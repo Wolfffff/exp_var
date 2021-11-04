@@ -1,0 +1,91 @@
+---
+title: "Expression variation EDA"
+output: html_notebook
+---
+
+A simple notebook for pulling RNAseq data from Expression Atlas, merging it together, and filtering it. 
+
+```{r}
+library(ExpressionAtlas)
+library(tidyverse)
+library(limma)
+
+# Change the timeout because GTEx is huge!
+options(timeout=1800)
+```
+
+Pull data as needed
+
+```{r}
+# atlasRes <- searchAtlasExperiments("",species = "Homo sapiens" )
+
+accession_ids = c("E-MTAB-5214","E-ENAD-41","E-ENAD-34","E-GEUV-1","E-ENAD-33")
+
+rnaseqExps <- getAtlasData( 
+  accession_ids
+  # atlasRes$Accession[
+  #   grep(
+  #     "rna-seq",
+  #     atlasRes$Type,
+  #     ignore.case = TRUE
+  #   )
+  # ][1:50]
+)
+
+allExps <- rnaseqExps
+exps <- names(rnaseqExps@listData)
+
+exp_data = lapply(exps, FUN = function(x){return(allExps[[x]]$rnaseq)})
+names(exp_data) <- exps
+```
+
+Generate a data frame containing all counts and another with all the metadata. NAs where metadata is missing.
+
+```{r}
+metadata_df <- data.frame()
+counts_df <- data.frame()
+
+for (dset_name in names(exp_data)) {
+  print(dset_name)
+  dset = exp_data[[dset_name]]
+  
+  metadata <- colData(dset)
+  metadata <- data.frame(metadata)
+  
+  # Append dataset name and seq_id
+  metadata <- cbind(dataset = dset_name,metadata)
+  metadata <- cbind(seq_id = colnames(dset),metadata)
+  metadata_df <- dplyr::bind_rows(metadata_df, metadata)
+  
+  counts = assays(dset)$count
+  counts_df <- dplyr::bind_rows(counts_df,data.frame(counts))
+}
+
+```
+Here's where we can filter things up. The metadata is dependent on the experiment 
+```{r}
+
+colnames(metadata_df)
+unique(metadata_df$disease)
+
+```
+
+
+```{r}
+feature_vec = list()
+feature_vec[["disease"]] = c("normal","control","",NA)
+
+filtered_metadata <- metadata_df
+filtered_counts <- counts_df
+for (column in names(feature_vec)) {
+  filtered_counts <- filtered_counts[,filtered_metadata[,column] %in% feature_vec[[column]]]
+  filtered_metadata <- filtered_metadata[filtered_metadata[,column] %in% feature_vec[[column]],]
+}
+```
+
+
+```{r}
+dim(filtered_metadata)
+dim(filtered_counts)
+```
+
