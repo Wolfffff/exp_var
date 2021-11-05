@@ -9,6 +9,8 @@ A simple notebook for pulling RNAseq data from Expression Atlas, merging it toge
 library(ExpressionAtlas)
 library(tidyverse)
 library(limma)
+library(sva)
+library(edgeR)
 
 # Change the timeout because GTEx is huge!
 options(timeout=1800)
@@ -18,8 +20,8 @@ Pull data as needed
 
 ```{r}
 # atlasRes <- searchAtlasExperiments("",species = "Homo sapiens" )
-
-accession_ids = c("E-MTAB-5214","E-ENAD-41","E-ENAD-34","E-GEUV-1","E-ENAD-33")
+#
+accession_ids = c("E-ENAD-33","E-MTAB-5214","E-ENAD-41","E-ENAD-34","E-GEUV-1")
 
 rnaseqExps <- getAtlasData( 
   accession_ids
@@ -42,8 +44,16 @@ names(exp_data) <- exps
 Generate a data frame containing all counts and another with all the metadata. NAs where metadata is missing.
 
 ```{r}
-metadata_df <- data.frame()
-counts_df <- data.frame()
+# metadata_df <- data.frame()
+# counts_df <- data.frame()
+
+# Feature vectors to sort by
+feature_vec = list()
+feature_vec[["disease"]] = c("normal","control","",NA)
+params = read.csv("experiment_parameters.csv")
+
+results_list <- list()
+results_metadata_list <- list()
 
 for (dset_name in names(exp_data)) {
   print(dset_name)
@@ -52,40 +62,59 @@ for (dset_name in names(exp_data)) {
   metadata <- colData(dset)
   metadata <- data.frame(metadata)
   
-  # Append dataset name and seq_id
-  metadata <- cbind(dataset = dset_name,metadata)
-  metadata <- cbind(seq_id = colnames(dset),metadata)
-  metadata_df <- dplyr::bind_rows(metadata_df, metadata)
   
-  counts = assays(dset)$count
-  counts_df <- dplyr::bind_rows(counts_df,data.frame(counts))
+  # Append dataset name and seq_id
+  # metadata <- cbind(dataset = dset_name,metadata)
+  # metadata <- cbind(seq_id = colnames(dset),metadata)
+
+  counts = assays(dset)$counts
+  
+  filtered_metadata <- metadata
+  filtered_counts <- as_data_frame(counts)
+  for (column in names(feature_vec)) {
+    if (column %in% colnames(filtered_metadata)){
+      filtered_counts <- filtered_counts[,filtered_metadata[,column] %in% feature_vec[[column]]]
+      filtered_metadata <- filtered_metadata[filtered_metadata[,column] %in% feature_vec[[column]],]
+    }
+
+  }
+  
+  metadata <- filtered_metadata
+  counts <- filtered_counts
+  
+  # Make sure we only use variables where there are 2 or more levels and build design matrix to incude
+  # everything else
+  values_count <- sapply(lapply(metadata, unique), length) 
+  b <- paste0(" ",names(metadata[,values_count > 1]), collapse=" +")
+  model <- as.formula(paste("~ 0 +",b,sep = ""))
+  
+  design <- model.matrix(model,data = metadata)
+  # colnames(design) <- c()
+  # contrast <- makeContrasts(HSvsC=hs-ctrl, levels = design)
+  
+  cat("normalizing and estimating mean-variance weights \n")
+  countdata.list <- DGEList(counts=counts)
+  countdata.norm <- calcNormFactors(countdata.list)
+  cutoff <- 1
+  drop <- which(apply(cpm(countdata.norm), 1, max) < cutoff)
+  countdata.norm <- countdata.norm[-drop,] 
+  
+  # mod <- model.matrix(model, data=metadata)
+  # mod0 <- model.matrix(~ 1, data=metadata)
+  # svobj <- svaseq(cpm(countdata.norm), mod, mod0) 
+  
+  countdata.voom <- voom(countdata.norm, design = design, plot=T)
+  v2fit <- lmFit(countdata.voom, design)
+  e2fit <- eBayes(v2fit)
+  # summary(decideTests(e2fit))
+  results_list <-  append(results_list, e2fit)
+  results_metadata <- append(results_metadata_list, metadata)
+  # plotSA(v2fit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
 }
 
 ```
-Here's where we can filter things up. The metadata is dependent on the experiment 
-```{r}
-
-colnames(metadata_df)
-unique(metadata_df$disease)
-
-```
 
 
 ```{r}
-feature_vec = list()
-feature_vec[["disease"]] = c("normal","control","",NA)
-
-filtered_metadata <- metadata_df
-filtered_counts <- counts_df
-for (column in names(feature_vec)) {
-  filtered_counts <- filtered_counts[,filtered_metadata[,column] %in% feature_vec[[column]]]
-  filtered_metadata <- filtered_metadata[filtered_metadata[,column] %in% feature_vec[[column]],]
-}
+e2fit$Amean
 ```
-
-
-```{r}
-dim(filtered_metadata)
-dim(filtered_counts)
-```
-
