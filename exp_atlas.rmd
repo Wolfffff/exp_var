@@ -11,6 +11,8 @@ library(tidyverse)
 library(limma)
 library(sva)
 library(edgeR)
+library(ggplot2)
+
 
 # Change the timeout because GTEx is huge!
 options(timeout=1800)
@@ -19,9 +21,28 @@ options(timeout=1800)
 Pull data as needed
 
 ```{r}
+# Example pulling from recount3
+library(recount3)
+human_projects <- available_projects()
+
+proj_info <- subset(
+    human_projects,
+    project == "SRP009615" & project_type == "data_sources"
+)
+rse <- create_rse(proj_info)
+
+lines <- gsub(";;", "\t", colData(rse)$sra.sample_attributes)
+lines <- gsub("\\|", "\t", lines)
+df <- read.table(textConnection(lines), header = F, sep = "\t", stringsAsFactors = F)
+names <-  df[1,seq_len(ncol(df)) %% 2 == 1]
+df <-  df[,seq_len(ncol(df)) %% 2 == 0]
+colnames(df) <- names
+```
+
+```{r}
 # atlasRes <- searchAtlasExperiments("",species = "Homo sapiens" )
 #
-accession_ids = c("E-ENAD-33","E-MTAB-5214","E-ENAD-41","E-ENAD-34","E-GEUV-1")
+accession_ids = c("E-MTAB-5214","E-ENAD-41","E-ENAD-34","E-GEUV-1")
 
 rnaseqExps <- getAtlasData( 
   accession_ids
@@ -50,7 +71,7 @@ Generate a data frame containing all counts and another with all the metadata. N
 # Feature vectors to sort by
 feature_vec = list()
 feature_vec[["disease"]] = c("normal","control","",NA)
-params = read.csv("experiment_parameters.csv")
+# params = read.csv("experiment_parameters.csv")
 
 results_list <- list()
 results_metadata_list <- list()
@@ -68,6 +89,7 @@ for (dset_name in names(exp_data)) {
   # metadata <- cbind(seq_id = colnames(dset),metadata)
 
   counts = assays(dset)$counts
+  dim(counts)
   
   filtered_metadata <- metadata
   filtered_counts <- as_data_frame(counts)
@@ -84,37 +106,61 @@ for (dset_name in names(exp_data)) {
   
   # Make sure we only use variables where there are 2 or more levels and build design matrix to incude
   # everything else
+  # metadata <- metadata[!duplicated(metadata),]
   values_count <- sapply(lapply(metadata, unique), length) 
-  b <- paste0(" ",names(metadata[,values_count > 1]), collapse=" +")
-  model <- as.formula(paste("~ 0 +",b,sep = ""))
+  metadata <- metadata[,names(metadata[,values_count > 1])]
+
+
+  metadata <- metadata[,!(names(metadata) %in% c("AtlasArrayGroup"))] # Leave this in if you want to remove the AtlasAssayGroup
+  b <- paste0(" ",names(metadata), collapse=" +")
+  model <- as.formula(paste0("~ 0 +",b),)
+
   
   design <- model.matrix(model,data = metadata)
-  # colnames(design) <- c()
-  # contrast <- makeContrasts(HSvsC=hs-ctrl, levels = design)
+  # design <- design[,-which(colSums(design) == 0)]
   
-  cat("normalizing and estimating mean-variance weights \n")
+
+  print("Normalizing and estimating mean-variance weights \n")
   countdata.list <- DGEList(counts=counts)
   countdata.norm <- calcNormFactors(countdata.list)
+  
+  print("Trimming")
   cutoff <- 1
   drop <- which(apply(cpm(countdata.norm), 1, max) < cutoff)
   countdata.norm <- countdata.norm[-drop,] 
+  # mod0 = model.matrix(~0,data=metadata)
+  # mod <- design
+  # svobj = sva(dat = countdata.norm,mod = design, mod0 = mod0,B=1)
   
-  # mod <- model.matrix(model, data=metadata)
-  # mod0 <- model.matrix(~ 1, data=metadata)
-  # svobj <- svaseq(cpm(countdata.norm), mod, mod0) 
-  
+  print("Voom!")
   countdata.voom <- voom(countdata.norm, design = design, plot=T)
-  v2fit <- lmFit(countdata.voom, design)
-  e2fit <- eBayes(v2fit)
-  # summary(decideTests(e2fit))
-  results_list <-  append(results_list, e2fit)
-  results_metadata <- append(results_metadata_list, metadata)
-  # plotSA(v2fit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
-}
+  countdata_resids <- removeBatchEffect(countdata.voom, covariates=design)
+  
+  results =  prcomp(t(countdata_resids))
+  jpeg(paste0(dset_name,"_PCA.jpg"))
+  biplot(results)
+  dev.off()
 
+  
+
+  jpeg(paste0(dset_name,"_scree.jpg"))
+  var_explained = results$sdev^2 / sum(results$sdev^2)
+  qplot(c(1:10), var_explained[1:10]) + 
+    geom_line() + 
+    xlab("Principal Component") + 
+    ylab("Variance Explained") +
+    ggtitle("Scree Plot") +
+    ylim(0, 1)
+  dev.off()
+  
+  print("Appending results and metadata to lists")
+  results_list <- append(results_list, countdata_resids)
+  results_metadata_list <- append(results_metadata_list, metadata)
+}
 ```
 
 
 ```{r}
-e2fit$Amean
+
+
 ```
