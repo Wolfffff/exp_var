@@ -3,7 +3,7 @@ title: "Expression variation EDA"
 output: html_notebook
 ---
 
-A simple notebook for pulling RNAseq data from Expression Atlas, merging it together, and filtering it. 
+A simple notebook for pulling RNAseq data from Expression Atlas and recount3, merging it together, and filtering it. 
 
 ```{r}
 library(ExpressionAtlas)
@@ -12,6 +12,15 @@ library(limma)
 library(sva)
 library(edgeR)
 library(ggplot2)
+library(janitor)
+
+
+experimental_metadata <- read_csv("expression_atlas_metadata.csv")
+# experimental_metadata <- read_csv("recount3_metadata.csv")
+
+feature_vec = list()
+feature_vec[["disease"]] = c("normal","control","",NA)
+# params = read.csv("experiment_parameters.csv")
 
 
 # Change the timeout because GTEx is huge!
@@ -27,22 +36,36 @@ human_projects <- available_projects()
 
 proj_info <- subset(
     human_projects,
-    project == "SRP009615" & project_type == "data_sources"
+    project == "SRP166108" & project_type == "data_sources"
 )
 rse <- create_rse(proj_info)
 
-lines <- gsub(";;", "\t", colData(rse)$sra.sample_attributes)
-lines <- gsub("\\|", "\t", lines)
-df <- read.table(textConnection(lines), header = F, sep = "\t", stringsAsFactors = F)
-names <-  df[1,seq_len(ncol(df)) %% 2 == 1]
-df <-  df[,seq_len(ncol(df)) %% 2 == 0]
-colnames(df) <- names
+map_to_cols <- function(s) {
+  s %>%
+  str_split("\\|", simplify = TRUE) %>% 
+  str_split(";;", simplify = TRUE) %>% 
+  as_tibble() %>%
+  t() %>%
+  row_to_names(row_number = 1) %>%
+  repair_names()
+}
+
+convert_metadata_to_df <- function(sample_attributes) {
+  meta <- lapply(sample_attributes,FUN=map_to_cols)
+  meta <- dplyr::bind_rows(meta)
+  meta <- DataFrame(meta)
+  rownames(meta) <-rownames(colData(rse))
+  return(meta)
+}
+
+metadata_df <- convert_metadata_to_df(colData(rse)$sra.sample_attributes)
+rse@colData = metadata_df
 ```
 
 ```{r}
 # atlasRes <- searchAtlasExperiments("",species = "Homo sapiens" )
 #
-accession_ids = c("E-MTAB-5214","E-ENAD-41","E-ENAD-34","E-GEUV-1")
+accession_ids = experimental_metadata$id
 
 rnaseqExps <- getAtlasData( 
   accession_ids
@@ -59,6 +82,7 @@ allExps <- rnaseqExps
 exps <- names(rnaseqExps@listData)
 
 exp_data = lapply(exps, FUN = function(x){return(allExps[[x]]$rnaseq)})
+# exp_data = lapply(exps, FUN = function(x){return(allExps[[x]]$raw_counts)})
 names(exp_data) <- exps
 ```
 
@@ -69,9 +93,6 @@ Generate a data frame containing all counts and another with all the metadata. N
 # counts_df <- data.frame()
 
 # Feature vectors to sort by
-feature_vec = list()
-feature_vec[["disease"]] = c("normal","control","",NA)
-# params = read.csv("experiment_parameters.csv")
 
 results_list <- list()
 results_metadata_list <- list()
@@ -112,6 +133,7 @@ for (dset_name in names(exp_data)) {
 
 
   metadata <- metadata[,!(names(metadata) %in% c("AtlasArrayGroup"))] # Leave this in if you want to remove the AtlasAssayGroup
+  print(names(metadata))
   b <- paste0(" ",names(metadata), collapse=" +")
   model <- as.formula(paste0("~ 0 +",b),)
 
@@ -119,9 +141,9 @@ for (dset_name in names(exp_data)) {
   design <- model.matrix(model,data = metadata)
   # design <- design[,-which(colSums(design) == 0)]
   
-
+  
   print("Normalizing and estimating mean-variance weights \n")
-  countdata.list <- DGEList(counts=counts)
+  countdata.list <- DGEList(counts=assays(dset)$counts,samples = metadata,genes =rownames(dset))
   countdata.norm <- calcNormFactors(countdata.list)
   
   print("Trimming")
@@ -134,28 +156,30 @@ for (dset_name in names(exp_data)) {
   
   print("Voom!")
   countdata.voom <- voom(countdata.norm, design = design, plot=T)
-  countdata_resids <- removeBatchEffect(countdata.voom, covariates=design)
+  # countdata.voom <- countdata.voom[1:1000,] 
+  # countdata_resids <- removeBatchEffect(countdata.voom, covariates=design)
   
-  results =  prcomp(t(countdata_resids))
-  jpeg(paste0(dset_name,"_PCA.jpg"))
-  biplot(results)
-  dev.off()
-
+  # results =  prcomp(t(countdata_resids))
+  # jpeg(paste0(dset_name,"_PCA.jpg"))
+  # biplot(results)
+  # dev.off()
+  # 
+  # 
+  # 
+  # jpeg(paste0(dset_name,"_scree.jpg"))
+  # var_explained = results$sdev^2 / sum(results$sdev^2)
+  # qplot(c(1:10), var_explained[1:10]) +
+  #   geom_line() +
+  #   xlab("Principal Component") +
+  #   ylab("Variance Explained") +
+  #   ggtitle("Scree Plot") +
+  #   ylim(0, 1)
+  # dev.off()
   
-
-  jpeg(paste0(dset_name,"_scree.jpg"))
-  var_explained = results$sdev^2 / sum(results$sdev^2)
-  qplot(c(1:10), var_explained[1:10]) + 
-    geom_line() + 
-    xlab("Principal Component") + 
-    ylab("Variance Explained") +
-    ggtitle("Scree Plot") +
-    ylim(0, 1)
-  dev.off()
   
   print("Appending results and metadata to lists")
-  results_list <- append(results_list, countdata_resids)
-  results_metadata_list <- append(results_metadata_list, metadata)
+  results_list[[dset_name]] = countdata.voom
+  results_metadata_list[[dset_name]] = metadata
 }
 ```
 
