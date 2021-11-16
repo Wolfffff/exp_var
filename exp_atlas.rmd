@@ -21,10 +21,10 @@ library(ggfortify)
 experimental_metadata <- read_csv("expression_atlas_metadata.csv")
 experimental_metadata <- experimental_metadata[-1,]
 # experimental_metadata <- read_csv("recount3_metadata.csv")
+plots_dir <- "data/"
 
 feature_vec = list()
-feature_vec[["disease"]] = c("normal","control","",NA,"non inflammatory bowel disease control")
-# params = read.csv("experiment_parameters.csv")
+# feature_vec[["disease"]] = c("normal","control","",NA,"non inflammatory bowel disease control")
 
 
 # Change the timeout because GTEx is huge!
@@ -135,18 +135,28 @@ for (dset_name in names(exp_data)) {
   metadata <- metadata[,names(metadata[,values_count > 1])]
 
   print(names(metadata))
-  metadata <- metadata[,!(names(metadata) %in% columns_to_ignore)] # Leave this in if you want to remove the AtlasAssayGroup
+  # metadata <- metadata[,!(names(metadata) %in% columns_to_ignore)] # Leave this in if you want to remove the AtlasAssayGroup
   print(names(metadata))
-  b <- paste0(" ",names(metadata), collapse=" +")
+  b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
+  print(paste0("~ 0 +",b))
+
+  
+  # metadata <- metadata %>% mutate(group_no = as.integer(technical_replicate_group))
+  metadata$sample_id <- rownames(metadata)
+  metadata[metadata=="     "] = NA
   
   
-  design <- model.matrix(model,data = metadata)
+  
+
   # design <- design[,-which(colSums(design) == 0)]
   
   
   print("Normalizing and estimating mean-variance weights")
   countdata.list <- DGEList(counts=counts,samples = metadata,genes =rownames(dset))
+  # countdata.list <- sumTechReps(countdata.list,metadata)
+  design <- model.matrix(model,data = metadata)
+  
   countdata.norm <- calcNormFactors(countdata.list)
   
   print("Trimming")
@@ -176,7 +186,7 @@ for (dset_name in names(exp_data)) {
     ylim(0, 1)
   ggsave(tmp_plot,filename=paste0(dset_name,"_voom_scree.jpg"))
   
-  n.cores = 16
+  n.cores = 2
   cuts <- cut(1:nrow(countdata.voom), n.cores)
   
   # countdata.voom <- countdata.voom[1:1000,]
@@ -211,10 +221,4 @@ for (dset_name in names(exp_data)) {
 }
 save(results_list, file="results_list.RData")
 save(results_metadata_list, file="results_metadata_list.RData")
-```
-
-
-```{r}
-
-autoplot(results)
 ```
