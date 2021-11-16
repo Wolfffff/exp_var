@@ -3,7 +3,7 @@ title: "Expression variation EDA"
 output: html_notebook
 ---
 
-A simple notebook for pulling RNAseq data from Expression Atlas and recount3, merging it together, and filtering it. 
+A simple notebook for pulling RNAseq data from Expression Atlas and recount3
 
 ```{r}
 library(ExpressionAtlas)
@@ -13,13 +13,17 @@ library(sva)
 library(edgeR)
 library(ggplot2)
 library(janitor)
-
+library(foreach)
+library(doParallel)
+library(biomaRt)
+library(ggfortify)
 
 experimental_metadata <- read_csv("expression_atlas_metadata.csv")
+experimental_metadata <- experimental_metadata[-1,]
 # experimental_metadata <- read_csv("recount3_metadata.csv")
 
 feature_vec = list()
-feature_vec[["disease"]] = c("normal","control","",NA)
+feature_vec[["disease"]] = c("normal","control","",NA,"non inflammatory bowel disease control")
 # params = read.csv("experiment_parameters.csv")
 
 
@@ -27,10 +31,10 @@ feature_vec[["disease"]] = c("normal","control","",NA)
 options(timeout=1800)
 ```
 
-Pull data as needed
+Pull data as needed from recount3. This isn't currently in use but likely would be useful for making sure we have a standard processing pipeline.
 
 ```{r}
-# Example pulling from recount3
+# Example pulling from recount3 -- not currently in use.
 library(recount3)
 human_projects <- available_projects()
 
@@ -89,17 +93,14 @@ names(exp_data) <- exps
 Generate a data frame containing all counts and another with all the metadata. NAs where metadata is missing.
 
 ```{r}
-# metadata_df <- data.frame()
-# counts_df <- data.frame()
-
-# Feature vectors to sort by
-
 results_list <- list()
 results_metadata_list <- list()
+print(names(exp_data))
 
 for (dset_name in names(exp_data)) {
   print(dset_name)
   dset = exp_data[[dset_name]]
+  columns_to_ignore = unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name,]$columns_to_ignore,split=";"))
   
   metadata <- colData(dset)
   metadata <- data.frame(metadata)
@@ -110,8 +111,10 @@ for (dset_name in names(exp_data)) {
   # metadata <- cbind(seq_id = colnames(dset),metadata)
 
   counts = assays(dset)$counts
-  dim(counts)
+  print(dim(counts))
   
+  # Filter at the individual level
+  print(colnames(metadata))
   filtered_metadata <- metadata
   filtered_counts <- as_data_frame(counts)
   for (column in names(feature_vec)) {
@@ -131,60 +134,87 @@ for (dset_name in names(exp_data)) {
   values_count <- sapply(lapply(metadata, unique), length) 
   metadata <- metadata[,names(metadata[,values_count > 1])]
 
-
-  metadata <- metadata[,!(names(metadata) %in% c("AtlasArrayGroup"))] # Leave this in if you want to remove the AtlasAssayGroup
+  print(names(metadata))
+  metadata <- metadata[,!(names(metadata) %in% columns_to_ignore)] # Leave this in if you want to remove the AtlasAssayGroup
   print(names(metadata))
   b <- paste0(" ",names(metadata), collapse=" +")
-  model <- as.formula(paste0("~ 0 +",b),)
-
+  model <- as.formula(paste0("~ 0 +",b))
+  
   
   design <- model.matrix(model,data = metadata)
   # design <- design[,-which(colSums(design) == 0)]
   
   
-  print("Normalizing and estimating mean-variance weights \n")
-  countdata.list <- DGEList(counts=assays(dset)$counts,samples = metadata,genes =rownames(dset))
+  print("Normalizing and estimating mean-variance weights")
+  countdata.list <- DGEList(counts=counts,samples = metadata,genes =rownames(dset))
   countdata.norm <- calcNormFactors(countdata.list)
   
   print("Trimming")
   cutoff <- 1
   drop <- which(apply(cpm(countdata.norm), 1, max) < cutoff)
   countdata.norm <- countdata.norm[-drop,] 
+  
   # mod0 = model.matrix(~0,data=metadata)
   # mod <- design
   # svobj = sva(dat = countdata.norm,mod = design, mod0 = mod0,B=1)
   
   print("Voom!")
+  jpeg(paste0(dset_name,"_voom.jpg"))
   countdata.voom <- voom(countdata.norm, design = design, plot=T)
-  # countdata.voom <- countdata.voom[1:1000,] 
+  dev.off()
+
+  results =  prcomp(t(countdata.voom$E))
+  tmp_plot <- autoplot(results)
+  ggsave(tmp_plot,filename=paste0(dset_name,"_voom_PCA.jpg"))
+  
+  var_explained = results$sdev^2 / sum(results$sdev^2)
+  tmp_plot <- qplot(c(1:10), var_explained[1:10]) +
+    geom_line() +
+    xlab("Principal Component") +
+    ylab("Variance Explained") +
+    ggtitle("Scree Plot") +
+    ylim(0, 1)
+  ggsave(tmp_plot,filename=paste0(dset_name,"_voom_scree.jpg"))
+  
+  n.cores = 16
+  cuts <- cut(1:nrow(countdata.voom), n.cores)
+  
+  # countdata.voom <- countdata.voom[1:1000,]
   # countdata_resids <- removeBatchEffect(countdata.voom, covariates=design)
+  cl <- makeCluster(n.cores)
+  registerDoParallel(cl)
+  list_batch_effects_removed <- foreach(x=levels(cuts), .combine='c', .multicombine=TRUE) %dopar% { 
+    library(limma)
+    effects_removed <- removeBatchEffect(countdata.voom[cuts == x,],covariates=design) 
+    list(effects_removed)
+  }
   
-  # results =  prcomp(t(countdata_resids))
-  # jpeg(paste0(dset_name,"_PCA.jpg"))
-  # biplot(results)
-  # dev.off()
-  # 
-  # 
-  # 
-  # jpeg(paste0(dset_name,"_scree.jpg"))
-  # var_explained = results$sdev^2 / sum(results$sdev^2)
-  # qplot(c(1:10), var_explained[1:10]) +
-  #   geom_line() +
-  #   xlab("Principal Component") +
-  #   ylab("Variance Explained") +
-  #   ggtitle("Scree Plot") +
-  #   ylim(0, 1)
-  # dev.off()
-  
+  countdata_resids <- do.call(rbind, list_batch_effects_removed)
+  rownames(countdata_resids) <- countdata.voom$genes[,1]
+  results =  prcomp(t(countdata_resids))
+  tmp_plot <- autoplot(results)
+  ggsave(tmp_plot,filename=paste0(dset_name,"_PCA_onresids.jpg"))
+
+  var_explained = results$sdev^2 / sum(results$sdev^2)
+  tmp_plot <- qplot(c(1:10), var_explained[1:10]) +
+      geom_line() +
+      xlab("Principal Component") +
+      ylab("Variance Explained") +
+      ggtitle("Scree Plot") +
+      ylim(0, 1)
+  ggsave(tmp_plot,filename=paste0(dset_name,"_scree_onresids.jpg"))
+
   
   print("Appending results and metadata to lists")
-  results_list[[dset_name]] = countdata.voom
+  results_list[[dset_name]] = countdata_resids
   results_metadata_list[[dset_name]] = metadata
 }
+save(results_list, file="results_list.RData")
+save(results_metadata_list, file="results_metadata_list.RData")
 ```
 
 
 ```{r}
 
-
+autoplot(results)
 ```
