@@ -115,7 +115,7 @@ results_list <- list()
 results_metadata_list <- list()
 print(names(exp_data))
 
-for (dset_name in names(exp_data)[3]) {
+for (dset_name in names(exp_data)) {
   print(dset_name)
   dset = exp_data[[dset_name]]
   columns_to_ignore = unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name,]$columns_to_ignore,split=";"))
