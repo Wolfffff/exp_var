@@ -18,6 +18,24 @@ library(doParallel)
 library(biomaRt)
 library(ggfortify)
 
+pca <- function(x, space=c("rows", "columns"),
+                center=TRUE, scale=FALSE) {
+  space <- match.arg(space)
+  if(space=="columns") {x <- t(x)}
+  x <- t(scale(t(x), center=center, scale=scale))
+  x <- x/sqrt(nrow(x)-1)
+  s <- svd(x)
+  loading <- s$u
+  colnames(loading) <- paste0("Loading", 1:ncol(loading))
+  rownames(loading) <- rownames(x)
+  pc <- diag(s$d) %*% t(s$v)
+  rownames(pc) <- paste0("PC", 1:nrow(pc))
+  colnames(pc) <- colnames(x)
+  pve <- s$d^2 / sum(s$d^2)
+  if(space=="columns") {pc <- t(pc); loading <- t(loading)}
+  return(list(pc=pc, loading=loading, pve=pve))
+}
+
 experimental_metadata <- read_csv("expression_atlas_metadata.csv")
 experimental_metadata <- experimental_metadata[-1,]
 # experimental_metadata <- read_csv("recount3_metadata.csv")
@@ -133,18 +151,18 @@ for (dset_name in names(exp_data)) {
   # metadata <- metadata[!duplicated(metadata),]
   values_count <- sapply(lapply(metadata, unique), length) 
   metadata <- metadata[,names(metadata[,values_count > 1])]
-
   print(names(metadata))
   # metadata <- metadata[,!(names(metadata) %in% columns_to_ignore)] # Leave this in if you want to remove the AtlasAssayGroup
   print(names(metadata))
   b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
   print(paste0("~ 0 +",b))
+  design <- model.matrix(model,data = metadata)
 
   
   # metadata <- metadata %>% mutate(group_no = as.integer(technical_replicate_group))
   metadata$sample_id <- rownames(metadata)
-  metadata[metadata=="     "] = NA
+  # metadata[metadata=="     "] = NA
   
   
   
@@ -153,9 +171,8 @@ for (dset_name in names(exp_data)) {
   
   
   print("Normalizing and estimating mean-variance weights")
-  countdata.list <- DGEList(counts=counts,samples = metadata,genes =rownames(dset))
+  countdata.list <- DGEList(counts=counts,samples = metadata,genes=rownames(dset))
   # countdata.list <- sumTechReps(countdata.list,metadata)
-  design <- model.matrix(model,data = metadata)
   
   countdata.norm <- calcNormFactors(countdata.list)
   
@@ -172,7 +189,7 @@ for (dset_name in names(exp_data)) {
   jpeg(paste0(dset_name,"_voom.jpg"))
   countdata.voom <- voom(countdata.norm, design = design, plot=T)
   dev.off()
-
+  
   results =  prcomp(t(countdata.voom$E))
   tmp_plot <- autoplot(results)
   ggsave(tmp_plot,filename=paste0(dset_name,"_voom_PCA.jpg"))
@@ -186,11 +203,20 @@ for (dset_name in names(exp_data)) {
     ylim(0, 1)
   ggsave(tmp_plot,filename=paste0(dset_name,"_voom_scree.jpg"))
   
-  n.cores = 2
+  n.cores = 8
   cuts <- cut(1:nrow(countdata.voom), n.cores)
   
   # countdata.voom <- countdata.voom[1:1000,]
   # countdata_resids <- removeBatchEffect(countdata.voom, covariates=design)
+  PCs <- pca(countdata.voom$E)
+  metadata$PC1 <- PCs$pc[1,]
+  metadata$PC2 <- PCs$pc[2,]
+  metadata$PC3 <- PCs$pc[3,]
+  
+  b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
+  model <- as.formula(paste0("~ 0 +",b))
+  design <- model.matrix(model,data = metadata)
+  
   cl <- makeCluster(n.cores)
   registerDoParallel(cl)
   list_batch_effects_removed <- foreach(x=levels(cuts), .combine='c', .multicombine=TRUE) %dopar% { 
