@@ -115,7 +115,7 @@ results_list <- list()
 results_metadata_list <- list()
 print(names(exp_data))
 
-for (dset_name in names(exp_data)) {
+for (dset_name in names(exp_data)[3]) {
   print(dset_name)
   dset = exp_data[[dset_name]]
   columns_to_ignore = unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name,]$columns_to_ignore,split=";"))
@@ -172,8 +172,12 @@ for (dset_name in names(exp_data)) {
   
   print("Normalizing and estimating mean-variance weights")
   countdata.list <- DGEList(counts=counts,samples = metadata,genes=rownames(dset))
-  # countdata.list <- sumTechReps(countdata.list,metadata)
-  
+  if (names(metadata) %in% c("technical_replicate_group")){
+      countdata.list <- sumTechReps(countdata.list,metadata$technical_replicate_group)
+  }
+
+  # recalc with updated metadata
+  design <- model.matrix(model,data = countdata.list$samples)
   countdata.norm <- calcNormFactors(countdata.list)
   
   print("Trimming")
@@ -191,7 +195,11 @@ for (dset_name in names(exp_data)) {
   dev.off()
   
   results =  prcomp(t(countdata.voom$E))
-  tmp_plot <- autoplot(results)
+  # library(RColorBrewer)
+  # n <- length(unique(countdata.list$samples$technical_replicate_group))
+  # qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+  # col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+  tmp_plot <- autoplot(results)#,colour=col_vector[as.integer(countdata.list$samples$technical_replicate_group)])
   ggsave(tmp_plot,filename=paste0(dset_name,"_voom_PCA.jpg"))
   
   var_explained = results$sdev^2 / sum(results$sdev^2)
@@ -203,15 +211,20 @@ for (dset_name in names(exp_data)) {
     ylim(0, 1)
   ggsave(tmp_plot,filename=paste0(dset_name,"_voom_scree.jpg"))
   
-  n.cores = 8
+  n.cores = 16
   cuts <- cut(1:nrow(countdata.voom), n.cores)
   
   # countdata.voom <- countdata.voom[1:1000,]
   # countdata_resids <- removeBatchEffect(countdata.voom, covariates=design)
+  
+  metadata = countdata.list$samples
+  values_count <- sapply(lapply(metadata, unique), length) 
+  metadata <- metadata[,names(metadata[,values_count > 1])]
   PCs <- pca(countdata.voom$E)
   metadata$PC1 <- PCs$pc[1,]
   metadata$PC2 <- PCs$pc[2,]
   metadata$PC3 <- PCs$pc[3,]
+  
   
   b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
@@ -228,7 +241,10 @@ for (dset_name in names(exp_data)) {
   countdata_resids <- do.call(rbind, list_batch_effects_removed)
   rownames(countdata_resids) <- countdata.voom$genes[,1]
   results =  prcomp(t(countdata_resids))
-  tmp_plot <- autoplot(results)
+  # n <- length(unique(countdata.list$samples$technical_replicate_group))
+  # qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+  # col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+  tmp_plot <- autoplot(results)#,colour=col_vector[as.integer(countdata.list$samples$technical_replicate_group)])
   ggsave(tmp_plot,filename=paste0(dset_name,"_PCA_onresids.jpg"))
 
   var_explained = results$sdev^2 / sum(results$sdev^2)
