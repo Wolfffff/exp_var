@@ -153,11 +153,9 @@ for (dset_name in names(exp_data)) {
   metadata <- metadata[,names(metadata[,values_count > 1])]
   print(names(metadata))
   # metadata <- metadata[,!(names(metadata) %in% columns_to_ignore)] # Leave this in if you want to remove the AtlasAssayGroup
-  print(names(metadata))
   b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
   print(paste0("~ 0 +",b))
-  design <- model.matrix(model,data = metadata)
 
   
   # metadata <- metadata %>% mutate(group_no = as.integer(technical_replicate_group))
@@ -174,6 +172,7 @@ for (dset_name in names(exp_data)) {
   countdata.list <- DGEList(counts=counts,samples = metadata,genes=rownames(dset))
   if (names(metadata) %in% c("technical_replicate_group")){
       countdata.list <- sumTechReps(countdata.list,metadata$technical_replicate_group)
+      metadata = countdata.list$samples
   }
 
   # recalc with updated metadata
@@ -217,7 +216,6 @@ for (dset_name in names(exp_data)) {
   # countdata.voom <- countdata.voom[1:1000,]
   # countdata_resids <- removeBatchEffect(countdata.voom, covariates=design)
   
-  metadata = countdata.list$samples
   values_count <- sapply(lapply(metadata, unique), length) 
   metadata <- metadata[,names(metadata[,values_count > 1])]
   PCs <- pca(countdata.voom$E)
