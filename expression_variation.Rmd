@@ -1,0 +1,296 @@
+# Simple script showing how to pull data from Expression Atlas and recount3, normalize, and remove batch effects.
+
+```{r setup, include=FALSE}
+library(ExpressionAtlas)
+library(tidyverse)
+library(limma)
+library(sva)
+library(edgeR)
+library(ggplot2)
+library(janitor)
+library(foreach)
+library(doParallel)
+library(biomaRt)
+library(ggfortify)
+library(patchwork)
+library(cowplot)
+
+
+
+# Set timeout to avoid failure when trying to download GTEx or other large datasets
+options(timeout = 1800)
+```
+
+# A simple utility function for PCA
+
+```{r}
+pca <- function(x, space = c("rows", "columns"),
+                center = TRUE, scale = FALSE) {
+  space <- match.arg(space)
+  if (space == "columns") {
+    x <- t(x)
+  }
+  x <- t(scale(t(x), center = center, scale = scale))
+  x <- x / sqrt(nrow(x) - 1)
+  s <- svd(x)
+  loading <- s$u
+  colnames(loading) <- paste0("Loading", 1:ncol(loading))
+  rownames(loading) <- rownames(x)
+  pc <- diag(s$d) %*% t(s$v)
+  rownames(pc) <- paste0("PC", 1:nrow(pc))
+  colnames(pc) <- colnames(x)
+  pve <- s$d^2 / sum(s$d^2)
+  if (space == "columns") {
+    pc <- t(pc)
+    loading <- t(loading)
+  }
+  return(list(pc = pc, loading = loading, pve = pve))
+}
+```
+
+```{r}
+experimental_metadata <- read_csv("expression_atlas_metadata.csv")
+experimental_metadata <- experimental_metadata[-1,] # Remove the top row (GTEx) to lower the time cost when testing
+
+# Load metadata from recount3
+# experimental_metadata <- read_csv("recount3_metadata.csv")
+
+plots_dir <- "data/"
+
+# Setup filters for removing samples accordingly to the metadata
+feature_vec <- list()
+feature_vec[["disease"]] <- c("normal", "control", "", NA, "non inflammatory bowel disease control")
+```
+
+
+## recount3
+```{r recount3}
+# This is commented out as we're sticking with Expression Atlas for now.
+
+# library(recount3)
+
+# human_projects <- available_projects()
+
+# proj_info <- subset(
+#   human_projects,
+#   project == "SRP166108" & project_type == "data_sources"
+# )
+# rse <- create_rse(proj_info)
+
+# #
+# map_to_cols <- function(s) {
+#   s %>%
+#     str_split("\\|", simplify = TRUE) %>%
+#     str_split(";;", simplify = TRUE) %>%
+#     as_tibble() %>%
+#     t() %>%
+#     row_to_names(row_number = 1) %>%
+#     repair_names()
+# }
+
+# convert_metadata_to_df <- function(sample_attributes) {
+#   meta <- lapply(sample_attributes, FUN = map_to_cols)
+#   meta <- dplyr::bind_rows(meta)
+#   meta <- DataFrame(meta)
+#   rownames(meta) <- rownames(colData(rse))
+#   return(meta)
+# metadata_df <- convert_metadata_to_df(colData(rse)$sra.sample_attributes)
+# rse@colData <- metadata_df
+# }
+```
+
+## Expression Atlas
+
+```{r}
+accession_ids <- experimental_metadata$id
+
+rnaseq_exps <- getAtlasData(accession_ids)
+
+all_exps <- rnaseq_exps
+exps <- names(rnaseq_exps@listData)
+
+exp_data <- lapply(exps, FUN = function(x) {
+    return(all_exps[[x]]$rnaseq)
+})
+names(exp_data) <- exps
+```
+
+
+
+## Main loop
+```{r}
+results_list <- list()
+results_metadata_list <- list()
+print(names(exp_data))
+
+# Loop over datasets
+for (dset_name in names(exp_data)) {
+  print(dset_name)
+  dset <- exp_data[[dset_name]]
+  columns_to_ignore = unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name,]$columns_to_ignore,split=";"))
+
+  metadata <- colData(dset)
+  metadata <- data.frame(metadata)
+
+  counts = assays(dset)$counts
+  print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
+  print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
+
+  # Filter at the sample level
+  print(colnames(metadata))
+  filtered_metadata <- metadata
+  filtered_counts <- as_data_frame(counts)
+  for (column in names(feature_vec)) {
+    if (column %in% colnames(filtered_metadata)){
+      filtered_counts <- filtered_counts[,filtered_metadata[,column] %in% feature_vec[[column]]]
+      filtered_metadata <- filtered_metadata[filtered_metadata[,column] %in% feature_vec[[column]],]
+    }
+  }
+
+  metadata <- filtered_metadata
+  counts <- filtered_counts
+
+  metadata$sample_id <- rownames(metadata)
+
+  print("Normalizing and estimating mean-variance weights")
+  countdata.list <- DGEList(counts=counts,samples = metadata,genes=rownames(dset))
+  if (any(names(metadata) %in% c("technical_replicate_group"))){
+      print("Summing technical replicates")
+      countdata.list <- sumTechReps(countdata.list,metadata$technical_replicate_group)
+  }
+
+  countdata.norm <- calcNormFactors(countdata.list)
+
+  print("Trimming")
+  cutoff <- 1
+  drop <- which(apply(cpm(countdata.norm), 1, max) < cutoff)
+  countdata.norm <- countdata.norm[-drop,]
+
+  print("Voom!")
+  # recalc with updated metadata
+  values_count <- sapply(lapply(countdata.norm$samples, unique), length) 
+  countdata.norm$samples <- countdata.norm$samples[,names(countdata.norm$samples[,values_count > 1])]
+
+  b <- paste0(" ",names(countdata.norm$samples)[!(names(countdata.norm$samples) %in% c(columns_to_ignore,"lib.size","norm.factors"))], collapse=" +")
+  model <- as.formula(paste0("~ 0 +",b))
+  print(paste0("~ 0 +",b))
+  design <- model.matrix(model,data = countdata.norm$samples)
+
+  jpeg(paste0(plots_dir,dset_name,"_voom.jpg"))
+  countdata.voom <- voom(countdata.norm, design = design, plot=T)
+  dev.off()
+
+  results =  prcomp(t(countdata.voom$E))
+  pca_on_voom <- autoplot(results) + 
+      coord_fixed(ratio=1) +
+      theme_cowplot() #,colour=col_vector[as.integer(countdata.list$samples$technical_replicate_group)])
+
+  var_explained = results$sdev^2 / sum(results$sdev^2)
+  screen_on_voom <- qplot(c(1:10), var_explained[1:10]) +
+    geom_line() +
+    xlab("Principal Component") +
+    ylab("Variance Explained") +
+    ggtitle("Scree Plot") +
+    ylim(0, 1) + 
+    coord_fixed(ratio=1) +
+    theme_cowplot()
+
+
+
+  # Removing redundant features - see https://stackoverflow.com/questions/38222318/how-to-remove-duplicate-columns-content-in-data-table-r
+
+  features_pair <- combn(names(countdata.list$samples), 2, simplify = F) # list all column pairs
+  to_remove <- c() # init a vector to store duplicates
+  for (pair in features_pair) { # put the pairs for testing into temp objects
+    f1 <- pair[1]
+    f2 <- pair[2]
+      if (!(f1 %in% to_remove) & !(f2 %in% to_remove)) {
+        if (all(as.numeric(as.factor(countdata.list$samples[[f1]])) == as.numeric(as.factor(countdata.list$samples[[f2]])))) {
+          cat(f1, "and", f2, "are equal.\n")
+          to_remove <- c(to_remove, f2) # build the list of duplicates
+      }
+    }
+  }
+
+
+  countdata.list$samples <- countdata.list$samples[,!(names(countdata.list$sample) %in% as.list(to_remove))]
+
+  # Null model for SVA
+  # mod0 = model.matrix(~1,data=countdata.list$samples)
+  # We need to rebuild and ignore lib.size!
+  PCs <- pca(countdata.voom$E)
+  countdata.norm$samples$PC1 <- PCs$pc[1,]
+  b <- paste0(" ",names(countdata.norm$samples)[!(names(countdata.norm$samples) %in% c(columns_to_ignore,"lib.size","norm.factors"))], collapse=" +")
+  model_with_pc1 <- as.formula(paste0("~ 0 + PC1 +",b))
+  design_with_pc1 <- model.matrix(model_with_pc1, data = countdata.norm$samples)
+  # svobj = sva(countdata.norm$counts,mod0 = mod0,mod = design)
+
+
+  
+
+  # b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
+  # model <- as.formula(paste0("~ 0 +",b))
+  # design <- model.matrix(model,data = metadata)
+  print(paste0("Unfiltered count dimensions: ", dim(countdata.list$counts)[1], " x ", dim(countdata.list$counts)[2]))
+  print(paste0("Unfiltered metadata dimensions: ", dim(countdata.list$samples)[1], " x ", dim(countdata.list$samples)[2]))
+
+  n.cores <- 8
+  cuts <- cut(seq_len(nrow(countdata.voom)), n.cores)
+  
+  cl <- makeCluster(n.cores)
+  registerDoParallel(cl)
+  list_batch_effects_removed <- foreach(x=levels(cuts), .combine='c', .multicombine=TRUE) %dopar% { 
+    library(limma)
+    effects_removed <- removeBatchEffect(countdata.voom[cuts == x,],covariates=design) 
+    list(effects_removed)
+  }
+
+  countdata_resids <- do.call(rbind, list_batch_effects_removed)
+  rownames(countdata_resids) <- countdata.voom$genes[,1]
+
+  # With PC1
+
+  cl <- makeCluster(n.cores)
+  registerDoParallel(cl)
+  list_batch_effects_removed <- foreach(x=levels(cuts), .combine='c', .multicombine=TRUE) %dopar% { 
+    library(limma)
+    effects_removed <- removeBatchEffect(countdata.voom[cuts == x,],covariates=design_with_pc1) 
+    list(effects_removed)
+  }
+
+  countdata_resids_with_pc1 <- do.call(rbind, list_batch_effects_removed)
+  rownames(countdata_resids_with_pc1) <- countdata.voom$genes[,1]
+  results <- prcomp(t(countdata_resids_with_pc1))
+  pca_on_resids_with_pc1 <- autoplot(results) + 
+      coord_fixed(ratio=1) +
+      theme_cowplot()
+
+
+  results <- prcomp(t(countdata_resids))
+  pca_on_resids <- autoplot(results) + 
+      coord_fixed(ratio=1) +
+      theme_cowplot()
+
+  var_explained <- results$sdev^2 / sum(results$sdev^2)
+  scree_on_resids  <- qplot(c(1:10), var_explained[1:10]) +
+      geom_line() +
+      xlab("Principal Component") +
+      ylab("Variance Explained") +
+      ggtitle("Scree Plot") +
+      ylim(0, 1) + 
+      coord_fixed(ratio=1) +
+      theme_cowplot()
+
+  print("Writing figures")
+
+  plt <- plot_grid(nrow=1, scale = 0.9, pca_on_voom + ggtitle("Uncorrected"), pca_on_resids + ggtitle("Known effects"), pca_on_resids_with_pc1 + ggtitle("Known effects and PC1"))
+  ggsave(plt,filename=paste0(plots_dir,dset_name,"_pca.jpg"), width = 18, height = 6
+  , dpi = 300)
+  print("Appending results and metadata to lists")
+  results_list[[dset_name]] <- countdata_resids
+  results_metadata_list[[dset_name]] <- metadata
+}
+
+save(results_list, file = "results_list.RData")
+save(results_metadata_list, file = "results_metadata_list.RData")
+```
