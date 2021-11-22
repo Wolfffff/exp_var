@@ -14,8 +14,9 @@ library(biomaRt)
 library(ggfortify)
 library(patchwork)
 library(cowplot)
-
-
+library(clusterProfiler)
+library(AnnotationDbi)
+library(org.Hs.eg.db)
 
 # Set timeout to avoid failure when trying to download GTEx or other large datasets
 options(timeout = 1800)
@@ -142,8 +143,11 @@ for (dset_name in names(exp_data)) {
   filtered_counts <- as_data_frame(counts)
   for (column in names(feature_vec)) {
     if (column %in% colnames(filtered_metadata)){
-      filtered_counts <- filtered_counts[,filtered_metadata[,column] %in% feature_vec[[column]]]
-      filtered_metadata <- filtered_metadata[filtered_metadata[,column] %in% feature_vec[[column]],]
+      control_names_tb = table(filtered_metadata[,column])
+      control_names_tb = control_names[names(control_names_tb) %in% feature_vec[[column]]]
+      control_name = names(control_names_tb)[control_names_tb == max(control_names_tb)]
+      filtered_counts <- filtered_counts[,filtered_metadata[,column] == control_name]
+      filtered_metadata <- filtered_metadata[filtered_metadata[,column] == control_name,]
     }
   }
 
