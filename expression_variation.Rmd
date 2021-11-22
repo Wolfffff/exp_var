@@ -144,7 +144,8 @@ for (dset_name in names(exp_data)) {
   for (column in names(feature_vec)) {
     if (column %in% colnames(filtered_metadata)){
       control_names_tb = table(filtered_metadata[,column])
-      control_names_tb = control_names[names(control_names_tb) %in% feature_vec[[column]]]
+      control_names_tb = control_names_tb[names(control_names_tb) %in% feature_vec[[column]]]
+      print(control_names_tb)
       control_name = names(control_names_tb)[control_names_tb == max(control_names_tb)]
       filtered_counts <- filtered_counts[,filtered_metadata[,column] == control_name]
       filtered_metadata <- filtered_metadata[filtered_metadata[,column] == control_name,]
@@ -216,7 +217,6 @@ for (dset_name in names(exp_data)) {
     }
   }
 
-
   countdata.list$samples <- countdata.list$samples[,!(names(countdata.list$sample) %in% as.list(to_remove))]
 
   # Null model for SVA
@@ -235,8 +235,8 @@ for (dset_name in names(exp_data)) {
   # b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
   # model <- as.formula(paste0("~ 0 +",b))
   # design <- model.matrix(model,data = metadata)
-  print(paste0("Unfiltered count dimensions: ", dim(countdata.list$counts)[1], " x ", dim(countdata.list$counts)[2]))
-  print(paste0("Unfiltered metadata dimensions: ", dim(countdata.list$samples)[1], " x ", dim(countdata.list$samples)[2]))
+  print(paste0("Filtered count dimensions: ", dim(countdata.list$counts)[1], " x ", dim(countdata.list$counts)[2]))
+  print(paste0("Filtered metadata dimensions: ", dim(countdata.list$samples)[1], " x ", dim(countdata.list$samples)[2]))
 
   n.cores <- 8
   cuts <- cut(seq_len(nrow(countdata.voom)), n.cores)
@@ -287,9 +287,12 @@ for (dset_name in names(exp_data)) {
 
   print("Writing figures")
 
-  plt <- plot_grid(nrow=1, scale = 0.9, pca_on_voom + ggtitle("Uncorrected"), pca_on_resids + ggtitle("Known effects"), pca_on_resids_with_pc1 + ggtitle("Known effects and PC1"))
-  ggsave(plt,filename=paste0(plots_dir,dset_name,"_pca.jpg"), width = 18, height = 6
-  , dpi = 300)
+  plt <- plot_grid(nrow=1, scale = 0.9, 
+                   pca_on_voom + ggtitle("Uncorrected"), 
+                   pca_on_resids + ggtitle("Known effects"), 
+                   pca_on_resids_with_pc1 + ggtitle("Known effects and PC1"))
+  save_plot(filename=paste0(plots_dir,dset_name,"_pca.jpg"), plt, 
+            base_height = 6, base_asp = 1.2, ncol = 3)
   print("Appending results and metadata to lists")
   results_list[[dset_name]] <- countdata_resids
   results_metadata_list[[dset_name]] <- metadata
