@@ -39,6 +39,10 @@ make_filtered_data = function(counts, metadata){
               metadata = filtered_metadata))
 }
 
+get_control_cols <- function(metadata){
+  names(metadata)[!(names(metadata) %in% c(columns_to_ignore,"lib.size","norm.factors"))]
+}
+
 remove_large_factors = function(metadata){
 
   cols_to_control = get_control_cols(metadata)
