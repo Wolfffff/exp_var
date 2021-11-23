@@ -18,35 +18,10 @@ library(clusterProfiler)
 library(AnnotationDbi)
 library(org.Hs.eg.db)
 
+source("functions.R")
+
 # Set timeout to avoid failure when trying to download GTEx or other large datasets
 options(timeout = 1800)
-```
-
-# A simple utility function for PCA
-
-```{r}
-pca <- function(x, space = c("rows", "columns"),
-                center = TRUE, scale = FALSE) {
-  space <- match.arg(space)
-  if (space == "columns") {
-    x <- t(x)
-  }
-  x <- t(scale(t(x), center = center, scale = scale))
-  x <- x / sqrt(nrow(x) - 1)
-  s <- svd(x)
-  loading <- s$u
-  colnames(loading) <- paste0("Loading", 1:ncol(loading))
-  rownames(loading) <- rownames(x)
-  pc <- diag(s$d) %*% t(s$v)
-  rownames(pc) <- paste0("PC", 1:nrow(pc))
-  colnames(pc) <- colnames(x)
-  pve <- s$d^2 / sum(s$d^2)
-  if (space == "columns") {
-    pc <- t(pc)
-    loading <- t(loading)
-  }
-  return(list(pc = pc, loading = loading, pve = pve))
-}
 ```
 
 ```{r}
@@ -140,28 +115,14 @@ for (dset_name in names(exp_data)) {
   print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
 
-  # Filter at the sample level
-  print(colnames(metadata))
-  filtered_metadata <- metadata
-  filtered_counts <- as_data_frame(counts)
-  for (column in names(feature_vec)) {
-    if (column %in% colnames(filtered_metadata)){
-      control_names_tb = table(filtered_metadata[,column])
-      control_names_tb = control_names_tb[names(control_names_tb) %in% feature_vec[[column]]]
-      print(control_names_tb)
-      control_name = names(control_names_tb)[control_names_tb == max(control_names_tb)]
-      filtered_counts <- filtered_counts[,filtered_metadata[,column] == control_name]
-      filtered_metadata <- filtered_metadata[filtered_metadata[,column] == control_name,]
-    }
-  }
-
-  metadata <- filtered_metadata
-  counts <- filtered_counts
+  filtered_data = make_filtered_data(counts, metadata)
+  metadata <- filtered_data$metadata
+  counts <- filtered_data$counts
   n_samples = dim(metadata)[1]
   metadata$sample_id <- rownames(metadata)
 
   print("Normalizing and estimating mean-variance weights")
-  countdata.list <- DGEList(counts=counts,samples = metadata,genes=rownames(dset))
+  countdata.list <- DGEList(counts=counts, samples=metadata, genes=rownames(dset))
   if (any(names(metadata) %in% c("technical_replicate_group"))){
       print("Summing technical replicates")
       countdata.list <- sumTechReps(countdata.list,metadata$technical_replicate_group)
@@ -181,16 +142,9 @@ for (dset_name in names(exp_data)) {
 
   # Removing columns with a crazy number of levels that mess everything up. 
   # (this is why we have random effects by the way)
-  cols_to_control = names(countdata.norm$samples)[!(names(countdata.norm$samples) %in% c(columns_to_ignore,"lib.size","norm.factors"))]
-  for(col in cols_to_control){
-    n_coef = length(unique(countdata.norm$samples[[col]])) - 1
-    print(paste(col, n_coef))
-    if(n_coef > n_samples/5 | n_coef <= 0){
-      print(paste("Droping column", col, "from metadata because it has ", n_coef, "levels."))
-      countdata.norm$samples = countdata.norm$samples[,names(countdata.norm$samples) != col]
-      cols_to_control = cols_to_control[cols_to_control!=col]
-     }
-  }
+  countdata.norm$samples = remove_large_factors(countdata.norm$samples)
+
+  cols_to_control = get_control_cols(countdata.norm$samples)
   b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
   print(paste0("~ 0 +",b))
@@ -200,86 +154,40 @@ for (dset_name in names(exp_data)) {
   countdata.voom <- voom(countdata.norm, design = design, plot=T)
   dev.off()
 
-  results =  prcomp(t(countdata.voom$E))
-  pca_on_voom <- autoplot(results) + 
-      coord_fixed(ratio=1) +
-      theme_cowplot() #,colour=col_vector[as.integer(countdata.list$samples$technical_replicate_group)])
-  print(pca_on_voom)
+  # Raw PCA plot
+  pca_on_voom =  pca_plot(countdata.voom$E)
+
+  screen_on_voom <- scree_plot(countdata.voom$E)
   
-
-  var_explained = results$sdev^2 / sum(results$sdev^2)
-  screen_on_voom <- qplot(c(1:10), var_explained[1:10]) +
-    geom_line() +
-    xlab("Principal Component") +
-    ylab("Variance Explained") +
-    ggtitle("Scree Plot") +
-    ylim(0, 1) + 
-    coord_fixed(ratio=1) +
-    theme_cowplot()
-
-  
-  # Removing redundant features - see https://stackoverflow.com/questions/38222318/how-to-remove-duplicate-columns-content-in-data-table-r
-
-  features_pair <- combn(names(countdata.list$samples), 2, simplify = F) # list all column pairs
-  to_remove <- c() # init a vector to store duplicates
-  for (pair in features_pair) { # put the pairs for testing into temp objects
-    f1 <- pair[1]
-    f2 <- pair[2]
-    if (!(f1 %in% to_remove) & !(f2 %in% to_remove)) {
-      if (all(as.numeric(as.factor(countdata.list$samples[[f1]])) == as.numeric(as.factor(countdata.list$samples[[f2]])))) {
-        cat(f1, "and", f2, "are equal.\n")
-        to_remove <- c(to_remove, f2) # build the list of duplicates
-      }
-    }
-  }
-
-  countdata.list$samples <- countdata.list$samples[,!(names(countdata.list$sample) %in% as.list(to_remove))]
+  countdata.list$samples = remove_redundant_features(countdata.list$samples)
 
   # Null model for SVA
   # mod0 = model.matrix(~1,data=countdata.list$samples)
   # We need to rebuild and ignore lib.size!
   PCs <- pca(countdata.voom$E)
   countdata.norm$samples$PC1 <- PCs$pc[1,]
-  b <- paste0(" ",names(countdata.norm$samples)[!(names(countdata.norm$samples) %in% c(columns_to_ignore,"lib.size","norm.factors"))], collapse=" +")
+  b <- paste0(" ", get_control_cols(countdata.norm$samples), collapse=" +")
   model_with_pc1 <- as.formula(paste0("~ 0 + PC1 +",b))
   design_with_pc1 <- model.matrix(model_with_pc1, data = countdata.norm$samples)
   # svobj = sva(countdata.norm$counts,mod0 = mod0,mod = design)
 
+  print(paste0("Filtered count dimensions: ", paste(dim(countdata.list$counts), collapse = " x ")))
+  print(paste0("Filtered metadata dimensions: ", paste(dim(countdata.list$samples), collapse = " x ")))
 
-  # b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
-  # model <- as.formula(paste0("~ 0 +",b))
-  # design <- model.matrix(model,data = metadata)
-  print(paste0("Filtered count dimensions: ", dim(countdata.list$counts)[1], " x ", dim(countdata.list$counts)[2]))
-  print(paste0("Filtered metadata dimensions: ", dim(countdata.list$samples)[1], " x ", dim(countdata.list$samples)[2]))
-
+  # Batch effects
   countdata_resids <- removeBatchEffect(countdata.voom, covariates=design) 
   rownames(countdata_resids) <- countdata.voom$genes[,1]
 
-  # With PC1
-
+  # Batch effects With PC1
   countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom,covariates=design_with_pc1) 
   rownames(countdata_resids_with_pc1) <- countdata.voom$genes[,1]
   
-  results <- prcomp(t(countdata_resids_with_pc1))
-  pca_on_resids_with_pc1 <- autoplot(results) + 
-      coord_fixed(ratio=1) +
-      theme_cowplot()
+  # PCA plot with Batch effects
+  pca_on_resids <- pca_plot(countdata_resids)
+  scree_on_resids <- scree_plot(countdata_resids)
 
-
-  results <- prcomp(t(countdata_resids))
-  pca_on_resids <- autoplot(results) + 
-      coord_fixed(ratio=1) +
-      theme_cowplot()
-
-  var_explained <- results$sdev^2 / sum(results$sdev^2)
-  scree_on_resids  <- qplot(c(1:10), var_explained[1:10]) +
-      geom_line() +
-      xlab("Principal Component") +
-      ylab("Variance Explained") +
-      ggtitle("Scree Plot") +
-      ylim(0, 1) + 
-      coord_fixed(ratio=1) +
-      theme_cowplot()
+  # PCA plot with Batch effects and PC1
+  pca_on_resids_with_pc1 <- pca_plot(countdata_resids_with_pc1)
 
   print("Writing figures")
 
