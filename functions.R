@@ -78,12 +78,27 @@ remove_redundant_features <- function(metadata){
 }
 
 pca_plot = function(resids){
-  results <- prcomp(t(resids))
-  pca_plot <- autoplot(results) + 
-      coord_fixed(ratio=1) +
-      theme_cowplot()
-  pca_plot
+  pcar = pca(resids)
+  results = t(pcar$pc)
+  mean = data.frame(matrix(colMeans(results), 
+                    ncol = dim(results)[2]))
+  colnames(mean) = colnames(results)
+  vars = data.frame(matrix(colVars(results), 
+                           ncol = dim(results)[2]))
+  colnames(vars) = colnames(results)
+  
+  plot <-  ggplot(results, aes(PC1, PC2)) + 
+    geom_point() + 
+    stat_ellipse(level = 0.99) + 
+    stat_ellipse(level = 0.99, type = "norm", linetype = 2) + 
+    geom_point(data= mean, color = "tomato3", size = 7) +
+    coord_fixed(ratio=1) +
+    labs(x = paste0("PC1 (", round(pcar$pve[1]*100, 2), "%)"),
+         y = paste0("PC2 (", round(pcar$pve[2]*100, 2), "%)")) +
+    theme_cowplot()
+  plot
 }
+
 
 scree_plot <- function(resids){
   var_explained <- pca(resids)$pve
@@ -96,3 +111,5 @@ scree_plot <- function(resids){
       coord_fixed(ratio=1) +
       theme_cowplot()
 }
+
+vector_cor = function(x, y) x%*%y/sqrt(x%*%x * y%*%y)
