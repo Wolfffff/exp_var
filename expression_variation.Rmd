@@ -294,7 +294,7 @@ for (dset_name in names(exp_data)) {
   results_metadata_list[[dset_name]] <- metadata
 }
 
-for(dset_name in names(plot_list)) save_plot(filename=paste0(plots_dir, dset_name,"_pca.jpg"), plot_list[[dset_name]], 
+for(dset_name in names(plot_list)) save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), plot_list[[dset_name]], 
             base_height = 6, base_asp = 1.2, ncol = 3)
 save(plot_list, file = "plots_list.RData")
 save(results_list, file = "results_list.RData")
