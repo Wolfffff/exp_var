@@ -122,8 +122,10 @@ names(exp_data) <- exps
 ```{r}
 results_list <- list()
 results_metadata_list <- list()
+plot_list <- list()
 print(names(exp_data))
 
+dset_name = names(exp_data)[[6]]
 # Loop over datasets
 for (dset_name in names(exp_data)) {
   print(dset_name)
@@ -154,7 +156,7 @@ for (dset_name in names(exp_data)) {
 
   metadata <- filtered_metadata
   counts <- filtered_counts
-
+  n_samples = dim(metadata)[1]
   metadata$sample_id <- rownames(metadata)
 
   print("Normalizing and estimating mean-variance weights")
@@ -176,7 +178,19 @@ for (dset_name in names(exp_data)) {
   values_count <- sapply(lapply(countdata.norm$samples, unique), length) 
   countdata.norm$samples <- countdata.norm$samples[,names(countdata.norm$samples[,values_count > 1])]
 
-  b <- paste0(" ",names(countdata.norm$samples)[!(names(countdata.norm$samples) %in% c(columns_to_ignore,"lib.size","norm.factors"))], collapse=" +")
+  # Removing columns with a crazy number of levels that mess everything up. 
+  # (this is why we have random effects by the way)
+  cols_to_control = names(countdata.norm$samples)[!(names(countdata.norm$samples) %in% c(columns_to_ignore,"lib.size","norm.factors"))]
+  for(col in cols_to_control){
+    n_coef = length(unique(countdata.norm$samples[[col]])) - 1
+    print(paste(col, n_coef))
+    if(n_coef > n_samples/5 | n_coef <= 0){
+      print(paste("Droping column", col, "from metadata because it has ", n_coef, "levels."))
+      countdata.norm$samples = countdata.norm$samples[,names(countdata.norm$samples) != col]
+      cols_to_control = cols_to_control[cols_to_control!=col]
+     }
+  }
+  b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
   print(paste0("~ 0 +",b))
   design <- model.matrix(model,data = countdata.norm$samples)
@@ -189,6 +203,8 @@ for (dset_name in names(exp_data)) {
   pca_on_voom <- autoplot(results) + 
       coord_fixed(ratio=1) +
       theme_cowplot() #,colour=col_vector[as.integer(countdata.list$samples$technical_replicate_group)])
+  print(pca_on_voom)
+  
 
   var_explained = results$sdev^2 / sum(results$sdev^2)
   screen_on_voom <- qplot(c(1:10), var_explained[1:10]) +
@@ -200,8 +216,7 @@ for (dset_name in names(exp_data)) {
     coord_fixed(ratio=1) +
     theme_cowplot()
 
-
-
+  
   # Removing redundant features - see https://stackoverflow.com/questions/38222318/how-to-remove-duplicate-columns-content-in-data-table-r
 
   features_pair <- combn(names(countdata.list$samples), 2, simplify = F) # list all column pairs
@@ -209,10 +224,10 @@ for (dset_name in names(exp_data)) {
   for (pair in features_pair) { # put the pairs for testing into temp objects
     f1 <- pair[1]
     f2 <- pair[2]
-      if (!(f1 %in% to_remove) & !(f2 %in% to_remove)) {
-        if (all(as.numeric(as.factor(countdata.list$samples[[f1]])) == as.numeric(as.factor(countdata.list$samples[[f2]])))) {
-          cat(f1, "and", f2, "are equal.\n")
-          to_remove <- c(to_remove, f2) # build the list of duplicates
+    if (!(f1 %in% to_remove) & !(f2 %in% to_remove)) {
+      if (all(as.numeric(as.factor(countdata.list$samples[[f1]])) == as.numeric(as.factor(countdata.list$samples[[f2]])))) {
+        cat(f1, "and", f2, "are equal.\n")
+        to_remove <- c(to_remove, f2) # build the list of duplicates
       }
     }
   }
@@ -230,40 +245,20 @@ for (dset_name in names(exp_data)) {
   # svobj = sva(countdata.norm$counts,mod0 = mod0,mod = design)
 
 
-  
-
   # b <- paste0(" ",names(metadata)[!(names(metadata) %in% c(columns_to_ignore))], collapse=" +")
   # model <- as.formula(paste0("~ 0 +",b))
   # design <- model.matrix(model,data = metadata)
   print(paste0("Filtered count dimensions: ", dim(countdata.list$counts)[1], " x ", dim(countdata.list$counts)[2]))
   print(paste0("Filtered metadata dimensions: ", dim(countdata.list$samples)[1], " x ", dim(countdata.list$samples)[2]))
 
-  n.cores <- 8
-  cuts <- cut(seq_len(nrow(countdata.voom)), n.cores)
-  
-  cl <- makeCluster(n.cores)
-  registerDoParallel(cl)
-  list_batch_effects_removed <- foreach(x=levels(cuts), .combine='c', .multicombine=TRUE) %dopar% { 
-    library(limma)
-    effects_removed <- removeBatchEffect(countdata.voom[cuts == x,],covariates=design) 
-    list(effects_removed)
-  }
-
-  countdata_resids <- do.call(rbind, list_batch_effects_removed)
+  countdata_resids <- removeBatchEffect(countdata.voom, covariates=design) 
   rownames(countdata_resids) <- countdata.voom$genes[,1]
 
   # With PC1
 
-  cl <- makeCluster(n.cores)
-  registerDoParallel(cl)
-  list_batch_effects_removed <- foreach(x=levels(cuts), .combine='c', .multicombine=TRUE) %dopar% { 
-    library(limma)
-    effects_removed <- removeBatchEffect(countdata.voom[cuts == x,],covariates=design_with_pc1) 
-    list(effects_removed)
-  }
-
-  countdata_resids_with_pc1 <- do.call(rbind, list_batch_effects_removed)
+  countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom,covariates=design_with_pc1) 
   rownames(countdata_resids_with_pc1) <- countdata.voom$genes[,1]
+  
   results <- prcomp(t(countdata_resids_with_pc1))
   pca_on_resids_with_pc1 <- autoplot(results) + 
       coord_fixed(ratio=1) +
@@ -291,13 +286,16 @@ for (dset_name in names(exp_data)) {
                    pca_on_voom + ggtitle("Uncorrected"), 
                    pca_on_resids + ggtitle("Known effects"), 
                    pca_on_resids_with_pc1 + ggtitle("Known effects and PC1"))
-  save_plot(filename=paste0(plots_dir,dset_name,"_pca.jpg"), plt, 
-            base_height = 6, base_asp = 1.2, ncol = 3)
+
   print("Appending results and metadata to lists")
+  plot_list[[dset_name]] <- plt
   results_list[[dset_name]] <- countdata_resids
   results_metadata_list[[dset_name]] <- metadata
 }
 
+for(dset_name in names(plot_list)) save_plot(filename=paste0(plots_dir, dset_name,"_pca.jpg"), plot_list[[dset_name]], 
+            base_height = 6, base_asp = 1.2, ncol = 3)
+save(plot_list, file = "plots_list.RData")
 save(results_list, file = "results_list.RData")
 save(results_metadata_list, file = "results_metadata_list.RData")
 ```
