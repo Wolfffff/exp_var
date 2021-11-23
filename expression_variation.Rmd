@@ -60,7 +60,8 @@ plots_dir <- "data/"
 
 # Setup filters for removing samples accordingly to the metadata
 feature_vec <- list()
-feature_vec[["disease"]] <- c("normal", "control", "", NA, "non inflammatory bowel disease control")
+feature_vec[["disease"]] <- c("normal", "control", "", NA, 
+                              "non inflammatory bowel disease control")
 ```
 
 
