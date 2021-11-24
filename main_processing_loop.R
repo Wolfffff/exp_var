@@ -13,7 +13,7 @@ main_count_processing <- function(dset_name,
   #print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
   
-  filtered_data = make_filtered_data(counts, metadata)
+  filtered_data = make_filtered_data(counts, metadata, feature_vec)
   metadata <- filtered_data$metadata
   counts <- filtered_data$counts
   n_samples = dim(metadata)[1]
@@ -25,6 +25,12 @@ main_count_processing <- function(dset_name,
     print("Summing technical replicates")
     countdata.list <- sumTechReps(countdata.list,metadata$technical_replicate_group)
   }
+  countdata.list$samples = remove_redundant_features(countdata.list$samples)
+  
+  # Removing columns with a crazy number of levels that mess everything up. 
+  # (this is why we have random effects by the way)
+  countdata.list$samples = remove_large_factors(countdata.list$samples, 
+                                                columns_to_ignore)
   
   countdata.norm <- calcNormFactors(countdata.list)
   
@@ -38,10 +44,7 @@ main_count_processing <- function(dset_name,
   values_count <- sapply(lapply(countdata.norm$samples, unique), length) 
   countdata.norm$samples <- countdata.norm$samples[,names(countdata.norm$samples[,values_count > 1])]
   
-  # Removing columns with a crazy number of levels that mess everything up. 
-  # (this is why we have random effects by the way)
-  countdata.norm$samples = remove_large_factors(countdata.norm$samples, 
-                                                columns_to_ignore)
+
   
   design <- make_desing_matrix(countdata.norm$samples, columns_to_ignore)
   
@@ -53,8 +56,6 @@ main_count_processing <- function(dset_name,
   pca_on_voom =  pca_plot(countdata.voom$E)
   
   screen_on_voom <- scree_plot(countdata.voom$E)
-  
-  countdata.list$samples = remove_redundant_features(countdata.list$samples)
   
   # Null model for SVA
   # mod0 = model.matrix(~1,data=countdata.list$samples)

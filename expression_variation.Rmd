@@ -112,7 +112,7 @@ results_list <- llply(names(exp_data),
                       exp_data, 
                       experimental_metadata, 
                       feature_vec, 
-                      .parallel = TRUE)  
+                      .parallel = parallel)  
 names(results_list) <- names(exp_data)
 for(dset_name in names(results_list)) 
   save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list[[dset_name]]$plotPanel, 

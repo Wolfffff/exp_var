@@ -21,7 +21,7 @@ pca <- function(x, space = c("rows", "columns"),
   return(list(pc = pc, loading = loading, pve = pve))
 }
 
-make_filtered_data = function(counts, metadata){
+make_filtered_data = function(counts, metadata, feature_vec){
   #print(colnames(metadata))
   filtered_metadata <- metadata
   filtered_counts <- as_data_frame(counts)
@@ -44,13 +44,13 @@ get_control_cols <- function(metadata, columns_to_ignore){
 }
 
 remove_large_factors = function(metadata, columns_to_ignore){
-
+  n_samples = nrow(metadata)
   cols_to_control = get_control_cols(metadata, columns_to_ignore)
   for(col in cols_to_control){
     n_coef = length(unique(metadata[[col]])) - 1
     #print(paste(col, n_coef))
     if(n_coef > n_samples/5 | n_coef <= 0){
-      print(paste("Droping column", col, "from metadata because it has ", n_coef, "levels."))
+      print(paste("Droping column", col, "from metadata because it has", n_coef, "levels. Cut off is", n_samples/5, "."))
       metadata = metadata[,names(metadata) != col]
       cols_to_control = cols_to_control[cols_to_control!=col]
      }
@@ -68,7 +68,7 @@ remove_redundant_features <- function(metadata){
     f2 <- pair[2]
     if (!(f1 %in% to_remove) & !(f2 %in% to_remove)) {
       if (all(as.numeric(as.factor(metadata[[f1]])) == as.numeric(as.factor(metadata[[f2]])))) {
-        cat(f1, "and", f2, "are equal.\n")
+        #cat(f1, "and", f2, "are equal.\n")
         to_remove <- c(to_remove, f2) # build the list of duplicates
       }
     }
