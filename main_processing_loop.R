@@ -1,4 +1,4 @@
-main_count_processing <- function(dset_name){
+main_count_processing <- function(dset_name, exp_data, experimental_metadata){
   print(dset_name)
   dset <- exp_data[[dset_name]]
   columns_to_ignore = unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name,]$columns_to_ignore,split=";"))
