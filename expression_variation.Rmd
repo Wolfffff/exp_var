@@ -126,27 +126,12 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                           assay_name="raw_counts", 
                           .parallel = TRUE)  
 names(results_list_rc3) <- names(exp_data_rc3)
-
-results_list <- llply(names(exp_data), 
-                      main_count_processing, 
-                      exp_data, 
-                      experimental_metadata, 
-                      feature_vec, 
-                      .parallel = parallel)
-names(results_list) <- names(exp_data)
-
-for(dset_name in names(results_list)) 
-  save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list[[dset_name]]$plotPanel, 
-            base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
                     
-
 for(dset_name in names(results_list_rc3)) 
   save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list_rc3[[dset_name]]$plotPanel, 
             base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
 
 save(results_list_rc3, file = "results_list_rc3.RData")
-save(results_list, file = "results_list.RData")
-
 ```
 
 Now we calculate the gene expression variance in all the samples
