@@ -20,8 +20,6 @@ library(AnnotationDbi)
 pak::pkg_install(c("rrcov", "org.Hs.eg.db"))
 library(org.Hs.eg.db)
 library(rrcov)
-library(doMC)
-library(plyr)
 
 source("functions.R")
 
@@ -49,7 +47,6 @@ feature_vec[["disease"]] <- c("normal", "control", "", NA,
 ## recount3
 ```{r recount3}
 # This is commented out as we're sticking with Expression Atlas for now.
-
 library(recount3)
 
 human_projects <- available_projects()
