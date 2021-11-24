@@ -119,12 +119,13 @@ if(.Platform$OS.type == "unix") {
   library(doMC)
   registerDoMC(32)
 } 
-results_list_rc3 <- llply(names(exp_data_rc3), 
+results_list_rc3 <- llply(names(exp_data_rc3),
+                          main_count_processing,
                           exp_data_rc3, 
                           experimental_metadata_rc3, 
                           feature_vec,
                           assay_name="raw_counts", 
-                          .parallel = TRUE)  
+                          .parallel = FALSE)  
 names(results_list_rc3) <- names(exp_data_rc3)
                     
 for(dset_name in names(results_list_rc3)) 
