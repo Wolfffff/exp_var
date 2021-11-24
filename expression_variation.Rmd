@@ -57,11 +57,17 @@ for (id in experimental_metadata_rc3$id) {
   # Load the project
   proj_info <- subset(
     human_projects,
-    project == experimental_metadata_rc3$id[1] & project_type == "data_sources"
+    project == id & project_type == "data_sources"
   )
   rse <- create_rse(proj_info)
 
-  metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
+  if (proj_info$file_source == "gtex") {
+    metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
+  }
+  else {
+    #Could probably just use expand_sra_attributes
+    metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
+  }
   rse@colData <- metadata_df
   exp_data_rc3[[id]] <- rse
 }
@@ -88,7 +94,6 @@ names(exp_data_ea) <- exps
 ## Main loop
 ```{r}
 source("./main_processing_loop.R")
-
 parallel = FALSE
 if(.Platform$OS.type == "unix") {
   parallel = TRUE
@@ -106,9 +111,7 @@ names(results_list_ea) <- names(exp_data_ea)
 for(dset_name in names(results_list_ea)) 
   save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list_ea[[dset_name]]$plotPanel, 
             base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
-
 save(results_list_ea, file = "results_list_ea.RData")
-
 ```
 
 Add a second loop for processing recount3 data.
@@ -117,8 +120,9 @@ parallel = FALSE
 if(.Platform$OS.type == "unix") {
   parallel = TRUE
   library(doMC)
-  registerDoMC(32)
+  registerDoMC(16)
 } 
+<<<<<<< HEAD
 results_list_rc3 <- llply(names(exp_data_rc3),
                           main_count_processing,
                           exp_data_rc3, 
@@ -126,6 +130,15 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                           feature_vec,
                           assay_name="raw_counts", 
                           .parallel = FALSE)  
+=======
+results_list_rc3 <- llply(names(exp_data_rc3), 
+                      main_count_processing,  
+                      exp_data_rc3, 
+                      experimental_metadata_rc3, 
+                      feature_vec,
+                      assay_name="raw_counts", 
+                      .parallel = TRUE)  
+>>>>>>> dca04cf8d97bb65ae30f7e638109d1624cc735a9
 names(results_list_rc3) <- names(exp_data_rc3)
                     
 for(dset_name in names(results_list_rc3)) 

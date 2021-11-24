@@ -6,3 +6,6 @@ Single-cell RNA-seq analysis of human pancreas from healthy individuals and type
 GTEx v8 data for tissue: brain,BRAIN,,
 Single-cell RNA-seq of naive and primed human embryonic stem cells,ERP108653,,
 Single cell transcriptional dynamics of flavivirus infection,SRP132726,,
+GTEx v8 data for tissue: skin,SKIN,,
+Single-cell RNA-seq of of human dermal fibroblasts (supplementary - different stimulation conditions of dsRNA),ERP109920,,
+Single-cell RNA-seq of CD4+ Treg and Tmem cells from different tissues in mouse and human,ERP104512,,
