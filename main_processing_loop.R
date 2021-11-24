@@ -12,7 +12,7 @@ main_count_processing <- function(dset_name,
       columns_to_ignore <- unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name, ]$columns_to_ignore, split = ";"))
     },
     error = function(e) {
-      columns_to_ignore <- c()
+      columns_to_ignore <- c("")
     }
   )
 
