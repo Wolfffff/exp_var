@@ -78,24 +78,26 @@ remove_redundant_features <- function(metadata){
 }
 
 pca_plot = function(resids){
-  pcar = pca(resids)
-  results = t(pcar$pc)
+  pca_resid = pca(resids)
+  rpca_resid = PcaGrid(t(resids), 10, crit.pca.distances = 0.99)
+  results = t(pca_resid$pc)
   mean = data.frame(matrix(colMeans(results), 
                     ncol = dim(results)[2]))
   colnames(mean) = colnames(results)
   vars = data.frame(matrix(colVars(results), 
                            ncol = dim(results)[2]))
   colnames(vars) = colnames(results)
-  
-  plot <-  ggplot(results, aes(PC1, PC2)) + 
+  results = data.frame(results, outlier = !rpca_resid@flag)
+  plot <-  ggplot(results, aes(PC1, PC2, color= outlier)) + 
     geom_point() + 
-    stat_ellipse(level = 0.99) + 
-    stat_ellipse(level = 0.99, type = "norm", linetype = 2) + 
+    stat_ellipse(level = 0.99, color = "black") + 
+    stat_ellipse(level = 0.99, type = "norm", color = "black", linetype = 2) + 
     geom_point(data= mean, color = "tomato3", size = 7) +
     coord_fixed(ratio=1) +
-    labs(x = paste0("PC1 (", round(pcar$pve[1]*100, 2), "%)"),
-         y = paste0("PC2 (", round(pcar$pve[2]*100, 2), "%)")) +
-    theme_cowplot()
+    labs(x = paste0("PC1 (", round(pca_resid$pve[1]*100, 2), "%)"),
+         y = paste0("PC2 (", round(pca_resid$pve[2]*100, 2), "%)")) +
+    theme_cowplot() + scale_color_manual(values = c("black", "green")) +
+    theme(legend.position = "none")
   plot
 }
 
@@ -113,3 +115,12 @@ scree_plot <- function(resids){
 }
 
 vector_cor = function(x, y) x%*%y/sqrt(x%*%x * y%*%y)
+
+make_desing_matrix = function(metadata){
+  cols_to_control = get_control_cols(metadata)
+  b <- paste0(" ", cols_to_control, collapse=" +")
+  model <- as.formula(paste0("~ 0 +",b))
+  print(paste0("~ 0 +",b))
+  design <- model.matrix(model,data = metadata)
+  design
+}

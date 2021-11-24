@@ -17,6 +17,8 @@ library(cowplot)
 library(clusterProfiler)
 library(AnnotationDbi)
 library(org.Hs.eg.db)
+pak::pkg_install("rrcov")
+library(rrcov)
 
 source("functions.R")
 
@@ -144,11 +146,7 @@ for (dset_name in names(exp_data)) {
   # (this is why we have random effects by the way)
   countdata.norm$samples = remove_large_factors(countdata.norm$samples)
 
-  cols_to_control = get_control_cols(countdata.norm$samples)
-  b <- paste0(" ", cols_to_control, collapse=" +")
-  model <- as.formula(paste0("~ 0 +",b))
-  print(paste0("~ 0 +",b))
-  design <- model.matrix(model,data = countdata.norm$samples)
+  design <- make_desing_matrix(countdata.norm$samples)
 
   jpeg(paste0(plots_dir,dset_name,"_voom.jpg"))
   countdata.voom <- voom(countdata.norm, design = design, plot=T)
@@ -164,11 +162,7 @@ for (dset_name in names(exp_data)) {
   # Null model for SVA
   # mod0 = model.matrix(~1,data=countdata.list$samples)
   # We need to rebuild and ignore lib.size!
-  PCs <- pca(countdata.voom$E)
-  countdata.norm$samples$PC1 <- PCs$pc[1,]
-  b <- paste0(" ", get_control_cols(countdata.norm$samples), collapse=" +")
-  model_with_pc1 <- as.formula(paste0("~ 0 + PC1 +",b))
-  design_with_pc1 <- model.matrix(model_with_pc1, data = countdata.norm$samples)
+  
   # svobj = sva(countdata.norm$counts,mod0 = mod0,mod = design)
 
   print(paste0("Filtered count dimensions: ", paste(dim(countdata.list$counts), collapse = " x ")))
@@ -178,22 +172,40 @@ for (dset_name in names(exp_data)) {
   countdata_resids <- removeBatchEffect(countdata.voom, covariates=design) 
   rownames(countdata_resids) <- countdata.voom$genes[,1]
 
-  # Batch effects With PC1
-  countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom,covariates=design_with_pc1) 
-  rownames(countdata_resids_with_pc1) <- countdata.voom$genes[,1]
-  
   # PCA plot with Batch effects
   pca_on_resids <- pca_plot(countdata_resids)
   scree_on_resids <- scree_plot(countdata_resids)
+  
+  # Dropping outlier 
+  rpca_resid <- PcaGrid(t(countdata_resids), 20, crit.pca.distances = 0.99)
+  countdata.norm_noOut <- countdata.norm
+  countdata.norm_noOut$counts = countdata.norm_noOut$counts[,rpca_resid@flag]
+  countdata.norm_noOut$samples = countdata.norm_noOut$samples[rpca_resid@flag,]
+  design_noOut <- make_desing_matrix(countdata.norm_noOut$samples)
+  countdata.voom_noOut <- voom(countdata.norm_noOut, design = design_noOut)
+  countdata_resids_noOut <- removeBatchEffect(countdata.voom_noOut, covariates=design_noOut) 
+  pca_on_resids_noOut <- pca_plot(countdata_resids_noOut)
+  
+  # Batch effects With PC1
+  
+  PCs <- pca(countdata.voom$E)
+  countdata.norm$samples$PC1 <- PCs$pc[1,]
+  design_with_pc1 <-make_desing_matrix(countdata.norm$samples)
+  
+  countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom,covariates=design_with_pc1) 
+  rownames(countdata_resids_with_pc1) <- countdata.voom$genes[,1]
+  
+
 
   # PCA plot with Batch effects and PC1
   pca_on_resids_with_pc1 <- pca_plot(countdata_resids_with_pc1)
 
   print("Writing figures")
 
-  plt <- plot_grid(nrow=1, scale = 0.9, 
+  plt <- plot_grid(nrow=2, scale = 0.9, 
                    pca_on_voom + ggtitle("Uncorrected"), 
                    pca_on_resids + ggtitle("Known effects"), 
+                   pca_on_resids_noOut  + ggtitle("Known effects, no outliers"),
                    pca_on_resids_with_pc1 + ggtitle("Known effects and PC1"))
 
   print("Appending results and metadata to lists")
@@ -203,7 +215,7 @@ for (dset_name in names(exp_data)) {
 }
 
 for(dset_name in names(plot_list)) save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), plot_list[[dset_name]], 
-            base_height = 6, base_asp = 1.2, ncol = 3)
+            base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
 save(plot_list, file = "plots_list.RData")
 save(results_list, file = "results_list.RData")
 save(results_metadata_list, file = "results_metadata_list.RData")
