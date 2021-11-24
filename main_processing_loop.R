@@ -7,9 +7,9 @@ main_count_processing <- function(dset_name,
   dset <- exp_data[[dset_name]]
 
   # Catch empty columns_to_ignore
-  tryCatch(
+  columns_to_ignore = tryCatch(
     expr = {
-      columns_to_ignore <- unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name, ]$columns_to_ignore, split = ";"))
+      unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name, ]$columns_to_ignore, split = ";"))
     },
     error = function(e) {
       columns_to_ignore <- c("")

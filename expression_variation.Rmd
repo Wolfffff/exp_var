@@ -122,15 +122,7 @@ if(.Platform$OS.type == "unix") {
   library(doMC)
   registerDoMC(16)
 } 
-<<<<<<< HEAD
-results_list_rc3 <- llply(names(exp_data_rc3),
-                          main_count_processing,
-                          exp_data_rc3, 
-                          experimental_metadata_rc3, 
-                          feature_vec,
-                          assay_name="raw_counts", 
-                          .parallel = FALSE)  
-=======
+
 results_list_rc3 <- llply(names(exp_data_rc3), 
                       main_count_processing,  
                       exp_data_rc3, 
@@ -138,7 +130,6 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                       feature_vec,
                       assay_name="raw_counts", 
                       .parallel = TRUE)  
->>>>>>> dca04cf8d97bb65ae30f7e638109d1624cc735a9
 names(results_list_rc3) <- names(exp_data_rc3)
                     
 for(dset_name in names(results_list_rc3)) 
