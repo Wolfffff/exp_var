@@ -17,8 +17,8 @@ library(patchwork)
 library(cowplot)
 library(clusterProfiler)
 library(AnnotationDbi)
+pak::pkg_install(c("rrcov", "org.Hs.eg.db"))
 library(org.Hs.eg.db)
-pak::pkg_install("rrcov")
 library(rrcov)
 
 source("functions.R")
@@ -105,9 +105,14 @@ parallel = FALSE
 if(.Platform$OS.type == "unix") {
   parallel = TRUE
   library(doMC)
-  registerDoMC(32)
+  registerDoMC(8)
 } 
-results_list <- llply(names(exp_data), main_count_processing, exp_data, experimental_metadata, .parallel = parallel)  
+results_list <- llply(names(exp_data), 
+                      main_count_processing, 
+                      exp_data, 
+                      experimental_metadata, 
+                      feature_vec, 
+                      .parallel = TRUE)  
 names(results_list) <- names(exp_data)
 for(dset_name in names(results_list)) 
   save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list[[dset_name]]$plotPanel, 
