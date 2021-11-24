@@ -124,3 +124,21 @@ make_desing_matrix = function(metadata, columns_to_ignore){
   design <- model.matrix(model,data = metadata)
   design
 }
+
+map_to_cols_rc3 <- function(s) {
+  s %>%
+    str_split("\\|", simplify = TRUE) %>%
+    str_split(";;", simplify = TRUE) %>%
+    as_tibble() %>%
+    t() %>%
+    row_to_names(row_number = 1) %>%
+    repair_names()
+}
+
+convert_metadata_to_df_rc3 <- function(sample_attributes) {
+  meta <- lapply(sample_attributes, FUN = map_to_cols_rc3)
+  meta <- dplyr::bind_rows(meta)
+  meta <- DataFrame(meta)
+  rownames(meta) <- rownames(colData(rse))
+  return(meta)
+}

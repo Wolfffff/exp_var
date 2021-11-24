@@ -1,7 +1,8 @@
 main_count_processing <- function(dset_name, 
                                   exp_data, 
                                   experimental_metadata,
-                                  feature_vec){
+                                  feature_vec,
+                                  assay_name){
   print(dset_name)
   dset <- exp_data[[dset_name]]
   columns_to_ignore = unlist(strsplit(experimental_metadata[experimental_metadata$id == dset_name,]$columns_to_ignore,split=";"))
@@ -9,8 +10,8 @@ main_count_processing <- function(dset_name,
   metadata <- colData(dset)
   metadata <- data.frame(metadata)
   
-  counts = assays(dset)$counts
-  #print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
+  counts = assays(dset)[[assay_name]]
+  print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
   
   filtered_data = make_filtered_data(counts, metadata, feature_vec)
