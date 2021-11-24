@@ -210,8 +210,8 @@ for (dset_name in names(exp_data)) {
 
   print("Appending results and metadata to lists")
   plot_list[[dset_name]] <- plt
-  results_list[[dset_name]] <- countdata_resids
-  results_metadata_list[[dset_name]] <- metadata
+  results_list[[dset_name]] <- countdata_resids_noOut
+  results_metadata_list[[dset_name]] <- countdata.norm_noOut$samples
 }
 
 for(dset_name in names(plot_list)) save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), plot_list[[dset_name]], 
