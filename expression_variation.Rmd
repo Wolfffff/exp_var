@@ -17,9 +17,11 @@ library(patchwork)
 library(cowplot)
 library(clusterProfiler)
 library(AnnotationDbi)
+pak::pkg_install(c("rrcov", "org.Hs.eg.db"))
 library(org.Hs.eg.db)
-pak::pkg_install("rrcov")
 library(rrcov)
+library(doMC)
+library(plyr)
 
 source("functions.R")
 
@@ -28,11 +30,12 @@ options(timeout = 1800)
 ```
 
 ```{r}
-experimental_metadata <- read_csv("expression_atlas_metadata.csv")
-experimental_metadata <- experimental_metadata[-1,] # Remove the top row (GTEx) to lower the time cost when testing
+experimental_metadata_ea <- read_csv("expression_atlas_metadata.csv")
+experimental_metadata_ea <- experimental_metadata_ea[-1,] # Remove the top row (GTEx) to lower the time cost when testing
 
 # Load metadata from recount3
-# experimental_metadata <- read_csv("recount3_metadata.csv")
+experimental_metadata_rc3 <- read_csv("recount3_metadata.csv")
+
 
 plots_dir <- "data/"
 
@@ -47,52 +50,40 @@ feature_vec[["disease"]] <- c("normal", "control", "", NA,
 ```{r recount3}
 # This is commented out as we're sticking with Expression Atlas for now.
 
-# library(recount3)
+library(recount3)
 
-# human_projects <- available_projects()
+human_projects <- available_projects()
 
-# proj_info <- subset(
-#   human_projects,
-#   project == "SRP166108" & project_type == "data_sources"
-# )
-# rse <- create_rse(proj_info)
+exp_data_rc3 = list()
 
-# #
-# map_to_cols <- function(s) {
-#   s %>%
-#     str_split("\\|", simplify = TRUE) %>%
-#     str_split(";;", simplify = TRUE) %>%
-#     as_tibble() %>%
-#     t() %>%
-#     row_to_names(row_number = 1) %>%
-#     repair_names()
-# }
+for (id in experimental_metadata_rc3$id) {
+  # Load the project
+  proj_info <- subset(
+    human_projects,
+    project == experimental_metadata_rc3$id[1] & project_type == "data_sources"
+  )
+  rse <- create_rse(proj_info)
 
-# convert_metadata_to_df <- function(sample_attributes) {
-#   meta <- lapply(sample_attributes, FUN = map_to_cols)
-#   meta <- dplyr::bind_rows(meta)
-#   meta <- DataFrame(meta)
-#   rownames(meta) <- rownames(colData(rse))
-#   return(meta)
-# metadata_df <- convert_metadata_to_df(colData(rse)$sra.sample_attributes)
-# rse@colData <- metadata_df
-# }
+  metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
+  rse@colData <- metadata_df
+  exp_data_rc3[[id]] <- rse
+}
 ```
 
 ## Expression Atlas
 
 ```{r}
-accession_ids <- experimental_metadata$id
+accession_ids <- experimental_metadata_ea$id
 
 rnaseq_exps <- getAtlasData(accession_ids)
 
 all_exps <- rnaseq_exps
 exps <- names(rnaseq_exps@listData)
 
-exp_data <- lapply(exps, FUN = function(x) {
+exp_data_ea <- lapply(exps, FUN = function(x) {
     return(all_exps[[x]]$rnaseq)
 })
-names(exp_data) <- exps
+names(exp_data_ea) <- exps
 ```
 
 
@@ -107,13 +98,43 @@ if(.Platform$OS.type == "unix") {
   library(doMC)
   registerDoMC(32)
 } 
-results_list <- llply(names(exp_data), main_count_processing, exp_data, experimental_metadata, .parallel = parallel)  
-names(results_list) <- names(exp_data)
-for(dset_name in names(results_list)) 
-  save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list[[dset_name]]$plotPanel, 
+results_list_ea <- llply(names(exp_data_ea), 
+                      main_count_processing, 
+                      exp_data_ea, 
+                      experimental_metadata_ea, 
+                      feature_vec,
+                      assay_name="counts", 
+                      .parallel = TRUE)  
+names(results_list_ea) <- names(exp_data_ea)
+for(dset_name in names(results_list_ea)) 
+  save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list_ea[[dset_name]]$plotPanel, 
             base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
 
-save(results_list, file = "results_list.RData")
+save(results_list_ea, file = "results_list_ea.RData")
+
+```
+
+Add a second loop for processing recount3 data.
+```{r}
+parallel = FALSE
+if(.Platform$OS.type == "unix") {
+  parallel = TRUE
+  library(doMC)
+  registerDoMC(32)
+} 
+results_list_rc3 <- llply(names(exp_data_rc3), 
+                      main_count_processing, 
+                      exp_data_rc3, 
+                      experimental_metadata_rc3, 
+                      feature_vec,
+                      assay_name="raw_counts", 
+                      .parallel = TRUE)  
+names(results_list_rc3) <- names(exp_data_rc3)
+for(dset_name in names(results_list_rc3)) 
+  save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list_rc3[[dset_name]]$plotPanel, 
+            base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
+
+save(results_list_rc3, file = "results_list_rc3.RData")
 ```
 
 Now we calculate the gene expression variance in all the samples
