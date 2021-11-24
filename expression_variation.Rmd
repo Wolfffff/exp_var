@@ -96,7 +96,7 @@ parallel = FALSE
 if(.Platform$OS.type == "unix") {
   parallel = TRUE
   library(doMC)
-  registerDoMC(32)
+  registerDoMC(8)
 } 
 results_list_ea <- llply(names(exp_data_ea), 
                       main_count_processing, 

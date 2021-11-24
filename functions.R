@@ -22,14 +22,14 @@ pca <- function(x, space = c("rows", "columns"),
 }
 
 make_filtered_data = function(counts, metadata){
-  print(colnames(metadata))
+  #print(colnames(metadata))
   filtered_metadata <- metadata
   filtered_counts <- as_data_frame(counts)
   for (column in names(feature_vec)) {
     if (column %in% colnames(filtered_metadata)){
       control_names_tb = table(filtered_metadata[,column])
       control_names_tb = control_names_tb[names(control_names_tb) %in% feature_vec[[column]]]
-      print(control_names_tb)
+      #print(control_names_tb)
       control_name = names(control_names_tb)[control_names_tb == max(control_names_tb)]
       filtered_counts <- filtered_counts[,filtered_metadata[,column] == control_name]
       filtered_metadata <- filtered_metadata[filtered_metadata[,column] == control_name,]
@@ -39,16 +39,16 @@ make_filtered_data = function(counts, metadata){
               metadata = filtered_metadata))
 }
 
-get_control_cols <- function(metadata){
+get_control_cols <- function(metadata, columns_to_ignore){
   names(metadata)[!(names(metadata) %in% c(columns_to_ignore,"lib.size","norm.factors"))]
 }
 
-remove_large_factors = function(metadata){
+remove_large_factors = function(metadata, columns_to_ignore){
 
-  cols_to_control = get_control_cols(metadata)
+  cols_to_control = get_control_cols(metadata, columns_to_ignore)
   for(col in cols_to_control){
     n_coef = length(unique(metadata[[col]])) - 1
-    print(paste(col, n_coef))
+    #print(paste(col, n_coef))
     if(n_coef > n_samples/5 | n_coef <= 0){
       print(paste("Droping column", col, "from metadata because it has ", n_coef, "levels."))
       metadata = metadata[,names(metadata) != col]
@@ -116,11 +116,11 @@ scree_plot <- function(resids){
 
 vector_cor = function(x, y) x%*%y/sqrt(x%*%x * y%*%y)
 
-make_desing_matrix = function(metadata){
-  cols_to_control = get_control_cols(metadata)
+make_desing_matrix = function(metadata, columns_to_ignore){
+  cols_to_control = get_control_cols(metadata, columns_to_ignore)
   b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
-  print(paste0("~ 0 +",b))
+  #print(paste0("~ 0 +",b))
   design <- model.matrix(model,data = metadata)
   design
 }
