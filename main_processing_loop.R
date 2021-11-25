@@ -57,9 +57,7 @@ main_count_processing <- function(dset_name,
   values_count <- sapply(lapply(countdata.norm$samples, unique), length)
   countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[, values_count > 1])]
 
-
-
-  design <- make_desing_matrix(countdata.norm$samples, columns_to_ignore)
+  design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
 
   jpeg(paste0(plots_dir, dset_name, "_voom.jpg"))
   countdata.voom <- voom(countdata.norm, design = design, plot = T)
@@ -95,7 +93,7 @@ main_count_processing <- function(dset_name,
     paste(dim(countdata.norm_noOut$samples), collapse = " x ")
   ))
 
-  design_noOut <- make_desing_matrix(countdata.norm_noOut$samples, columns_to_ignore)
+  design_noOut <- make_design_matrix(countdata.norm_noOut$samples, columns_to_ignore)
   countdata.voom_noOut <- voom(countdata.norm_noOut, design = design_noOut)
   countdata_resids_noOut <- removeBatchEffect(countdata.voom_noOut, covariates = design_noOut)
   rownames(countdata_resids_noOut) <- countdata.voom_noOut$genes[, 1]
@@ -105,7 +103,7 @@ main_count_processing <- function(dset_name,
 
   PCs <- pca(countdata.voom$E)
   countdata.norm$samples$PC1 <- PCs$pc[1, ]
-  design_with_pc1 <- make_desing_matrix(countdata.norm$samples, columns_to_ignore)
+  design_with_pc1 <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
 
   countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom, covariates = design_with_pc1)
   rownames(countdata_resids_with_pc1) <- countdata.voom$genes[, 1]
