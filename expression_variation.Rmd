@@ -29,7 +29,7 @@ options(timeout = 1800)
 
 ```{r}
 experimental_metadata_ea <- read_csv("expression_atlas_metadata.csv")
-experimental_metadata_ea <- experimental_metadata_ea[-1,] # Remove the top row (GTEx) to lower the time cost when testing
+experimental_metadata_ea <- experimental_metadata_ea # Remove the top row (GTEx) to lower the time cost when testing
 
 # Load metadata from recount3
 experimental_metadata_rc3 <- read_csv("recount3_metadata.csv")
@@ -68,6 +68,13 @@ for (id in experimental_metadata_rc3$id) {
     #Could probably just use expand_sra_attributes
     metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
   }
+  
+  # Crude way to set NA to ""
+  metadata_df@listData <- lapply(metadata_df@listData, function(x) {
+    x[is.na(x)] = ""
+    x
+  })
+
   rse@colData <- metadata_df
   exp_data_rc3[[id]] <- rse
 }
@@ -106,7 +113,7 @@ results_list_ea <- llply(names(exp_data_ea),
                       experimental_metadata_ea, 
                       feature_vec,
                       assay_name="counts", 
-                      .parallel = TRUE)  
+                      .parallel = parallel)  
 names(results_list_ea) <- names(exp_data_ea)
 for(dset_name in names(results_list_ea)) 
   save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list_ea[[dset_name]]$plotPanel, 
@@ -130,6 +137,7 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                       feature_vec = feature_vec,
                       assay_name = "raw_counts", 
                       .parallel = FALSE)  
+
 names(results_list_rc3) <- names(exp_data_rc3)
                     
 for(dset_name in names(results_list_rc3)) 

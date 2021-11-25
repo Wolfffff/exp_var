@@ -50,7 +50,7 @@ remove_large_factors = function(metadata, columns_to_ignore){
     n_coef = length(unique(metadata[[col]])) - 1
     #print(paste(col, n_coef))
     if(n_coef > n_samples/5 | n_coef <= 0){
-      print(paste("Droping column", col, "from metadata because it has", n_coef, "levels. Cut off is", n_samples/5, "."))
+      print(paste("Dropping column", col, "from metadata because it has", n_coef, "levels. Cut off is", n_samples/5, "."))
       metadata = metadata[,names(metadata) != col]
       cols_to_control = cols_to_control[cols_to_control!=col]
      }
@@ -116,7 +116,7 @@ scree_plot <- function(resids){
 
 vector_cor = function(x, y) x%*%y/sqrt(x%*%x * y%*%y)
 
-make_desing_matrix = function(metadata, columns_to_ignore){
+make_design_matrix = function(metadata, columns_to_ignore){
   cols_to_control = get_control_cols(metadata, columns_to_ignore)
   b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
