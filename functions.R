@@ -22,14 +22,17 @@ pca <- function(x, space = c("rows", "columns"),
 }
 
 make_filtered_data = function(counts, metadata, feature_vec){
-  #print(colnames(metadata))
+  print(colnames(metadata))
   filtered_metadata <- metadata
   filtered_counts <- as_data_frame(counts)
   for (column in names(feature_vec)) {
     if (column %in% colnames(filtered_metadata)){
-      control_names_tb = table(filtered_metadata[,column])
+      control_names_tb = table(filtered_metadata[,column], useNA = "ifany")
       control_names_tb = control_names_tb[names(control_names_tb) %in% feature_vec[[column]]]
-      #print(control_names_tb)
+      if(is.na(names(control_names_tb))){
+        filtered_metadata[,column][is.na(filtered_metadata[,column])] = "control"
+        names(control_names_tb) = "control"
+      }
       control_name = names(control_names_tb)[control_names_tb == max(control_names_tb)]
       filtered_counts <- filtered_counts[,filtered_metadata[,column] == control_name]
       filtered_metadata <- filtered_metadata[filtered_metadata[,column] == control_name,]
@@ -51,7 +54,7 @@ remove_large_factors = function(metadata, columns_to_ignore){
     #print(paste(col, n_coef))
     if(n_coef > n_samples/5 | n_coef <= 0){
       print(paste("Dropping column", col, "from metadata because it has", n_coef, "levels. Cut off is", n_samples/5, "."))
-      metadata = metadata[,names(metadata) != col]
+      metadata = metadata[,names(metadata) != col, drop=FALSE]
       cols_to_control = cols_to_control[cols_to_control!=col]
      }
   }
@@ -68,13 +71,14 @@ remove_redundant_features <- function(metadata){
     f2 <- pair[2]
     if (!(f1 %in% to_remove) & !(f2 %in% to_remove)) {
       if (all(as.numeric(as.factor(metadata[[f1]])) == as.numeric(as.factor(metadata[[f2]])))) {
-        #cat(f1, "and", f2, "are equal.\n")
+        cat(f1, "and", f2, "are equal.\n")
         to_remove <- c(to_remove, f2) # build the list of duplicates
       }
     }
   }
 
   metadata <- metadata[,!(names(metadata) %in% as.list(to_remove))]
+  metadata
 }
 
 pca_plot = function(resids){
@@ -118,6 +122,7 @@ vector_cor = function(x, y) x%*%y/sqrt(x%*%x * y%*%y)
 
 make_design_matrix = function(metadata, columns_to_ignore){
   cols_to_control = get_control_cols(metadata, columns_to_ignore)
+  if(length(cols_to_control) == 0) return(model.matrix(~1,data = metadata))
   b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
   #print(paste0("~ 0 +",b))

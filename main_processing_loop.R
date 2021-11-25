@@ -16,7 +16,6 @@ main_count_processing <- function(dset_name,
     }
   )
 
-
   metadata <- colData(dset)
   metadata <- data.frame(metadata)
 
@@ -32,9 +31,11 @@ main_count_processing <- function(dset_name,
 
   print("Normalizing and estimating mean-variance weights")
   countdata.list <- DGEList(counts = counts, samples = metadata, genes = rownames(dset))
-  if (any(names(metadata) %in% c("technical_replicate_group"))) {
+  rep_names = c("technical_replicate_group", "wells.replicate")
+  if (any(names(metadata) %in% rep_names)) {
     print("Summing technical replicates")
-    countdata.list <- sumTechReps(countdata.list, metadata$technical_replicate_group)
+    rep_col = names(metadata)[names(metadata) %in% rep_names]
+    countdata.list <- sumTechReps(countdata.list, metadata[[rep_col]])
   }
   countdata.list$samples <- remove_redundant_features(countdata.list$samples)
 
