@@ -17,7 +17,7 @@ library(patchwork)
 library(cowplot)
 library(clusterProfiler)
 library(AnnotationDbi)
-pak::pkg_install(c("rrcov", "org.Hs.eg.db"))
+#pak::pkg_install(c("rrcov", "org.Hs.eg.db"))
 library(org.Hs.eg.db)
 library(rrcov)
 
@@ -29,7 +29,7 @@ options(timeout = 1800)
 
 ```{r}
 experimental_metadata_ea <- read_csv("expression_atlas_metadata.csv")
-experimental_metadata_ea <- experimental_metadata_ea # Remove the top row (GTEx) to lower the time cost when testing
+experimental_metadata_ea <- experimental_metadata_ea[-1,] # Remove the top row (GTEx) to lower the time cost when testing
 
 # Load metadata from recount3
 experimental_metadata_rc3 <- read_csv("recount3_metadata.csv")
@@ -151,12 +151,16 @@ save(results_list_rc3, file = "results_list_rc3.RData")
 Now we calculate the gene expression variance in all the samples
 
 ```{r}
-
-for (dset_name in names(results_list)) {
+variance_df_list = vector("list", length = length(results_list_ea))
+names(variance_df_list) = names(results_list_ea)
+for (dset_name in names(results_list_ea)) {
   print(dset_name)
-  exprDf = results_list[[dset_name]]
-  gene_vars = rowVars(exprDf)
-  names(gene_vars) = 
+  exprDf = results_list_ea[[dset_name]]
+  gene_vars = rowVars(exprDf$residuals)
+  variance_df_list[[dset_name]] = data.frame(
+      Genes = names(gene_vars),
+      vars = gene_vars)
   }
+  variance_df = reduce(variance_df_list, inner_join, by = "Genes")
 ```
 

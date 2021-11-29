@@ -52,8 +52,10 @@ remove_large_factors = function(metadata, columns_to_ignore){
   for(col in cols_to_control){
     n_coef = length(unique(metadata[[col]])) - 1
     #print(paste(col, n_coef))
-    if(n_coef > n_samples/5 | n_coef <= 0){
-      print(paste("Dropping column", col, "from metadata because it has", n_coef, "levels. Cut off is", n_samples/5, "."))
+    #cut_off = n_samples/5
+    cut_off = 20
+    if(n_coef > cut_off | n_coef <= 0){
+      print(paste("Dropping column", col, "from metadata because it has", n_coef, "levels. Cut off is", cut_off, "."))
       metadata = metadata[,names(metadata) != col, drop=FALSE]
       cols_to_control = cols_to_control[cols_to_control!=col]
      }
