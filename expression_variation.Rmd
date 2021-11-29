@@ -162,5 +162,33 @@ for (dset_name in names(results_list_ea)) {
       vars = gene_vars)
   }
   variance_df = reduce(variance_df_list, inner_join, by = "Genes")
+  colnames(variance_df)[-1] = names(results_list_ea)
 ```
 
+Spearman correlations between the variances across experiments
+```{r}
+pak::pkg_install("corrplot")
+library(corrplot)
+var_cor = cor(variance_df[,-1], method = "s")
+png("data/var_corr_plot_EA.png", height = 1080, width = 1080)
+corrplot.mixed(var_cor, upper = "ellipse")
+dev.off()
+```
+
+```{r}
+top_genes = variance_df[order(variance_df[,2], decreasing = TRUE)[1:500],]
+
+GO_enrichment = enrichGO(gene  = top_genes$Genes,
+                         universe      = variance_df$Genes,
+                         OrgDb         = org.Hs.eg.db,
+                         keyType       = 'ENSEMBL',
+                         ont           = "BP",
+                         pAdjustMethod = "BH",
+                         pvalueCutoff  = 0.01,
+                         qvalueCutoff  = 0.05,
+                         readable      = TRUE)
+GO_enrichment@result %>% as_tibble %>% 
+    filter(Count>10) %>% 
+    arrange(p.adjust) %>%
+    dplyr::select(ID, Description, Count, p.adjust) 
+```
