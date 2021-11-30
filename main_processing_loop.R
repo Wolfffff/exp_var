@@ -15,6 +15,7 @@ main_count_processing <- function(dset_name,
       columns_to_ignore <- c("")
     }
   )
+  columns_to_ignore = c(columns_to_ignore, crap_cols)
 
   metadata <- colData(dset)
   metadata <- data.frame(metadata)
@@ -29,11 +30,11 @@ main_count_processing <- function(dset_name,
   n_samples <- dim(metadata)[1]
   metadata$sample_id <- rownames(metadata)
 
-  print("Normalizing and estimating mean-variance weights")
+  print("Normalizing and estimating mean-variance weights...")
   countdata.list <- DGEList(counts = counts, samples = metadata, genes = rownames(dset))
   rep_names = c("technical_replicate_group", "wells.replicate")
   if (any(names(metadata) %in% rep_names)) {
-    print("Summing technical replicates")
+    print("Summing technical replicates...")
     rep_col = names(metadata)[names(metadata) %in% rep_names]
     countdata.list <- sumTechReps(countdata.list, metadata[[rep_col]])
   }
@@ -45,21 +46,22 @@ main_count_processing <- function(dset_name,
     countdata.list$samples,
     columns_to_ignore
   )
-
+  print("Calculating normalization factors...")
   countdata.norm <- calcNormFactors(countdata.list)
 
-  print("Trimming")
+  print("Trimming...")
   cutoff <- 1
   drop <- which(apply(cpm(countdata.norm), 1, max) < cutoff)
   countdata.norm <- countdata.norm[-drop, ]
 
-  print("Voom!")
   # recalc with updated metadata
   values_count <- sapply(lapply(countdata.norm$samples, unique), length)
   countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[, values_count > 1])]
 
+  print("Making design matrix...")
   design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
-
+  print(paste("Design matrix size:", paste(dim(design), collapse = " x ")))
+  print("Voom!")
   jpeg(paste0(plots_dir, dset_name, "_voom.jpg"))
   countdata.voom <- voom(countdata.norm, design = design, plot = T)
   dev.off()

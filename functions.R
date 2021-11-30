@@ -1,3 +1,7 @@
+crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Title", "ENA.checklist", 
+              "ENA.FIRST.PUBLIC", "ENA.LAST.UPDATE", "isolate", "INSDC.center.alias", 
+              "INSDC.center.name", "INSDC.first.public", "INSDC.last.update", "INSDC.status", "Sample.Name", "SRA.accession", "title", "gtex.smrin")
+
 pca <- function(x, space = c("rows", "columns"),
                 center = TRUE, scale = FALSE) {
   space <- match.arg(space)
@@ -22,7 +26,7 @@ pca <- function(x, space = c("rows", "columns"),
 }
 
 make_filtered_data = function(counts, metadata, feature_vec){
-  print(colnames(metadata))
+  #print(colnames(metadata))
   filtered_metadata <- metadata
   filtered_counts <- as_data_frame(counts)
   for (column in names(feature_vec)) {
@@ -127,7 +131,7 @@ make_design_matrix = function(metadata, columns_to_ignore){
   if(length(cols_to_control) == 0) return(model.matrix(~1,data = metadata))
   b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 0 +",b))
-  #print(paste0("~ 0 +",b))
+  print(paste0("~ 0 +",b))
   design <- model.matrix(model,data = metadata)
   design
 }
