@@ -1,6 +1,6 @@
 ﻿name,id,columns_to_ignore,notes
 The Power of Resolution: Contextualized Understanding of Chemical-biological Interactions,SRP166108,age;isolate;sex,
-Reconstructing the human first trimester fetal-maternal interface using single cell transcriptomics - Smartseq 2 data,ERP107748,alias;Alias;Broker.name;Description;Title;ENA.checklist;ENA.FIRST.PUBLIC;ENA.LAST.UPDATE;isolate;INSDC.center.alias;INSDC.center.name;INSDC.first.public;INSDC.last.update;INSDC.status;Sample.Name;SRA.accession;title,
+Reconstructing the human first trimester fetal-maternal interface using single cell transcriptomics - Smartseq 2 data,ERP107748,,
 Single-cell indexed RNA-Seq of human hematopoietic stem and progenitors,SRP066781,,
 Single-cell RNA-seq analysis of human pancreas from healthy individuals and type 2 diabetes patients,ERP017126,,
 GTEx v8 data for tissue: brain,BRAIN,,
