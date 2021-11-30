@@ -123,6 +123,7 @@ save(results_list_ea, file = "results_list_ea.RData")
 Add a second loop for processing recount3 data.
 
 ```{r}
+source("./main_processing_loop.R")
 parallel = FALSE
 if(.Platform$OS.type == "unix") {
   parallel = TRUE
@@ -136,7 +137,7 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                       experimental_metadata = experimental_metadata_rc3, 
                       feature_vec = feature_vec,
                       assay_name = "raw_counts", 
-                      .parallel = FALSE)  
+                      .parallel = parallel)  
 
 names(results_list_rc3) <- names(exp_data_rc3)
                     
