@@ -130,7 +130,7 @@ if(.Platform$OS.type == "unix") {
   registerDoMC(16)
 } 
 
-results_list_rc3 <- llply(names(exp_data_rc3)[-1], 
+results_list_rc3 <- llply(names(exp_data_rc3), 
                       main_count_processing,  
                       exp_data = exp_data_rc3, 
                       experimental_metadata = experimental_metadata_rc3, 
