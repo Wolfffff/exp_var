@@ -104,14 +104,12 @@ main_count_processing <- function(dset_name,
 
   # Batch effects With PC1
 
-  PCs <- pca(countdata.voom$E)
-  countdata.norm$samples$PC1 <- PCs$pc[1, ]
-  design_with_pc1 <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
+  PCs <- pca(pca_on_resids_noOut)
+  countdata.norm_noOut$samples$PC1 <- PCs$pc[1, ]
+  design_with_pc1 <- make_design_matrix(countdata.norm_noOut$samples, columns_to_ignore)
 
-  countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom, covariates = design_with_pc1)
-  rownames(countdata_resids_with_pc1) <- countdata.voom$genes[, 1]
-
-
+  countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom_noOut, covariates = design_with_pc1)
+  rownames(countdata_resids_with_pc1) <- countdata.voom_noOut$genes[, 1]
 
   # PCA plot with Batch effects and PC1
   pca_on_resids_with_pc1 <- pca_plot(countdata_resids_with_pc1)
@@ -129,6 +127,8 @@ main_count_processing <- function(dset_name,
   # print("Appending results and metadata to lists")
   list(
     n_samples = dim(countdata.norm_noOut$samples)[1],
+    raw_voom = countdata.voom,
+    voom_noOut = countdata.voom_noOut
     plotPanel = plt,
     plot_list = list(uncorrected = pca_on_voom, batch = pca_on_resids, clean = pca_on_resids_noOut, pc1 = pca_on_resids_with_pc1),
     residuals = countdata_resids_noOut,
