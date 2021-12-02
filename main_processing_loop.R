@@ -62,10 +62,18 @@ main_count_processing <- function(dset_name,
   design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
   print(paste("Design matrix size:", paste(dim(design), collapse = " x ")))
   print("Voom!")
+
   jpeg(paste0(plots_dir, dset_name, "_voom.jpg"))
   countdata.voom <- voom(countdata.norm, design = design, plot = T)
   dev.off()
 
+  print("Corrected residual plot")
+  jpeg(paste0(plots_dir, dset_name, "_corrected_voom_lm_eb.jpg"))
+  fit <- lmFit(countdata.voom, design)
+  ebfit <- eBayes(fit)
+  plotSA(ebfit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
+  dev.off()
+  
   # Raw PCA plot
   pca_on_voom <- pca_plot(countdata.voom$E)
 
@@ -128,7 +136,7 @@ main_count_processing <- function(dset_name,
   list(
     n_samples = dim(countdata.norm_noOut$samples)[1],
     raw_voom = countdata.voom,
-    voom_noOut = countdata.voom_noOut
+    voom_noOut = countdata.voom_noOut,
     plotPanel = plt,
     plot_list = list(uncorrected = pca_on_voom, batch = pca_on_resids, clean = pca_on_resids_noOut, pc1 = pca_on_resids_with_pc1),
     residuals = countdata_resids_noOut,

@@ -50,18 +50,20 @@ feature_vec[["treatment"]] <- c("normal", "control", "", NA)
 # This is commented out as we're sticking with Expression Atlas for now.
 library(recount3)
 
-human_projects <- available_projects()
+# Move cache to deal with quota issues
+cache = recount3_cache(cache_dir="cache")
+human_projects <- available_projects(bfc=cache)
 
 exp_data_rc3 = list()
-
+# recount_cache_rm()
 for (id in experimental_metadata_rc3$id) {
   # Load the project
   proj_info <- subset(
     human_projects,
     project == id & project_type == "data_sources"
   )
-  rse <- create_rse(proj_info)
-
+  # Tape to deal with acquisition issues
+  rse <- create_rse(proj_info, bfc=cache)
   if (proj_info$file_source == "gtex") {
     metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
   } else {
@@ -128,7 +130,7 @@ parallel = FALSE
 if(.Platform$OS.type == "unix") {
   parallel = TRUE
   library(doMC)
-  registerDoMC(16)
+  registerDoMC(32)
 } 
 
 results_list_rc3 <- llply(names(exp_data_rc3), 
