@@ -87,7 +87,7 @@ remove_redundant_features <- function(metadata){
   metadata
 }
 
-pca_plot = function(resids){
+pca_plot = function(resids, color = NULL){
   pca_resid = pca(resids)
   rpca_resid = PcaGrid(t(resids), 10, crit.pca.distances = 0.99)
   results = t(pca_resid$pc)
@@ -97,8 +97,12 @@ pca_plot = function(resids){
   vars = data.frame(matrix(colVars(results), 
                            ncol = dim(results)[2]))
   colnames(vars) = colnames(results)
+  if(is.null(color)){
   results = data.frame(results, outlier = !rpca_resid@flag)
-  plot <-  ggplot(results, aes(PC1, PC2, color= outlier)) + 
+  } else {
+     results = data.frame(results, outlier = color)
+  }
+  plot <-  ggplot(results, aes(PC1, PC2, color = outlier)) + 
     geom_point() + 
     stat_ellipse(level = 0.99, color = "black") + 
     stat_ellipse(level = 0.99, type = "norm", color = "black", linetype = 2) + 
@@ -130,8 +134,8 @@ make_design_matrix = function(metadata, columns_to_ignore){
   cols_to_control = get_control_cols(metadata, columns_to_ignore)
   if(length(cols_to_control) == 0) return(model.matrix(~1,data = metadata))
   b <- paste0(" ", cols_to_control, collapse=" +")
-  model <- as.formula(paste0("~ 0 +",b))
-  print(paste0("~ 0 +",b))
+  model <- as.formula(paste0("~ 1 +",b))
+  print(paste0("~ 1 +",b))
   design <- model.matrix(model,data = metadata)
   design
 }
