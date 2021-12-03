@@ -89,18 +89,15 @@ remove_redundant_features <- function(metadata){
 
 pca_plot = function(resids, color = NULL){
   pca_resid = pca(resids)
-  rpca_resid = PcaGrid(t(resids), 10, crit.pca.distances = 0.99)
   results = t(pca_resid$pc)
   mean = data.frame(matrix(colMeans(results), 
                     ncol = dim(results)[2]))
   colnames(mean) = colnames(results)
-  vars = data.frame(matrix(colVars(results), 
-                           ncol = dim(results)[2]))
-  colnames(vars) = colnames(results)
   if(is.null(color)){
-  results = data.frame(results, outlier = !rpca_resid@flag)
+    rpca_resid = PcaGrid(t(resids), 10, crit.pca.distances = 0.99)
+    results = data.frame(results, outlier = !rpca_resid@flag)
   } else {
-     results = data.frame(results, outlier = color)
+    results = data.frame(results, outlier = color)
   }
   plot <-  ggplot(results, aes(PC1, PC2, color = outlier)) + 
     geom_point() + 
@@ -110,7 +107,8 @@ pca_plot = function(resids, color = NULL){
     coord_fixed(ratio=1) +
     labs(x = paste0("PC1 (", round(pca_resid$pve[1]*100, 2), "%)"),
          y = paste0("PC2 (", round(pca_resid$pve[2]*100, 2), "%)")) +
-    theme_cowplot() + scale_color_manual(values = c("black", "green")) +
+    theme_cowplot() + 
+    scale_color_manual(values = c("black", viridis(length(unique(color))-1))) +
     theme(legend.position = "none")
   plot
 }
@@ -136,7 +134,7 @@ make_design_matrix = function(metadata, columns_to_ignore){
   b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 1 +",b))
   print(paste0("~ 1 +",b))
-  design <- model.matrix(model,data = metadata)
+    design <- model.matrix(model,data = metadata)
   design
 }
 

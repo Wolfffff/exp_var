@@ -67,9 +67,10 @@ main_count_processing <- function(dset_name,
   dev.off()
 
   # Raw PCA plot
-  pca_on_voom <- pca_plot(countdata.voom$E)
-
-  screen_on_voom <- scree_plot(countdata.voom$E)
+  design_intercept = model.matrix(~1, data = countdata.norm$samples)
+  raw_voomed_resid = removeBatchEffect(countdata.voom, covariates = design_intercept)
+  pca_on_voom <- pca_plot(raw_voomed_resid, color = rep(1, ncol(raw_voomed_resid)))
+  #screen_on_voom <- scree_plot(raw_voomed_resid)
 
   # Null model for SVA
   # mod0 = model.matrix(~1,data=countdata.list$samples)
@@ -81,15 +82,18 @@ main_count_processing <- function(dset_name,
   countdata_resids <- removeBatchEffect(countdata.voom, covariates = design)
   rownames(countdata_resids) <- countdata.voom$genes[, 1]
 
-  # PCA plot with Batch effects
-  pca_on_resids <- pca_plot(countdata_resids)
-  scree_on_resids <- scree_plot(countdata_resids)
+
 
   # Dropping outlier
   rpca_resid <- PcaGrid(t(countdata_resids), 20, crit.pca.distances = 0.99)
   countdata.norm_noOut <- countdata.norm
   countdata.norm_noOut$counts <- countdata.norm_noOut$counts[, rpca_resid@flag]
   countdata.norm_noOut$samples <- countdata.norm_noOut$samples[rpca_resid@flag, ]
+
+  # PCA plot with Batch effects
+  pca_on_resids <- pca_plot(countdata_resids, color = !rpca_resid@flag)
+  #scree_on_resids <- scree_plot(countdata_resids)
+
 
   print(paste0(
     "Filtered metadata dimensions: ",
@@ -100,7 +104,7 @@ main_count_processing <- function(dset_name,
   countdata.voom_noOut <- voom(countdata.norm_noOut, design = design_noOut)
   countdata_resids_noOut <- removeBatchEffect(countdata.voom_noOut, covariates = design_noOut)
   rownames(countdata_resids_noOut) <- countdata.voom_noOut$genes[, 1]
-  pca_on_resids_noOut <- pca_plot(countdata_resids_noOut)
+  pca_on_resids_noOut <- pca_plot(countdata_resids_noOut, color = rep(1, ncol(countdata_resids_noOut)))
 
   # Batch effects With PC1
 
@@ -128,7 +132,7 @@ main_count_processing <- function(dset_name,
   list(
     n_samples = dim(countdata.norm_noOut$samples)[1],
     raw_voom = countdata.voom,
-    voom_noOut = countdata.voom_noOut
+    voom_noOut = countdata.voom_noOut,
     plotPanel = plt,
     plot_list = list(uncorrected = pca_on_voom, batch = pca_on_resids, clean = pca_on_resids_noOut, pc1 = pca_on_resids_with_pc1),
     residuals = countdata_resids_noOut,
