@@ -67,10 +67,11 @@ main_count_processing <- function(dset_name,
   countdata.voom <- voom(countdata.norm, design = design, plot = T)
   dev.off()
 
-  print("Corrected residual plot")
-  jpeg(paste0(plots_dir, dset_name, "_corrected_voom_lm_eb.jpg"))
   fit <- lmFit(countdata.voom, design)
   ebfit <- eBayes(fit)
+
+  print("Corrected residual plot")
+  jpeg(paste0(plots_dir, dset_name, "_eBayes_SA.jpg"))
   plotSA(ebfit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
   dev.off()
   
@@ -78,7 +79,7 @@ main_count_processing <- function(dset_name,
   design_intercept = model.matrix(~1, data = countdata.norm$samples)
   raw_voomed_resid = removeBatchEffect(countdata.voom, covariates = design_intercept)
   pca_on_voom <- pca_plot(raw_voomed_resid, color = rep(1, ncol(raw_voomed_resid)))
-  #screen_on_voom <- scree_plot(raw_voomed_resid)
+  screen_on_voom <- scree_plot(raw_voomed_resid)
 
   # Null model for SVA
   # mod0 = model.matrix(~1,data=countdata.list$samples)
@@ -87,8 +88,22 @@ main_count_processing <- function(dset_name,
   # svobj = sva(countdata.norm$counts,mod0 = mod0,mod = design)
 
   # Batch effects
-  countdata_resids <- removeBatchEffect(countdata.voom, covariates = design)
+  # countdata_resids <- removeBatchEffect(cpm(countdata.voom, log=TRUE, prior.count=3), covariates = design)#removeBatchEffect(countdata.voom, covariates = design)
+  countdata_resids <- ebfit#removeBatchEffect(ebfit, covariates = design)
   rownames(countdata_resids) <- countdata.voom$genes[, 1]
+
+  # PCA plot with Batch effects
+  pca_on_resids <- pca_plot(countdata_resids)
+  scree_on_resids <- scree_plot(countdata_resids)
+  
+  print("Corrected residual plot")
+
+
+  # Null model for SVA
+  # mod0 = model.matrix(~1,data=countdata.list$samples)
+  # We need to rebuild and ignore lib.size!
+
+  # svobj = sva(countdata.norm$counts,mod0 = mod0,mod = design)
 
 
 

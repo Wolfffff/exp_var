@@ -155,3 +155,29 @@ convert_metadata_to_df_rc3 <- function(sample_attributes) {
   rownames(meta) <- rownames(colData(rse))
   return(meta)
 }
+
+voom_lm_ebayes (counts, design, label=NULL){
+
+  if (label != NULL){) {
+    jpeg(paste0(label, "_voom.jpg"))
+    countdata.voom <- voom(countdata.norm, design = design, plot = T)
+    dev.off()
+  } else {
+     countdata.voom <- voom(countdata.norm, design = design, plot = F)
+  }
+
+  fit <- lmFit(countdata.voom, design)
+  ebfit <- eBayes(fit)
+
+  if (label != NULL){) {
+    jpeg(paste0(label, "_corrected_voom_lm_eb.jpg"))
+    plotSA(ebfit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
+    dev.off()
+  }
+
+  return(ebfit)
+}
+
+inv_log2_plus05 = function(x){
+  return(pow(2, x) - 0.5)
+}
