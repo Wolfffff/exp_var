@@ -156,8 +156,10 @@ convert_metadata_to_df_rc3 <- function(sample_attributes) {
   return(meta)
 }
 
-voom_lm_ebayes <- function(counts, design, label=NULL){
-
+voom_lm_ebayes <- function(counts, design=NULL, label=NULL){
+  if(is.null(design)){
+      design = matrix(1, nrow = ncol(counts), ncol = 1)
+  }
   if (!is.null(label)) {
     jpeg(paste0(label, "_voom.jpg"))
     countdata.voom <- voom(countdata.norm, design = design, plot = T)
