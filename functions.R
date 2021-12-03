@@ -156,9 +156,9 @@ convert_metadata_to_df_rc3 <- function(sample_attributes) {
   return(meta)
 }
 
-voom_lm_ebayes (counts, design, label=NULL){
+voom_lm_ebayes <- function(counts, design, label=NULL){
 
-  if (label != NULL){) {
+  if (!is.null(label)) {
     jpeg(paste0(label, "_voom.jpg"))
     countdata.voom <- voom(countdata.norm, design = design, plot = T)
     dev.off()
@@ -169,7 +169,7 @@ voom_lm_ebayes (counts, design, label=NULL){
   fit <- lmFit(countdata.voom, design)
   ebfit <- eBayes(fit)
 
-  if (label != NULL){) {
+  if (!is.null(label)) {
     jpeg(paste0(label, "_corrected_voom_lm_eb.jpg"))
     plotSA(ebfit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
     dev.off()
