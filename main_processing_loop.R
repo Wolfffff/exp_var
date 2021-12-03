@@ -62,10 +62,18 @@ main_count_processing <- function(dset_name,
   design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
   print(paste("Design matrix size:", paste(dim(design), collapse = " x ")))
   print("Voom!")
+
   jpeg(paste0(plots_dir, dset_name, "_voom.jpg"))
   countdata.voom <- voom(countdata.norm, design = design, plot = T)
   dev.off()
 
+  print("Corrected residual plot")
+  jpeg(paste0(plots_dir, dset_name, "_corrected_voom_lm_eb.jpg"))
+  fit <- lmFit(countdata.voom, design)
+  ebfit <- eBayes(fit)
+  plotSA(ebfit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
+  dev.off()
+  
   # Raw PCA plot
   design_intercept = model.matrix(~1, data = countdata.norm$samples)
   raw_voomed_resid = removeBatchEffect(countdata.voom, covariates = design_intercept)
