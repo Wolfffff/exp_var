@@ -181,5 +181,5 @@ voom_lm_ebayes <- function(counts, design=NULL, label=NULL){
 }
 
 inv_log2_plus05 = function(x){
-  return(pow(2, x) - 0.5)
+  return(2**x - 0.5)
 }
