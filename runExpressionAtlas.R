@@ -18,7 +18,8 @@ library(AnnotationDbi)
 library(org.Hs.eg.db)
 library(rrcov)
 library(DESeq2)
-library(vsn)
+library(vsn
+library(viridis)
 source("functions.R")
 
 # Set timeout to avoid failure when trying to download GTEx or other large datasets
