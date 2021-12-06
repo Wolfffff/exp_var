@@ -123,7 +123,7 @@ main_count_processing <- function(dset_name,
 
   plt <- plot_grid(
     nrow = 2, scale = 0.9,
-    pca_on_voom + ggtitle("Uncorrected"),
+    pca_on_raw + ggtitle("Uncorrected"),
     pca_on_resids + ggtitle("Known effects"),
     pca_on_resids_noOut + ggtitle("Known effects, no outliers"),
     pca_on_resids_with_pc1 + ggtitle("Known effects and PC1")
