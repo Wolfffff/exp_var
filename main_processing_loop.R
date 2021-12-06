@@ -69,24 +69,14 @@ main_count_processing <- function(dset_name,
   # Indep cols from design matrix same as remove redundant features but post filter 
   # I'll probably just replace the remove_redundant_features function with this one
   indep_design = design[, qr(design)$pivot[seq_len(qr(design)$rank)]]
+  print(paste("Independent design matrix size:", paste(dim(indep_design), collapse = " x ")))
 
   # Switch to DESeq2
-  dds  <- DESeqDataSetFromMatrix(countData = countdata.norm$counts, colData = countdata.norm$samples, design = indep_design)
-  # Use vst wrapper for varianceStabilizingTransformation
-  vsd <- vst(dds, blind = FALSE)
-  jpeg(paste0(plots_dir, dset_name, "_meanSd_vst.jpg"))
-  meanSdPlot(assay(vst))
-  dev.off()
-  countdata_resids <- removeBatchEffect(assay(vsd), covariates = indep_design)#removeBatchEffect(countdata.voom, covariates = design)
+  countdata_resids <- DESeq2_vst_lm(countdata.norm, design = indep_design, label = dset_name)#removeBatchEffect(countdata.voom, covariates = design)
   
-  rownames(countdata_resids) <- countdata.norm$genes[, 1]
-
-  # PCA plot with Batch effects
   jpeg(paste0(plots_dir, dset_name, "_meanSd_resids.jpg"))
   meanSdPlot(countdata_resids)
   dev.off()
-  pca_on_resids <- pca_plot(countdata_resids)
-  # scree_on_resids <- scree_plot(countdata_resids)
   
   # print("Corrected residual plot")
 
@@ -105,10 +95,9 @@ main_count_processing <- function(dset_name,
   countdata.norm_noOut$counts <- countdata.norm_noOut$counts[, rpca_resid@flag]
   countdata.norm_noOut$samples <- countdata.norm_noOut$samples[rpca_resid@flag, ]
 
-  # PCA plot with Batch effects
+  # PCA plot with Batch effects (this plot happens here to make use of the outlier tags from the robust PCA)
   pca_on_resids <- pca_plot(countdata_resids, color = !rpca_resid@flag)
   #scree_on_resids <- scree_plot(countdata_resids)
-
 
   print(paste0(
     "Filtered metadata dimensions: ",
@@ -116,19 +105,16 @@ main_count_processing <- function(dset_name,
   ))
 
   design_noOut <- make_design_matrix(countdata.norm_noOut$samples, columns_to_ignore)
-  countdata.voom_noOut <- voom(countdata.norm_noOut, design = design_noOut)
-  countdata_resids_noOut <- removeBatchEffect(countdata.voom_noOut, covariates = design_noOut)
-  rownames(countdata_resids_noOut) <- countdata.voom_noOut$genes[, 1]
+  countdata_resids_noOut <- DESeq2_vst_lm(countdata.norm_noOut, design = design_noOut)
   pca_on_resids_noOut <- pca_plot(countdata_resids_noOut, color = rep("1", ncol(countdata_resids_noOut)))
 
   # Batch effects With PC1
 
-  PCs <- pca(pca_on_resids_noOut)
+  PCs <- pca(countdata_resids_noOut)
   countdata.norm_noOut$samples$PC1 <- PCs$pc[1, ]
   design_with_pc1 <- make_design_matrix(countdata.norm_noOut$samples, columns_to_ignore)
 
-  countdata_resids_with_pc1 <- removeBatchEffect(countdata.voom_noOut, covariates = design_with_pc1)
-  rownames(countdata_resids_with_pc1) <- countdata.voom_noOut$genes[, 1]
+  countdata_resids_with_pc1 <- DESeq2_vst_lm(countdata.norm_noOut, design = design_with_pc1)
 
   # PCA plot with Batch effects and PC1
   pca_on_resids_with_pc1 <- pca_plot(countdata_resids_with_pc1, color = rep("1", ncol(countdata_resids_with_pc1)))

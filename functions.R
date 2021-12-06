@@ -135,7 +135,7 @@ make_design_matrix = function(metadata, columns_to_ignore){
   model <- as.formula(paste0("~ 1 +",b))
   print(paste0("~ 1 +",b))
     design <- model.matrix(model,data = metadata)
-  design
+  design = design[, qr(design)$pivot[seq_len(qr(design)$rank)]]
 }
 
 map_to_cols_rc3 <- function(s) {
@@ -156,27 +156,26 @@ convert_metadata_to_df_rc3 <- function(sample_attributes) {
   return(meta)
 }
 
-voom_lm_ebayes <- function(counts, design=NULL, label=NULL){
+DESeq2_vst_lm <- function(countdata_norm, design=NULL, label=NULL){
+  counts <- countdata_norm$counts
+  metadata <- countdata_norm$samples
   if(is.null(design)){
-      design = matrix(1, nrow = ncol(counts$counts), ncol = 1)
-  }
-  if (!is.null(label)) {
-    jpeg( paste0(plots_dir, dset_name, "_", label,  "_voom.jpg"))
-    countdata.voom <- voom(counts, design = design, plot = T)
-    dev.off()
-  } else {
-     countdata.voom <- voom(counts, design = design, plot = F)
+      design = matrix(1, nrow = ncol(counts), ncol = 1)
   }
 
-  fit <- lmFit(countdata.voom, design)
-  ebfit <- eBayes(fit)
-
-  if (!is.null(label)) {
-    jpeg( paste0(plots_dir, dset_name, "_", label, "_corrected_voom_lm_eb.jpg"))
-    plotSA(ebfit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
+   # Switch to DESeq2
+  dds  <- DESeqDataSetFromMatrix(countData = counts, colData = metadata, design = design)
+  # Use vst wrapper for varianceStabilizingTransformation
+  vsd <- vst(dds, blind = FALSE)
+  if(!is.null(label)){
+    jpeg(paste0(plots_dir, label, "_meanSd_vst.jpg"))
+    meanSdPlot(assay(vsd))
     dev.off()
   }
-  return(ebfit)
+  countdata_resids <- removeBatchEffect(assay(vsd), covariates = design)#removeBatchEffect(countdata.voom, covariates = design)
+  
+  rownames(countdata_resids) <- countdata_norm$genes[, 1]
+  return(countdata_resids)
 }
 
 inv_log2_plus05 = function(x){
