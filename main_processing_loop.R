@@ -62,7 +62,7 @@ main_count_processing <- function(dset_name,
   design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
   print(paste("Design matrix size:", paste(dim(design), collapse = " x ")))
 
-  pca_on_raw <- pca_plot(countdata.norm$counts)
+  pca_on_raw <- pca_plot(countdata.norm$counts, color = rep("1", ncol(countdata.norm$counts)))
   screen_on_raw <- scree_plot(countdata.norm$counts)
 
   
@@ -119,7 +119,7 @@ main_count_processing <- function(dset_name,
   countdata.voom_noOut <- voom(countdata.norm_noOut, design = design_noOut)
   countdata_resids_noOut <- removeBatchEffect(countdata.voom_noOut, covariates = design_noOut)
   rownames(countdata_resids_noOut) <- countdata.voom_noOut$genes[, 1]
-  pca_on_resids_noOut <- pca_plot(countdata_resids_noOut, color = rep(1, ncol(countdata_resids_noOut)))
+  pca_on_resids_noOut <- pca_plot(countdata_resids_noOut, color = rep("1", ncol(countdata_resids_noOut)))
 
   # Batch effects With PC1
 
@@ -131,7 +131,7 @@ main_count_processing <- function(dset_name,
   rownames(countdata_resids_with_pc1) <- countdata.voom_noOut$genes[, 1]
 
   # PCA plot with Batch effects and PC1
-  pca_on_resids_with_pc1 <- pca_plot(countdata_resids_with_pc1)
+  pca_on_resids_with_pc1 <- pca_plot(countdata_resids_with_pc1, color = rep("1", ncol(countdata_resids_with_pc1)))
 
   # print("Writing figures")
 
