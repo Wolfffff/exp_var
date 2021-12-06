@@ -132,13 +132,13 @@ main_count_processing <- function(dset_name,
   # print("Appending results and metadata to lists")
   list(
     n_samples = dim(countdata.norm_noOut$samples)[1],
-    raw_voom = countdata.voom,
-    voom_noOut = countdata.voom_noOut,
+    normcounts_raw = countdata.norm,
+    normcounts_noOut = countdata.norm_noOut,
     plotPanel = plt,
     plot_list = list(uncorrected = pca_on_raw, batch = pca_on_resids, clean = pca_on_resids_noOut, pc1 = pca_on_resids_with_pc1),
-    residuals = countdata_resids_noOut,
-    raw_residuals = countdata_resids,
-    pc1_residuals = countdata_resids_with_pc1,
+    residuals_noOut = countdata_resids_noOut,
+    residuals_raw = countdata_resids,
+    residuals_pc1 = countdata_resids_with_pc1,
     metadata = countdata.norm_noOut$samples
   )
 }
