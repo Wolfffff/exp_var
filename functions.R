@@ -158,25 +158,24 @@ convert_metadata_to_df_rc3 <- function(sample_attributes) {
 
 voom_lm_ebayes <- function(counts, design=NULL, label=NULL){
   if(is.null(design)){
-      design = matrix(1, nrow = ncol(counts), ncol = 1)
+      design = matrix(1, nrow = ncol(counts$counts), ncol = 1)
   }
   if (!is.null(label)) {
-    jpeg(paste0(label, "_voom.jpg"))
-    countdata.voom <- voom(countdata.norm, design = design, plot = T)
+    jpeg( paste0(plots_dir, dset_name, "_", label,  "_voom.jpg"))
+    countdata.voom <- voom(counts, design = design, plot = T)
     dev.off()
   } else {
-     countdata.voom <- voom(countdata.norm, design = design, plot = F)
+     countdata.voom <- voom(counts, design = design, plot = F)
   }
 
   fit <- lmFit(countdata.voom, design)
   ebfit <- eBayes(fit)
 
   if (!is.null(label)) {
-    jpeg(paste0(label, "_corrected_voom_lm_eb.jpg"))
+    jpeg( paste0(plots_dir, dset_name, "_", label, "_corrected_voom_lm_eb.jpg"))
     plotSA(ebfit, main="Final model: Mean-variance trend", ylab = "Sqrt( standard deviation )")
     dev.off()
   }
-
   return(ebfit)
 }
 
