@@ -18,7 +18,7 @@ library(AnnotationDbi)
 library(org.Hs.eg.db)
 library(rrcov)
 library(DESeq2)
-library(vsn
+library(vsn)
 library(viridis)
 source("functions.R")
 
