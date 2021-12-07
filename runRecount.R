@@ -47,32 +47,34 @@ library(recount3)
 cache = recount3_cache(cache_dir="cache")
 human_projects <- available_projects(bfc=cache)
 
-exp_data_rc3 = list()
-# recount_cache_rm()
-for (id in experimental_metadata_rc3$id) {
-  # Load the project
-  proj_info <- subset(
-    human_projects,
-    project == id & project_type == "data_sources"
-  )
-  # Tape to deal with acquisition issues
-  rse <- create_rse(proj_info, bfc=cache)
-  if (proj_info$file_source == "gtex") {
-    metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
-  } else {
-    #Could probably just use expand_sra_attributes
-    metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
-  }
+# exp_data_rc3 = list()
+# # recount_cache_rm()
+# for (id in experimental_metadata_rc3$id) {
+#   # Load the project
+#   proj_info <- subset(
+#     human_projects,
+#     project == id & project_type == "data_sources"
+#   )
+#   # Tape to deal with acquisition issues
+#   rse <- create_rse(proj_info, bfc=cache)
+#   if (proj_info$file_source == "gtex") {
+#     metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
+#   } else {
+#     #Could probably just use expand_sra_attributes
+#     metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
+#   }
   
-  # Crude way to set NA to ""
-  metadata_df@listData <- lapply(metadata_df@listData, function(x) {
-    x[is.na(x)] = ""
-    x
-  })
+#   # Crude way to set NA to ""
+#   metadata_df@listData <- lapply(metadata_df@listData, function(x) {
+#     x[is.na(x)] = ""
+#     x
+#   })
 
-  rse@colData <- metadata_df
-  exp_data_rc3[[id]] <- rse
-}
+#   rse@colData <- metadata_df
+#   exp_data_rc3[[id]] <- rse
+# }
+# saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
+exp_data_rc3 = readRDS("cache/recount3_data.RDS")
 
 source("./main_processing_loop.R")
 parallel = FALSE
@@ -83,7 +85,7 @@ if(.Platform$OS.type == "unix") {
 } 
 
 results_list_rc3 <- llply(names(exp_data_rc3), 
-                      main_count_processing,  
+                      main_loop,  
                       exp_data = exp_data_rc3, 
                       experimental_metadata = experimental_metadata_rc3, 
                       feature_vec = feature_vec,

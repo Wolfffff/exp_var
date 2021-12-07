@@ -136,7 +136,7 @@ if(.Platform$OS.type == "unix") {
 } 
 
 results_list_rc3 <- llply(names(exp_data_rc3), 
-                      main_count_processing,  
+                      main_loop,  
                       exp_data = exp_data_rc3, 
                       experimental_metadata = experimental_metadata_rc3, 
                       feature_vec = feature_vec,

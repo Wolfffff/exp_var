@@ -142,3 +142,7 @@ main_count_processing <- function(dset_name,
     metadata = countdata.norm_noOut$samples
   )
 }
+
+main_loop <- function (...) {
+  return(tryCatch(main_count_processing(...), error=function(e) NULL))
+}
