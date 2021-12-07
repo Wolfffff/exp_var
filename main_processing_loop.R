@@ -144,5 +144,5 @@ main_count_processing <- function(dset_name,
 }
 
 main_loop <- function (...) {
-  return(tryCatch(main_count_processing(...), error=function(e) NULL))
+  return(tryCatch(main_count_processing(...), error=function(e) NA))
 }
