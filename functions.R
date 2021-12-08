@@ -1,6 +1,6 @@
 crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Title", "ENA.checklist", 
               "ENA.FIRST.PUBLIC", "ENA.LAST.UPDATE", "isolate", "INSDC.center.alias", 
-              "INSDC.center.name", "INSDC.first.public", "INSDC.last.update", "INSDC.status", "Sample.Name", "SRA.accession", "title", "gtex.smrin")
+              "INSDC.center.name", "INSDC.first.public", "INSDC.last.update", "INSDC.status", "Sample.Name", "SRA.accession", "title", "gtex.smrin", "rownames")
 
 pca <- function(x, space = c("rows", "columns"),
                 center = TRUE, scale = FALSE) {
@@ -150,10 +150,11 @@ map_to_cols_rc3 <- function(s) {
 
 convert_metadata_to_df_rc3 <- function(sample_attributes) {
   meta <- lapply(sample_attributes, FUN = map_to_cols_rc3)
-  meta <- dplyr::bind_rows(meta)
-  meta <- DataFrame(meta)
-  rownames(meta) <- rownames(colData(rse))
-  return(meta)
+  names(meta) <- rownames(colData(rse))
+  meta_df <- dplyr::bind_rows(meta, .id = "rownames")
+  meta_df <- DataFrame(meta_df)
+  rownames(meta_df) <- meta_df$rownames
+  return(meta_df)
 }
 
 DESeq2_vst_lm <- function(countdata_norm, design=NULL, label=NULL){
