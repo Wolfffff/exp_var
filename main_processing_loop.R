@@ -131,6 +131,7 @@ main_count_processing <- function(dset_name,
 
   # print("Appending results and metadata to lists")
   list(
+    name = dset_name,
     n_samples = dim(countdata.norm_noOut$samples)[1],
     normcounts_raw = countdata.norm,
     normcounts_noOut = countdata.norm_noOut,

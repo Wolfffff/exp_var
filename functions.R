@@ -134,8 +134,8 @@ make_design_matrix = function(metadata, columns_to_ignore){
   b <- paste0(" ", cols_to_control, collapse=" +")
   model <- as.formula(paste0("~ 1 +",b))
   print(paste0("~ 1 +",b))
-    design <- model.matrix(model,data = metadata)
-  design = design[, qr(design)$pivot[seq_len(qr(design)$rank)]]
+  design <- model.matrix(model, data = metadata)
+  design = design[, qr(design)$pivot[seq_len(qr(design)$rank)], drop = FALSE]
 }
 
 map_to_cols_rc3 <- function(s) {
@@ -181,4 +181,16 @@ DESeq2_vst_lm <- function(countdata_norm, design=NULL, label=NULL){
 
 inv_log2_plus05 = function(x){
   return(2**x - 0.5)
+}
+
+cpm_lm <- function(countdata_norm, design=NULL){
+  counts <- countdata_norm$counts
+  metadata <- countdata_norm$samples
+  if(is.null(design)){
+      design = matrix(1, nrow = ncol(counts), ncol = 1)
+  }
+  cpm_counts  <- cpm(countdata_norm, log = TRUE, prior.count = 5)
+  countdata_resids <- removeBatchEffect(cpm_counts, covariates = design)#removeBatchEffect(countdata.voom, covariates = design)
+  rownames(countdata_resids) <- countdata_norm$genes[, 1]
+  return(countdata_resids)
 }
