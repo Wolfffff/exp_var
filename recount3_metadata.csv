@@ -16,17 +16,8 @@ GTEx v8 data for tissue: testis,TESTIS,,,control
 GTEx v8 data for tissue: stomach,STOMACH,,,control
 GTEx v8 data for tissue: pancreas,PANCREAS,,,control
 GTEx v8 data for tissue: pituitary,PITUITARY,,,control
-The Power of Resolution: Contextualized Understanding of Chemical-biological Interactions,SRP166108,,,multi-treatment
-Reconstructing the human first trimester fetal-maternal interface using single cell transcriptomics - Smartseq 2 data,ERP107748,,,control
-Single-cell indexed RNA-Seq of human hematopoietic stem and progenitors,SRP066781,,,control
-Single-Cell RNAseq analysis of diffuse neoplastic infiltrating cells at the migrating front of human glioblastoma,SRP079058,,,case-control
-Single-cell RNA-seq analysis of human pancreas from healthy individuals and type 2 diabetes patients,ERP017126,,,case-control
-Single-cell RNA-seq of naive and primed human embryonic stem cells,ERP108653,,,case-control
-Single-cell transcriptomics uncovers distinct molecular signatures of stem cells in chronic myeloid leukemia,SRP067759,,,case-control
-Single cell transcriptional dynamics of flavivirus infection,SRP132726,,,case-control
-Sequential inflammatory processes define human progression from M. tuberculosis infection to tuberculosis disease,SRP116272,,,case-control
-Single-cell RNA-seq reveals heterogeneity within human pre-cDCs,SRP092166,,,control
-Single-cell RNA-seq reveal lineage formation and X-chromosome dosage compensation in human preimplantation embryos,ERP012552,,,control
 Genetic and Epigenetic Fine Mapping of Complex Trait Associated Loci in the Human Liver,SRP187978,,,control
-_Genetics_of_gene_expression_in_macrophage_immune_response_Open_access,ERP020977,,,case-control
+_Genetics_of_gene_expression_in_macrophage_immune_response_Open_access,ERP020977,,,multi-treatment
 TCGA data for tissue: BRCA,BRCA,,,case-control
+RNA-seq transcript and gene data on zika exposed and zika naïve samples,SRP192714,,3 time points,case-control
+A blood RNA signature for predicting the treatment outcome in the Tuberculosis Treatment Response Cohort,SRP092402,,,case-control   

@@ -44,6 +44,8 @@ feature_vec <- list()
 feature_vec[["disease"]] <- c("normal", "control", "", NA, 
                               "non inflammatory bowel disease control")
 feature_vec[["treatment"]] <- c("normal", "control", "", NA)
+feature_vec[["tcga.cgc_sample_sample_type"]] <- c("Solid Tissue Normal")
+
 ```
 
 ## recount3
@@ -68,6 +70,8 @@ for (id in experimental_metadata_rc3$id) {
   rse <- create_rse(proj_info, bfc=cache)
   if (proj_info$file_source == "gtex") {
     metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
+  } else if(proj_info$file_source == "tcga") {
+    metadata_df <- colData(rse)[,grepl("tcga",colnames(colData(rse)),fixed=TRUE)]
   } else {
     #Could probably just use expand_sra_attributes
     metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
