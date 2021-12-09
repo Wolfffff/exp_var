@@ -16,8 +16,38 @@ GTEx v8 data for tissue: testis,TESTIS,,,control
 GTEx v8 data for tissue: stomach,STOMACH,,,control
 GTEx v8 data for tissue: pancreas,PANCREAS,,,control
 GTEx v8 data for tissue: pituitary,PITUITARY,,,control
+TCGA data for tissue: BRCA,BRCA,,,case-control
+TCGA data for tissue: KIRC,KIRC,,,case-control
+TCGA data for tissue: LUAD,LUAD,,,case-control
+TCGA data for tissue: UCEC,UCEC,,,case-control
+TCGA data for tissue: THCA,THCA,,,case-control
+TCGA data for tissue: PRAD,PRAD,,,case-control
+TCGA data for tissue: LUSC,LUSC,,,case-control
+TCGA data for tissue: HNSC,HNSC,,,case-control
+TCGA data for tissue: COAD,COAD,,,case-control
+TCGA data for tissue: LGG,LGG,,,case-control
+TCGA data for tissue: SKCM,SKCM,,,case-control
+TCGA data for tissue: STAD,STAD,,,case-control
+TCGA data for tissue: BLCA,BLCA,,,case-control
+TCGA data for tissue: OV,OV,,,case-control
+TCGA data for tissue: LIHC,LIHC,,,case-control
+TCGA data for tissue: KIRP,KIRP,,,case-control
+TCGA data for tissue: CESC,CESC,,,case-control
+TCGA data for tissue: SARC,SARC,,,case-control
+TCGA data for tissue: ESCA,ESCA,,,case-control
+TCGA data for tissue: PCPG,PCPG,,,case-control
+TCGA data for tissue: PAAD,PAAD,,,case-control
+TCGA data for tissue: LAML,LAML,,,case-control
+TCGA data for tissue: READ,READ,,,case-control
+TCGA data for tissue: GBM,GBM,,,case-control
+TCGA data for tissue: TGCT,TGCT,,,case-control
+TCGA data for tissue: THYM,THYM,,,case-control
 Genetic and Epigenetic Fine Mapping of Complex Trait Associated Loci in the Human Liver,SRP187978,,,control
 _Genetics_of_gene_expression_in_macrophage_immune_response_Open_access,ERP020977,,,multi-treatment
-TCGA data for tissue: BRCA,BRCA,,,case-control
 RNA-seq transcript and gene data on zika exposed and zika naïve samples,SRP192714,,3 time points,case-control
-A blood RNA signature for predicting the treatment outcome in the Tuberculosis Treatment Response Cohort,SRP092402,,,case-control   
+A blood RNA signature for predicting the treatment outcome in the Tuberculosis Treatment Response Cohort,SRP092402,,,case-control
+Gene Expression Analysis of Essential Tremor via RNA-sequencing,SRP216404,,,case-control
+HipSci___RNAseq___healthy_volunteers,ERP007111,,in expression atlas as well,control
+
+
+
