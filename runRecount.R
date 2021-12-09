@@ -103,9 +103,9 @@ names(results_list_rc3) <- names(exp_data_rc3)
 
 save(results_list_rc3, file = "cache/results_list_rc3.RData")
 
-for (dset_name in names(results_list_rc3)){
+for (dset_name in names(results_list_rc3)) {
     if(!is.na(results_list_rc3[[dset_name]]))
         save_plot(filename = paste0(plots_dir, dset_name, "_pca.png"),
                   results_list_rc3[[dset_name]]$plotPanel,
                   base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
-
+}
