@@ -79,7 +79,8 @@ for (id in experimental_metadata_rc3$id) {
     #Could probably just use expand_sra_attributes
     metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
   }
-  
+  single_mask = sapply(metadata_df , function(x) length(table(x)) > 1) 
+  metadata_df <- metadata_df[,single_mask, drop = FALSE]
   # Crude way to set NA to ""
   metadata_df@listData <- lapply(metadata_df@listData, function(x) {
     x[is.na(x)] = ""

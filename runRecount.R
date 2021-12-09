@@ -47,10 +47,9 @@ library(recount3)
 cache <- recount3_cache(cache_dir = "cache")
 human_projects <- available_projects(bfc = cache)
 
-pull_data <- FALSE
+pull_data <- TRUE
 if (pull_data) {
   exp_data_rc3 <- list()
-  recount_cache_rm()
   for (id in experimental_metadata_rc3$id) {
     # Load the project
     proj_info <- subset(
@@ -62,11 +61,16 @@ if (pull_data) {
     if (proj_info$file_source == "gtex") {
       metadata_df <- colData(rse)[, grepl("gtex", colnames(colData(rse)),
                                          fixed = TRUE)]
+    } else if (proj_info$file_source == "tcga") {
+      metadata_df <- colData(rse)[, grepl("tcga", colnames(colData(rse)),
+                                         fixed = TRUE)]
     } else {
       #Could probably just use expand_sra_attributes
       metadata_df <- convert_metadata_to_df_rc3(
         sample_attributes = colData(rse)$sra.sample_attributes)
     }
+    single_mask = sapply(metadata_df , function(x) length(table(x)) > 1)
+    metadata_df <- metadata_df[,single_mask, drop = FALSE]
     # Crude way to set NA to ""
     metadata_df@listData <- lapply(metadata_df@listData, function(x) {
       x[is.na(x)] <- ""
@@ -80,9 +84,9 @@ if (pull_data) {
     rse@colData <- metadata_df
     exp_data_rc3[[id]] <- rse
   }
-  saveRDS(exp_data_rc3, file = "cache/recount3_data2.RDS")
+  saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
 }
-exp_data_rc3 <- readRDS("cache/recount3_data2.RDS")
+exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
 
 source("./main_processing_loop.R")
 parallel <- FALSE
