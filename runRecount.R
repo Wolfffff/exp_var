@@ -47,47 +47,6 @@ library(recount3)
 cache <- recount3_cache(cache_dir = "cache")
 human_projects <- available_projects(bfc = cache)
 
-pull_data <- TRUE
-if (pull_data) {
-  exp_data_rc3 <- list()
-  for (id in experimental_metadata_rc3$id) {
-    # Load the project
-    proj_info <- subset(
-      human_projects,
-      project == id & project_type == "data_sources"
-    )
-    # Tape to deal with acquisition issues
-    rse <- create_rse(proj_info, bfc = cache)
-    if (proj_info$file_source == "gtex") {
-      metadata_df <- colData(rse)[, grepl("gtex", colnames(colData(rse)),
-                                         fixed = TRUE)]
-    } else if (proj_info$file_source == "tcga") {
-      metadata_df <- colData(rse)[, grepl("tcga", colnames(colData(rse)),
-                                         fixed = TRUE)]
-    } else {
-      #Could probably just use expand_sra_attributes
-      metadata_df <- convert_metadata_to_df_rc3(
-        sample_attributes = colData(rse)$sra.sample_attributes)
-    }
-    single_mask = sapply(metadata_df , function(x) length(table(x)) > 1)
-    metadata_df <- metadata_df[,single_mask, drop = FALSE]
-    # Crude way to set NA to ""
-    metadata_df@listData <- lapply(metadata_df@listData, function(x) {
-      x[is.na(x)] <- ""
-      x
-    })
-    # accotunting for missing metadata rows:
-    if (nrow(metadata_df) != length(colData(rse)$sra.sample_attributes)) {
-      rse@assays@data[["raw_counts"]] <-
-        assays(rse)[["raw_counts"]][, metadata_df$rownames]
-    }
-    rse@colData <- metadata_df
-    exp_data_rc3[[id]] <- rse
-  }
-  saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
-}
-exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
-
 source("./main_processing_loop.R")
 parallel <- FALSE
 if (.Platform$OS.type == "unix") {
@@ -95,6 +54,13 @@ if (.Platform$OS.type == "unix") {
   library(doMC)
   registerDoMC(64)
 }
+
+pull_data <- TRUE
+if (pull_data) {
+  exp_data_rc3 = llply(experimental_metadata_rc3$id, downloadRecount3, human_projects, .parallel = parallel)
+  saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
+}
+exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
 
 results_list_rc3 <- llply(names(exp_data_rc3),
                       main_loop,
@@ -105,8 +71,8 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                       .parallel = parallel)
 names(results_list_rc3) <- names(exp_data_rc3)
 
-# re_run = "SKIN"
-# results_list_rc3[[re_run]] <- main_loop(re_run, exp_data = exp_data_rc3,
+# re_run = "ESOPHAGUS"
+# results_list_rc3[[re_run]] <- main_loop(dset_name = re_run, exp_data = exp_data_rc3,
 #                       experimental_metadata = experimental_metadata_rc3,
 #                       feature_vec = feature_vec,
 #                       assay_name = "raw_counts")
@@ -119,3 +85,4 @@ for (dset_name in names(results_list_rc3)) {
                   results_list_rc3[[dset_name]]$plotPanel,
                   base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
 }
+

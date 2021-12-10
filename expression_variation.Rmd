@@ -1,32 +1,7 @@
 # Simple script showing how to pull data from Expression Atlas and recount3, normalize, and remove batch effects.
 
 ```{r setup, include=FALSE}
-library(ExpressionAtlas)
-library(plyr)
-library(tidyverse)
-library(limma)
-library(sva)
-library(edgeR)
-library(ggplot2)
-library(janitor)
-library(foreach)
-library(doParallel)
-library(biomaRt)
-library(ggfortify)
-library(patchwork)
-library(cowplot)
-library(clusterProfiler)
-library(AnnotationDbi)
-#pak::pkg_install(c("DESeq2", "vsn"))
-library(org.Hs.eg.db)
-library(rrcov)
-library(DESeq2)
-library(vsn)
-library(viridis)
 source("functions.R")
-
-# Set timeout to avoid failure when trying to download GTEx or other large datasets
-options(timeout = 1800)
 ```
 
 ```{r}
@@ -35,7 +10,6 @@ experimental_metadata_ea <- experimental_metadata_ea[-1,] # Remove the top row (
 
 # Load metadata from recount3
 experimental_metadata_rc3 <- read_csv("recount3_metadata.csv")
-
 
 plots_dir <- "data/"
 
@@ -54,9 +28,6 @@ feature_vec[["Healthy"]] <- c("Healthy")
 ## recount3
 
 ```{r recount3}
-# This is commented out as we're sticking with Expression Atlas for now.
-library(recount3)
-
 # Move cache to deal with quota issues
 cache = recount3_cache(cache_dir="cache")
 human_projects <- available_projects(bfc=cache)
@@ -64,31 +35,7 @@ human_projects <- available_projects(bfc=cache)
 exp_data_rc3 = list()
 # recount_cache_rm()
 for (id in experimental_metadata_rc3$id) {
-  # Load the project
-  proj_info <- subset(
-    human_projects,
-    project == id & project_type == "data_sources"
-  )
-  # Tape to deal with acquisition issues
-  rse <- create_rse(proj_info, bfc=cache)
-  if (proj_info$file_source == "gtex") {
-    metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
-  } else if(proj_info$file_source == "tcga") {
-    metadata_df <- colData(rse)[,grepl("tcga",colnames(colData(rse)),fixed=TRUE)]
-  } else {
-    #Could probably just use expand_sra_attributes
-    metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
-  }
-  single_mask = sapply(metadata_df , function(x) length(table(x)) > 1) 
-  metadata_df <- metadata_df[,single_mask, drop = FALSE]
-  # Crude way to set NA to ""
-  metadata_df@listData <- lapply(metadata_df@listData, function(x) {
-    x[is.na(x)] = ""
-    x
-  })
-
-  rse@colData <- metadata_df
-  exp_data_rc3[[id]] <- rse
+  exp_data_rc3[[id]] <- downloadRecount3(id, human_projects)
 }
 ```
 
@@ -130,6 +77,7 @@ for(dset_name in names(results_list_ea))
   save_plot(filename=paste0(plots_dir, dset_name,"_pca.png"), results_list_ea[[dset_name]]$plotPanel, 
             base_height = 6, base_asp = 1.2, ncol = 2, nrow = 2)
 save(results_list_ea, file = "results_list_ea.RData")
+load("./Rdatas/results_list_ea.RData")
 ```
 
 Add a second loop for processing recount3 data.
@@ -168,7 +116,7 @@ names(variance_df_list) = names(results_list_ea)
 for (dset_name in names(results_list_ea)) {
   print(dset_name)
   exprDf = results_list_ea[[dset_name]]
-  gene_vars = rowVars(exprDf$residuals)
+  gene_vars = rowVars(exprDf$residuals_noOut)
   variance_df_list[[dset_name]] = data.frame(
       Genes = names(gene_vars),
       vars = gene_vars)

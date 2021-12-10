@@ -1,4 +1,4 @@
-names(exp_data_rc3)[26]
+names(exp_data_rc3)
 
 crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Title", "ENA.checklist", 
               "ENA.FIRST.PUBLIC", "ENA.LAST.UPDATE", "isolate", "INSDC.center.alias", 
@@ -7,7 +7,9 @@ crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Ti
 
              #"gtex.smubrid")
 
-metadata <- colData(exp_data_rc3[["SKIN"]])
+dset_name = "ESOPHAGUS"
+exp_data = exp_data_rc3
+metadata <- colData(exp_data_rc3[["ESOPHAGUS"]])
 mask_no_levels = sapply(metadata, function(x) length(unique(x)) <= 1 | length(unique(x)) > 100)
 mask_crap_cols = names(metadata) %in% crap_cols
 mask = unlist(Map(`|`, mask_no_levels, mask_crap_cols))

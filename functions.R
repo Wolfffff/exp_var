@@ -1,6 +1,64 @@
+#pak::pkg_install(c("DESeq2", "vsn"))
+library(ExpressionAtlas)
+library(plyr)
+library(tidyverse)
+library(limma)
+library(sva)
+library(edgeR)
+library(ggplot2)
+library(janitor)
+library(foreach)
+library(doParallel)
+library(biomaRt)
+library(ggfortify)
+library(patchwork)
+library(cowplot)
+library(clusterProfiler)
+library(AnnotationDbi)
+library(org.Hs.eg.db)
+library(rrcov)
+library(DESeq2)
+library(vsn)
+library(viridis)
+library(recount3)
+
+
+# Set timeout to avoid failure when trying to download GTEx or other large datasets
+options(timeout = 1800)
+
 crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Title", "ENA.checklist", 
               "ENA.FIRST.PUBLIC", "ENA.LAST.UPDATE", "isolate", "INSDC.center.alias", 
               "INSDC.center.name", "INSDC.first.public", "INSDC.last.update", "INSDC.status", "Sample.Name", "SRA.accession", "title", "gtex.smrin", "rownames")
+
+downloadRecount3 <- function(id, human_projects = human_projects){
+  # Load the project
+  print(id)
+  proj_info <- subset(
+    human_projects,
+    project == id & project_type == "data_sources"
+  )
+  # Tape to deal with acquisition issues
+  rse <- create_rse(proj_info, bfc=cache)
+  if (proj_info$file_source == "gtex") {
+    metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
+  } else if(proj_info$file_source == "tcga") {
+    metadata_df <- colData(rse)[,grepl("tcga",colnames(colData(rse)),fixed=TRUE)]
+  } else {
+    #Could probably just use expand_sra_attributes
+    metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
+  }
+  single_mask = sapply(metadata_df , function(x) length(table(x)) > 1) 
+  metadata_df <- metadata_df[, single_mask, drop = FALSE]
+  # Crude way to set NA to ""
+  metadata_df@listData <- lapply(metadata_df@listData, function(x) {
+    x[is.na(x)] = ""
+    x
+  })
+
+  rse@colData <- metadata_df
+  rse
+}
+
 
 pca <- function(x, space = c("rows", "columns"),
                 center = TRUE, scale = FALSE) {

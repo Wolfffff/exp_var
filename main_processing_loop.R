@@ -27,6 +27,11 @@ main_count_processing <- function(dset_name,
       metadata = metadata[ remove_cell_culture,]
       counts   =   counts[, remove_cell_culture]
   }
+  if(dset_name == "ESOPHAGUS"){
+      remove_cell_culture = metadata[["gtex.smtsd"]] == "Esophagus - Mucosa"
+      metadata = metadata[ remove_cell_culture,]
+      counts   =   counts[, remove_cell_culture]
+  }
 
   print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
@@ -69,8 +74,10 @@ main_count_processing <- function(dset_name,
   design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
   print(paste("Design matrix size:", paste(dim(design), collapse = " x ")))
 
-  pca_on_raw <- pca_plot(countdata.norm$counts, color = rep("1", ncol(countdata.norm$counts)))
-  screen_on_raw <- scree_plot(countdata.norm$counts)
+  #pca_on_raw <- pca_plot(countdata.norm$counts, color = rep("1", ncol(countdata.norm$counts)))
+  pca_on_raw <- pca_plot(countdata.norm$counts, color = metadata[["gtex.smtsd"]])
+  save_plot("pca_on_raw.png", pca_on_raw, base_height = 6)
+  #screen_on_raw <- scree_plot(countdata.norm$counts)
 
   
   # Indep cols from design matrix same as remove redundant features but post filter 
