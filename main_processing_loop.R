@@ -3,6 +3,7 @@ main_count_processing <- function(dset_name,
                                   experimental_metadata,
                                   feature_vec,
                                   assay_name) {
+  tic()                                    
   print(dset_name)
   dset <- exp_data[[dset_name]]
 
@@ -141,8 +142,8 @@ main_count_processing <- function(dset_name,
     pca_on_resids + ggtitle("Known effects"),
     pca_on_resids_noOut + ggtitle("Known effects, no outliers"),
     pca_on_resids_with_pc1 + ggtitle("Known effects and PC1")
-  )
-
+  ) 
+  time = toc()
   # print("Appending results and metadata to lists")
   list(
     name = dset_name,
@@ -154,7 +155,8 @@ main_count_processing <- function(dset_name,
     residuals_noOut = countdata_resids_noOut,
     residuals_raw = countdata_resids,
     residuals_pc1 = countdata_resids_with_pc1,
-    metadata = countdata.norm_noOut$samples
+    metadata = countdata.norm_noOut$samples,
+    time = time
   )
 }
 

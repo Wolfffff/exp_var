@@ -21,7 +21,7 @@ library(DESeq2)
 library(vsn)
 library(viridis)
 library(recount3)
-
+library(tictoc)
 
 # Set timeout to avoid failure when trying to download GTEx or other large datasets
 options(timeout = 1800)
