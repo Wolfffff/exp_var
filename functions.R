@@ -30,13 +30,14 @@ crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Ti
               "ENA.FIRST.PUBLIC", "ENA.LAST.UPDATE", "isolate", "INSDC.center.alias", 
               "INSDC.center.name", "INSDC.first.public", "INSDC.last.update", "INSDC.status", "Sample.Name", "SRA.accession", "title", "gtex.smrin", "rownames")
 
-downloadRecount3 <- function(id, human_projects = human_projects){
+downloadRecount3 <- function(id){
   # Load the project
   print(id)
   proj_info <- subset(
     human_projects,
     project == id & project_type == "data_sources"
   )
+  print(proj_info)
   # Tape to deal with acquisition issues
   rse <- create_rse(proj_info, bfc=cache)
   if (proj_info$file_source == "gtex") {
@@ -45,7 +46,7 @@ downloadRecount3 <- function(id, human_projects = human_projects){
     metadata_df <- colData(rse)[,grepl("tcga",colnames(colData(rse)),fixed=TRUE)]
   } else {
     #Could probably just use expand_sra_attributes
-    metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes)
+    metadata_df <- convert_metadata_to_df_rc3(colData(rse)$sra.sample_attributes, rse)
   }
   single_mask = sapply(metadata_df , function(x) length(table(x)) > 1) 
   metadata_df <- metadata_df[, single_mask, drop = FALSE]
@@ -206,9 +207,9 @@ map_to_cols_rc3 <- function(s) {
     repair_names()
 }
 
-convert_metadata_to_df_rc3 <- function(sample_attributes) {
+convert_metadata_to_df_rc3 <- function(sample_attributes, rse_local) {
   meta <- lapply(sample_attributes, FUN = map_to_cols_rc3)
-  names(meta) <- rownames(colData(rse))
+  names(meta) <- rownames(colData(rse_local))
   meta_df <- dplyr::bind_rows(meta, .id = "rownames")
   meta_df <- DataFrame(meta_df)
   rownames(meta_df) <- meta_df$rownames

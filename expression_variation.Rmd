@@ -28,15 +28,21 @@ feature_vec[["Healthy"]] <- c("Healthy")
 ## recount3
 
 ```{r recount3}
-# Move cache to deal with quota issues
-cache = recount3_cache(cache_dir="cache")
-human_projects <- available_projects(bfc=cache)
-
-exp_data_rc3 = list()
-# recount_cache_rm()
-for (id in experimental_metadata_rc3$id) {
-  exp_data_rc3[[id]] <- downloadRecount3(id, human_projects)
+source("./main_processing_loop.R")
+parallel <- FALSE
+if (.Platform$OS.type == "unix") {
+  parallel <- TRUE
+  library(doMC)
+  registerDoMC(64)
 }
+
+pull_data <- TRUE
+if (pull_data) {
+  exp_data_rc3 = llply(experimental_metadata_rc3$id, downloadRecount3, .parallel = parallel)
+  names(exp_data_rc3) = experimental_metadata_rc3$id
+  saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
+}
+exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
 ```
 
 ## Expression Atlas

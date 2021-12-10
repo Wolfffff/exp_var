@@ -1,29 +1,4 @@
-library(ExpressionAtlas)
-library(plyr)
-library(tidyverse)
-library(limma)
-library(sva)
-library(edgeR)
-library(ggplot2)
-library(janitor)
-library(foreach)
-library(doParallel)
-library(biomaRt)
-library(ggfortify)
-library(patchwork)
-library(cowplot)
-library(clusterProfiler)
-library(AnnotationDbi)
-library(org.Hs.eg.db)
-library(rrcov)
-library(DESeq2)
-library(vsn)
-library(viridis)
 source("functions.R")
-
-# Set timeout to avoid failure when trying to download
-# GTEx or other large datasets
-options(timeout = 1800)
 
 experimental_metadata_ea <- read_csv("expression_atlas_metadata.csv")
 # Remove the top row (GTEx) to lower the time cost when testing
@@ -40,9 +15,6 @@ feature_vec[["disease"]] <- c("normal", "control", "", NA,
                               "non inflammatory bowel disease control")
 feature_vec[["treatment"]] <- c("normal", "control", "", NA)
 
-# This is commented out as we're sticking with Expression Atlas for now.
-library(recount3)
-
 # Move cache to deal with quota issues
 cache <- recount3_cache(cache_dir = "cache")
 human_projects <- available_projects(bfc = cache)
@@ -57,7 +29,8 @@ if (.Platform$OS.type == "unix") {
 
 pull_data <- TRUE
 if (pull_data) {
-  exp_data_rc3 = llply(experimental_metadata_rc3$id, downloadRecount3, human_projects, .parallel = parallel)
+  exp_data_rc3 = llply(experimental_metadata_rc3$id, downloadRecount3, .parallel = parallel)
+  names(exp_data_rc3) = experimental_metadata_rc3$id
   saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
 }
 exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
