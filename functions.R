@@ -28,7 +28,21 @@ options(timeout = 1800)
 
 crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Title", "ENA.checklist", 
               "ENA.FIRST.PUBLIC", "ENA.LAST.UPDATE", "isolate", "INSDC.center.alias", 
-              "INSDC.center.name", "INSDC.first.public", "INSDC.last.update", "INSDC.status", "Sample.Name", "SRA.accession", "title", "gtex.smrin", "rownames")
+              "INSDC.center.name", "INSDC.first.public", "INSDC.last.update", "INSDC.status", 
+              "Sample.Name", "SRA.accession", "title", "gtex.smrin", "rownames", "tcga.xml_month_of_form_completion", 
+              "tcga.xml_year_of_form_completion", "tcga.xml_year_of_initial_pathologic_diagnosis", 
+              "tcga.xml_initial_pathologic_diagnosis_method", "tcga.cgc_case_year_of_diagnosis", 
+              "tcga.gdc_metadata_files.file_size.analysis", "tcga.xml_breast_carcinoma_surgical_procedure_name", 
+              "tcga.xml_day_of_form_completion", "tcga.cgc_sample_shortest_dimension", "tcga.xml_stage_event_system_version",
+              "tcga.gdc_cases.samples.portions.analytes.concentration", "tcga.gdc_cases.samples.portions.analytes.aliquots.concentration")
+crap_cols = c(crap_cols, grep("^tcga..*_percent", names(metadata), value = TRUE))
+crap_cols = c(crap_cols, grep("^tcga..*analytes", names(metadata), value = TRUE))
+crap_cols = c(crap_cols, grep("^tcga..*xml_has_", names(metadata), value = TRUE))
+crap_cols = c(crap_cols, grep("^tcga..*_dimension$", names(metadata), value = TRUE))
+crap_cols = c(crap_cols, grep("^tcga..*tumor", names(metadata), value = TRUE))
+crap_cols = c(crap_cols, grep("^tcga..*cancer", names(metadata), value = TRUE))
+crap_cols = c(crap_cols, grep("^tcga..*pathologic", names(metadata), value = TRUE))
+crap_cols = c(crap_cols, grep("^tcga..*_collection_indicator$", names(metadata), value = TRUE))
 
 downloadRecount3 <- function(id){
   # Load the project

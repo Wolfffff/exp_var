@@ -25,7 +25,6 @@ TCGA data for tissue: PRAD,PRAD,,,case-control
 TCGA data for tissue: LUSC,LUSC,,,case-control
 TCGA data for tissue: HNSC,HNSC,,,case-control
 TCGA data for tissue: COAD,COAD,,,case-control
-TCGA data for tissue: LGG,LGG,,,case-control
 TCGA data for tissue: SKCM,SKCM,,,case-control
 TCGA data for tissue: STAD,STAD,,,case-control
 TCGA data for tissue: BLCA,BLCA,,,case-control
