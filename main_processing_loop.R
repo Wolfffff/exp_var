@@ -38,7 +38,7 @@ main_count_processing <- function(dset_name,
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
 
   filtered_data <- make_filtered_data(counts, metadata, feature_vec)
-  metadata <- filtered_data$metadata
+  metadata <- select_meta(filtered_data$metadata)
   counts <- filtered_data$counts
   n_samples <- dim(metadata)[1]
   metadata$sample_id <- rownames(metadata)

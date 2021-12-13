@@ -12,22 +12,15 @@ experimental_metadata_ea <- experimental_metadata_ea[-1,] # Remove the top row (
 experimental_metadata_rc3 <- read_csv("recount3_metadata.csv")
 
 plots_dir <- "data/"
-
-# Setup filters for removing samples accordingly to the metadata
-feature_vec <- list()
-feature_vec[["disease"]] <- c("normal", "control", "", NA, 
-                              "non inflammatory bowel disease control")
-feature_vec[["treatment"]] <- c("normal", "control", "", NA)
-feature_vec[["tcga.cgc_sample_sample_type"]] <- c("Solid Tissue Normal")
-feature_vec[["diagnosis"]] <- c("Control")
-feature_vec[["Healthy"]] <- c("Healthy")
-
-
 ```
 
 ## recount3
 
 ```{r recount3}
+# Move cache to deal with quota issues
+cache <- recount3_cache(cache_dir = "cache")
+human_projects <- available_projects(bfc = cache)
+
 source("./main_processing_loop.R")
 parallel <- FALSE
 if (.Platform$OS.type == "unix") {
@@ -40,9 +33,9 @@ pull_data <- TRUE
 if (pull_data) {
   exp_data_rc3 = llply(experimental_metadata_rc3$id, downloadRecount3, .parallel = parallel)
   names(exp_data_rc3) = experimental_metadata_rc3$id
-  saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
+  #saveRDS(exp_data_rc3, file = "cache/recount3_data.RDS")
 }
-exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
+#exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
 ```
 
 ## Expression Atlas
