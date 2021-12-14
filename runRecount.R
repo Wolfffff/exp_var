@@ -37,14 +37,14 @@ if (pull_data) {
 }
 #exp_data_rc3 <- readRDS("cache/recount3_data.RDS")
 
-results_list_rc3 <- llply(names(exp_data_rc3),
+results_list_rc3 <- llply(names(exp_data_rc3)[18:31],
                       main_loop,
                       exp_data = exp_data_rc3,
                       experimental_metadata = experimental_metadata_rc3,
                       feature_vec = feature_vec,
                       assay_name = "raw_counts",
                       .parallel = parallel)
-names(results_list_rc3) <- names(exp_data_rc3)
+names(results_list_rc3) <- names(exp_data_rc3)[18:31]
 
 # re_run = "ESOPHAGUS"
 # results_list_rc3[[re_run]] <- main_loop(dset_name = re_run, exp_data = exp_data_rc3,
