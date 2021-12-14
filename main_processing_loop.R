@@ -38,27 +38,20 @@ main_count_processing <- function(dset_name,
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
 
   filtered_data <- make_filtered_data(counts, metadata, feature_vec)
-  metadata <- select_meta(filtered_data$metadata)
+  metadata <- filtered_data$metadata
   counts <- filtered_data$counts
   n_samples <- dim(metadata)[1]
   metadata$sample_id <- rownames(metadata)
 
   print("Normalizing and estimating mean-variance weights...")
   countdata.list <- DGEList(counts = counts, samples = metadata, genes = rownames(dset))
-  rep_names = c("technical_replicate_group", "wells.replicate")
+  rep_names = c("technical_replicate_group", "wells.replicate", "individual")
   if (any(names(metadata) %in% rep_names)) {
     print("Summing technical replicates...")
     rep_col = names(metadata)[names(metadata) %in% rep_names]
     countdata.list <- sumTechReps(countdata.list, metadata[[rep_col]])
   }
-  countdata.list$samples <- remove_redundant_features(countdata.list$samples)
 
-  # Removing columns with a crazy number of levels that mess everything up.
-  # (this is why we have random effects by the way)
-  countdata.list$samples <- remove_large_factors(
-    countdata.list$samples,
-    columns_to_ignore
-  )
   print("Calculating normalization factors...")
   countdata.norm <- calcNormFactors(countdata.list)
 
@@ -72,6 +65,14 @@ main_count_processing <- function(dset_name,
   countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[, values_count > 1])]
 
   print("Making design matrix...")
+  countdata.norm$samples  <- remove_redundant_features(countdata.norm$samples )
+  # Removing columns with a crazy number of levels that mess everything up.
+  # (this is why we have random effects by the way)
+  countdata.norm$samples  <- remove_large_factors(
+    countdata.norm$samples,
+    columns_to_ignore
+  )
+  countdata.norm$samples <- select_meta(countdata.norm$samples)
   design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
   print(paste("Design matrix size:", paste(dim(design), collapse = " x ")))
 
@@ -80,14 +81,10 @@ main_count_processing <- function(dset_name,
   save_plot("pca_on_raw.png", pca_on_raw, base_height = 6)
   #screen_on_raw <- scree_plot(countdata.norm$counts)
 
-  
-  # Indep cols from design matrix same as remove redundant features but post filter 
-  # I'll probably just replace the remove_redundant_features function with this one
-  indep_design = design[, qr(design)$pivot[seq_len(qr(design)$rank)]]
-  print(paste("Independent design matrix size:", paste(dim(indep_design), collapse = " x ")))
+  print(paste("Independent design matrix size:", paste(dim(design), collapse = " x ")))
 
   # Switch to DESeq2
-  countdata_resids <- DESeq2_vst_lm(countdata.norm, design = indep_design, label = dset_name)#removeBatchEffect(countdata.voom, covariates = design)
+  countdata_resids <- DESeq2_vst_lm(countdata.norm, design = design, label = dset_name)#removeBatchEffect(countdata.voom, covariates = design)
   
   jpeg(paste0(plots_dir, dset_name, "_meanSd_resids.jpg"))
   meanSdPlot(countdata_resids)
@@ -108,7 +105,7 @@ main_count_processing <- function(dset_name,
   rpca_resid <- PcaGrid(t(countdata_resids), 20, crit.pca.distances = 0.99)
   countdata.norm_noOut <- countdata.norm
   countdata.norm_noOut$counts <- countdata.norm_noOut$counts[, rpca_resid@flag]
-  countdata.norm_noOut$samples <- countdata.norm_noOut$samples[rpca_resid@flag, ]
+  countdata.norm_noOut$samples <- countdata.norm_noOut$samples[rpca_resid@flag, ,drop = FALSE]
 
   # PCA plot with Batch effects (this plot happens here to make use of the outlier tags from the robust PCA)
   pca_on_resids <- pca_plot(countdata_resids, color = !rpca_resid@flag)

@@ -205,7 +205,7 @@ pca_plot = function(resids, color = NULL){
     labs(x = paste0("PC1 (", round(pca_resid$pve[1]*100, 2), "%)"),
          y = paste0("PC2 (", round(pca_resid$pve[2]*100, 2), "%)")) +
     theme_cowplot() + 
-    scale_color_manual(values = c("black", viridis(length(unique(color))-1))) +
+    scale_color_manual(values = c("black",  "tomato3", viridis(length(unique(color))-2))) +
     theme(legend.position = "none")
   plot
 }
