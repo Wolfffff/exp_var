@@ -196,6 +196,7 @@ pca_plot = function(resids, color = NULL){
   } else {
     results = data.frame(results, outlier = color)
   }
+  colors = c("black",  "tomato3", viridis(length(unique(color))))
   plot <-  ggplot(results, aes(PC1, PC2, color = outlier)) + 
     geom_point() + 
     stat_ellipse(level = 0.99, color = "black") + 
@@ -205,7 +206,7 @@ pca_plot = function(resids, color = NULL){
     labs(x = paste0("PC1 (", round(pca_resid$pve[1]*100, 2), "%)"),
          y = paste0("PC2 (", round(pca_resid$pve[2]*100, 2), "%)")) +
     theme_cowplot() + 
-    scale_color_manual(values = c("black",  "tomato3", viridis(length(unique(color))-2))) +
+    scale_color_manual(values = colors[1:length(unique(color))]) +
     theme(legend.position = "none")
   plot
 }
