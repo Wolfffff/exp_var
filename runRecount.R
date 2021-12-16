@@ -46,11 +46,11 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                       .parallel = parallel)
 names(results_list_rc3) <- names(exp_data_rc3)
 
-re_run = "SRP187978"
-results_list_rc3[[re_run]] <- main_loop(dset_name = re_run, exp_data = exp_data_rc3,
-                      experimental_metadata = experimental_metadata_rc3,
-                      feature_vec = feature_vec,
-                      assay_name = "raw_counts")
+# re_run = "SRP187978"
+# results_list_rc3[[re_run]] <- main_loop(dset_name = re_run, exp_data = exp_data_rc3,
+#                       experimental_metadata = experimental_metadata_rc3,
+#                       feature_vec = feature_vec,
+#                       assay_name = "raw_counts")
 
 #save(results_list_rc3, file = "Rdatas/results_list_rc3.RData")
 #load("Rdatas/results_list_rc3.RData")
