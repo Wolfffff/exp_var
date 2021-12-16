@@ -46,7 +46,8 @@ results_list_rc3 <- llply(names(exp_data_rc3),
                       .parallel = parallel)
 names(results_list_rc3) <- names(exp_data_rc3)
 
-# re_run = "SRP187978"
+names(results_list_rc3)[(is.na(results_list_rc3))]
+# re_run = "BLCA"
 # results_list_rc3[[re_run]] <- main_loop(dset_name = re_run, exp_data = exp_data_rc3,
 #                       experimental_metadata = experimental_metadata_rc3,
 #                       feature_vec = feature_vec,

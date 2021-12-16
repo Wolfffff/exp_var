@@ -261,9 +261,9 @@ DESeq2_vst_lm <- function(countdata_norm, design=NULL, label=NULL){
   if(is.null(design)){
       design = matrix(1, nrow = ncol(counts), ncol = 1)
   }
-
    # Switch to DESeq2
-  dds  <- DESeqDataSetFromMatrix(countData = counts, colData = metadata, design = design)
+  dds  <- DESeqDataSetFromMatrix(countData = counts, 
+                                 colData = metadata, design = design)
   # Use vst wrapper for varianceStabilizingTransformation
   vsd <- vst(dds, blind = FALSE)
   if(!is.null(label)){

@@ -34,6 +34,7 @@ main_count_processing <- function(dset_name,
       counts   =   counts[, remove_cell_culture]
   }
 
+
   print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
 
@@ -81,9 +82,18 @@ main_count_processing <- function(dset_name,
   save_plot("pca_on_raw.png", pca_on_raw, base_height = 6)
   #screen_on_raw <- scree_plot(countdata.norm$counts)
 
-  print(paste("Independent design matrix size:", paste(dim(design), collapse = " x ")))
-
   # Switch to DESeq2
+  if(dset_name == "BLOOD"){
+      bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
+      remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1:3])
+      countdata.norm  =   countdata.norm[-remove_genes,]
+  }
+  if(dset_name %in% c("COLON", "STOMACH")){
+      bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
+      remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1])
+      countdata.norm  =   countdata.norm[-remove_genes,]
+  }
+  print(paste0("Filtered count dimensions: ", dim(countdata.norm$counts)[1], " x ", dim(countdata.norm$counts)[2]))
   countdata_resids <- DESeq2_vst_lm(countdata.norm, design = design, label = dset_name)#removeBatchEffect(countdata.voom, covariates = design)
   
   jpeg(paste0(plots_dir, dset_name, "_meanSd_resids.jpg"))
@@ -102,8 +112,9 @@ main_count_processing <- function(dset_name,
 
 
   # Dropping outlier
-  rpca_resid <- PcaGrid(t(countdata_resids), 20, crit.pca.distances = 0.99)
   countdata.norm_noOut <- countdata.norm
+  
+  rpca_resid <- PcaGrid(t(countdata_resids), 20, crit.pca.distances = 0.99)
   countdata.norm_noOut$counts <- countdata.norm_noOut$counts[, rpca_resid@flag]
   countdata.norm_noOut$samples <- countdata.norm_noOut$samples[rpca_resid@flag, ,drop = FALSE]
 

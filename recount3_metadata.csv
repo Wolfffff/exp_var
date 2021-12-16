@@ -26,7 +26,6 @@ TCGA data for tissue: LUSC,LUSC,,,case-control
 TCGA data for tissue: HNSC,HNSC,,,case-control
 TCGA data for tissue: COAD,COAD,,,case-control
 TCGA data for tissue: STAD,STAD,,,case-control
-TCGA data for tissue: BLCA,BLCA,,,case-control
 TCGA data for tissue: LIHC,LIHC,,,case-control
 TCGA data for tissue: KIRP,KIRP,,,case-control
 Genetic and Epigenetic Fine Mapping of Complex Trait Associated Loci in the Human Liver,SRP187978,,,control
