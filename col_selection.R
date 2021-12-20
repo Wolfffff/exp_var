@@ -18,10 +18,8 @@ filter_meta = function(metadata){
     metadata
 }
 
-
-samples = ldply(names(exp_data_rc3)[18:30], function(x) {print(x); nrow(filter_meta(colData(exp_data_rc3[[x]])))})
-samples$dataset = names(exp_data_rc3)[18:30]
-metadata <- colData(exp_data_rc3[["KIRC"]])
+metadata <- colData(exp_data_rc3[["ERP020977"]])
+nrow(metadata)
 sel_metada = select_meta(filter_meta(metadata))
 nrow(sel_metada)
 
@@ -38,7 +36,7 @@ llply(sel_metada, function(x) table(x))
 #sapply(metadata[,mask], function(x) length(unique(x)))
 nrow(sel_metada)
 table(sel_metada)
-col = metadata[["tcga.cgc_sample_sample_type"]]
+col = metadata[["sampling.date"]]
 names(dplyr::select(as.data.frame(metadata), contains("type")))
 sum(col == "")/length(col)
 length(col)
