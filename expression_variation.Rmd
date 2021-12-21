@@ -155,3 +155,55 @@ GO_enrichment@result %>% as_tibble %>%
     arrange(p.adjust) %>%
     dplyr::select(ID, Description, Count, p.adjust) 
 ```
+
+```{r}
+variance_df_list = vector("list", length = length(results_list_rc3))
+names(variance_df_list) = names(results_list_rc3)
+for (dset_name in names(results_list_rc3)) {
+  print(dset_name)
+  exprDf = results_list_rc3[[dset_name]]
+  gene_vars = rowVars(exprDf$residuals_noOut)
+  variance_df_list[[dset_name]] = data.frame(
+      Genes = names(gene_vars),
+      vars = gene_vars)
+  }
+  variance_df = reduce(variance_df_list, inner_join, by = "Genes")
+  colnames(variance_df)[-1] = names(results_list_rc3)
+```
+```{r}
+mean_df_list = vector("list", length = length(results_list_rc3))
+names(mean_df_list) = names(results_list_rc3)
+for (dset_name in names(results_list_rc3)) {
+  print(dset_name)
+  exprDf = results_list_rc3[[dset_name]]
+  gene_vars = rowMeans(exprDf$residuals_noOut)
+  mean_df_list[[dset_name]] = data.frame(
+      Genes = names(gene_vars),
+      vars = gene_vars)
+  }
+  mean_df = reduce(mean_df_list, inner_join, by = "Genes")
+  colnames(mean_df)[-1] = names(results_list_rc3)
+```
+```{r}
+library(reshape2)
+library(ggplot2)
+
+xymelt <- melt(mean_df, id.vars = "Genes")
+library(RColorBrewer)
+n <- ncol(mean_df)
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
+ggplot(xymelt, aes(x = value, colour = variable)) +
+  geom_density(show_guide=FALSE) + 
+  stat_density(geom="line",position="identity") +
+  scale_colour_manual(values=col_vector) +
+  theme_classic() +
+  labs(y="Density", 
+       x="Residual", 
+       title="Density plot of post correction expression data",
+       colour="Study")
+  
+ggsave(width=10,height=5,dpi=300,"mean_dist.png")
+
+```
