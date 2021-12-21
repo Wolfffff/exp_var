@@ -78,7 +78,11 @@ colnames(variance_df)[-1] = names(results_list_rc3)
 
 pak::pkg_install("corrplot")
 library(corrplot)
-var_cor = cor(variance_df[,-1], method = "s")
-png("data/var_corr_plot_rc3.png", height = 1080, width = 1080)
+var_cor = cor(variance_df[,-1], method = "p")
+png("data/var_corr_pearson_plot_rc3.png", height = 1080, width = 1080)
 corrplot.mixed(var_cor, upper = "ellipse")
+dev.off()
+
+png("data/test_plot.png", height = 1080, width = 1080)
+plot(variance_df$SRP192714, variance_df$TESTIS, pch = 19)
 dev.off()
