@@ -7,4 +7,6 @@
 exp_var.Rproj
 cache
 out/
+Rdatas/
 .nfs000*
+*.RDS
