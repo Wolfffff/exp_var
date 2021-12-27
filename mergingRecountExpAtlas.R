@@ -72,3 +72,7 @@ mean_var = list(mean = list(ea = mean_df_ea, rc3 = mean_df_rc3,
                 var  = list(ea = variance_df_ea, rc3 = variance_df_rc3, 
                             merged = merged_variance_df))
 saveRDS(mean_var, file = "Rdatas/mean_variance.RDS")
+
+png("test.png", height = 1080, width = 1080)
+plot(merged_variance_df[,5:6], pch = 19)
+dev.off()
