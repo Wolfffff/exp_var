@@ -216,13 +216,9 @@ library(reshape2)
 
 mean_var <- readRDS("./Rdatas/mean_variance.RDS")
 variance_df_long <- melt(mean_var$var$merged, id.vars = "Genes", variable.name = "study", value.name = "variance")
-top_genes = variance_df_long %>% group_by(study) %>% slice_max(order_by = variance, n = 100)
+top_5q = as.integer((length(unique(variance_df_long$Genes))/100) * 5)
+top_genes = variance_df_long %>% group_by(study) %>% slice_max(order_by = variance, n = top_5q)
 top_genes_df = as.data.frame(table(top_genes$Genes))
 top_genes_df$Freq <- top_genes_df$Freq / length(unique(top_genes$study))
-ggplot(top_genes_df,aes(x=Freq)) + geom_histogram()
-ggsave(width=10,height=5,dpi=300,"top_overlap.png")
-
-top_genes_df[order(top_genes_df$Freq, decreasing = TRUE)[1:10],]
-
-
+top_genes_df = top_genes_df[order(top_genes_df$Freq,decreasing = TRUE),]
 ```
