@@ -21,4 +21,13 @@ names(gene_var_rank) = (mean_var$var$merged[,1])
 saveRDS(gene_var_rank, file = "./Rdatas/gene_var_rank.RDS")
 data.frame(gene = names(gene_var_rank), rank = gene_var_rank, row.names = NULL) %>%
     write_csv("Rdatas/gene_var_rank.csv")
-which(gene_var_rank == 2)
+which(gene_var_rank == 1)
+
+library(evolqg)
+library(yamdar)
+
+groups = c(rep("EA", 8), rep("gTEX", 17),  rep("tcga", 12), rep("misc", 4))
+names(groups) =  colnames(var_cor)
+toHypotMatrix(groups)
+
+TestModularity(var_cor, toHypotMatrix(groups), permutations = 10000)

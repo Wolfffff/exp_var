@@ -14,6 +14,7 @@ main_count_processing <- function(dset_name,
     },
     error = function(e) {
       columns_to_ignore <- c("")
+      columns_to_ignore
     }
   )
   columns_to_ignore = c(columns_to_ignore, crap_cols)
@@ -33,7 +34,6 @@ main_count_processing <- function(dset_name,
       metadata = metadata[ remove_cell_culture,]
       counts   =   counts[, remove_cell_culture]
   }
-
 
   print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))

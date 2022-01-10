@@ -287,8 +287,8 @@ cpm_lm <- function(countdata_norm, design=NULL){
   if(is.null(design)){
       design = matrix(1, nrow = ncol(counts), ncol = 1)
   }
-  cpm_counts  <- cpm(countdata_norm, log = TRUE, prior.count = 5)
-  countdata_resids <- removeBatchEffect(cpm_counts, covariates = design)#removeBatchEffect(countdata.voom, covariates = design)
+  cpm_counts  <- cpm(counts, log = TRUE, prior.count = 5)
+  countdata_resids <- removeBatchEffect(cpm_counts, covariates = design)
   rownames(countdata_resids) <- countdata_norm$genes[, 1]
   return(countdata_resids)
 }
