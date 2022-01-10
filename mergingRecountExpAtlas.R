@@ -60,13 +60,6 @@ colnames(variance_df_ea)[-1] = names(results_list_ea)
 merged_variance_df = inner_join(variance_df_ea, variance_df_rc3, by = "Genes")
 merged_mean_df = inner_join(mean_df_ea, mean_df_rc3, by = "Genes")
 
-pak::pkg_install("corrplot")
-library(corrplot)
-var_cor = cor(merged_variance_df[,-1], method = "s")
-png("data/var_corr_plot.png", height = 2080, width = 2080)
-corrplot.mixed(var_cor, upper = "ellipse")
-dev.off()
-
 mean_var = list(mean = list(ea = mean_df_ea, rc3 = mean_df_rc3, 
                             merged = merged_mean_df),
                 var  = list(ea = variance_df_ea, rc3 = variance_df_rc3, 
