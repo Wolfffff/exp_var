@@ -59,6 +59,8 @@ downloadRecount3 <- function(id){
   print(proj_info)
   # Tape to deal with acquisition issues
   cache_path = paste("cache", id, sep = "/")
+  if(!dir.exists(cache_path))
+    dir.create(cache_path, showWarnings = FALSE)
   local_cache <- recount3_cache(cache_dir = cache_path)
   rse <- create_rse(proj_info, bfc=local_cache)
   if (proj_info$file_source == "gtex") {

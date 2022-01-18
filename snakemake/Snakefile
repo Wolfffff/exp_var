@@ -1,0 +1,26 @@
+import pandas as pd
+
+configfile: "config.yaml"
+
+input_table = config["metadata"]["recount3"]
+IDs = pd.read_csv(input_table).loc[:,"id"].tolist()
+
+datasource = list(config["metadata"].keys())
+print(datasource)
+
+
+rule all:
+    input:
+        expand("Rdatas/{ids}.rds", ids=IDs, ds=datasource)
+
+rule download:
+    resources: 
+        tmpdir="/scratch/tmp"
+    params:
+        id=IDs
+    log:
+        "logs/download/{id}.txt"
+    output:
+        "Rdatas/{id}.rds"
+    script:
+        "scripts/downloadRecount3.R"
