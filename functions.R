@@ -58,7 +58,9 @@ downloadRecount3 <- function(id){
   )
   print(proj_info)
   # Tape to deal with acquisition issues
-  rse <- create_rse(proj_info, bfc=cache)
+  cache_path = paste("cache", id, sep = "/")
+  local_cache <- recount3_cache(cache_dir = cache_path)
+  rse <- create_rse(proj_info, bfc=local_cache)
   if (proj_info$file_source == "gtex") {
     metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
   } else if(proj_info$file_source == "tcga") {
@@ -69,6 +71,7 @@ downloadRecount3 <- function(id){
   }
   single_mask = sapply(metadata_df , function(x) length(table(x)) > 1) 
   metadata_df <- metadata_df[, single_mask, drop = FALSE]
+  
   # Crude way to set NA to ""
   metadata_df@listData <- lapply(metadata_df@listData, function(x) {
     x[is.na(x)] = ""

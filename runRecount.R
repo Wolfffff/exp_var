@@ -17,7 +17,7 @@ feature_vec[["treatment"]] <- c("normal", "control", "", NA)
 
 # Move cache to deal with quota issues
 cache <- recount3_cache(cache_dir = "cache")
-human_projects <- available_projects(bfc = cache)
+human_projects <- available_projects(bfc=cache)
 
 source("./main_processing_loop.R")
 parallel <- FALSE

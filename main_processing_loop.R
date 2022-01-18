@@ -24,16 +24,18 @@ main_count_processing <- function(dset_name,
 
   counts <- assays(dset)[[assay_name]]
 
-  if(dset_name == "SKIN"){
-      remove_cell_culture = metadata[["gtex.smtsd"]] != "Cells - Cultured fibroblasts"
-      metadata = metadata[ remove_cell_culture,]
-      counts   =   counts[, remove_cell_culture]
+  switch(dset_name,
+  SKIN = {
+        remove_cell_culture = metadata[["gtex.smtsd"]] != "Cells - Cultured fibroblasts"
+        metadata = metadata[ remove_cell_culture,]
+        counts   =   counts[, remove_cell_culture]
+  },
+  ESOPHAGUS = {
+        remove_cell_culture = metadata[["gtex.smtsd"]] == "Esophagus - Mucosa"
+        metadata = metadata[ remove_cell_culture,]
+        counts   =   counts[, remove_cell_culture]
   }
-  if(dset_name == "ESOPHAGUS"){
-      remove_cell_culture = metadata[["gtex.smtsd"]] == "Esophagus - Mucosa"
-      metadata = metadata[ remove_cell_culture,]
-      counts   =   counts[, remove_cell_culture]
-  }
+  )
 
   print(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
   print(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
@@ -83,11 +85,14 @@ main_count_processing <- function(dset_name,
   #screen_on_raw <- scree_plot(countdata.norm$counts)
 
   # Switch to DESeq2
+
+  # Remove top 3 genes from BLOOD
   if(dset_name == "BLOOD"){
       bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
       remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1:3])
       countdata.norm  =   countdata.norm[-remove_genes,]
   }
+   # Remove top 3 genes from COLON and STOMACH
   if(dset_name %in% c("COLON", "STOMACH")){
       bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
       remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1])
@@ -141,7 +146,7 @@ main_count_processing <- function(dset_name,
 
   # PCA plot with Batch effects and PC1
   pca_on_resids_with_pc1 <- pca_plot(countdata_resids_with_pc1, color = rep("1", ncol(countdata_resids_with_pc1)))
-
+  
   # print("Writing figures")
 
   plt <- plot_grid(
@@ -164,6 +169,7 @@ main_count_processing <- function(dset_name,
     residuals_raw = countdata_resids,
     residuals_pc1 = countdata_resids_with_pc1,
     metadata = countdata.norm_noOut$samples,
+    design = design_with_pc1,
     time = time
   )
 }
