@@ -298,3 +298,18 @@ cpm_lm <- function(countdata_norm, design=NULL){
   rownames(countdata_resids) <- countdata_norm$genes[, 1]
   return(countdata_resids)
 }
+
+calculate_row_wise_metric <- function(results_list,f){
+  summarized_list = vector("list", length = length(results_list))
+  names(summarized_list) = names(results_list)
+  for (dset_name in names(results_list)) {
+    exprDf = results_list[[dset_name]]
+    gene_vars = f(exprDf$residuals_noOut)
+    summarized_list[[dset_name]] = data.frame(
+        Genes = row.names(exprDf$residuals_noOut),
+        var = gene_vars)
+    }
+  summarized_df = purrr::reduce(summarized_list, inner_join, by = "Genes")
+  colnames(summarized_df)[-1] = names(results_list)
+  return(summarized_df)
+}
