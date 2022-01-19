@@ -23,7 +23,6 @@ pca_on_raw <- pca_plot(countdata.norm$counts, color = rep("1", ncol(countdata.no
 
 # Switch to DESeq2
 
-# Remove top 3 genes from BLOOD
 if(dset_name == "LIVER"){
     bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
     remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1])

@@ -235,8 +235,8 @@ make_design_matrix = function(metadata, columns_to_ignore){
   cols_to_control = get_control_cols(metadata, columns_to_ignore)
   if(length(cols_to_control) == 0) return(model.matrix(~1,data = metadata))
   b <- paste0(" ", cols_to_control, collapse=" +")
-  model <- as.formula(paste0("~ 1 +",b))
-  print(paste0("~ 1 +",b))
+  model <- as.formula(paste0("~ 0 +",b))
+  print(paste0("~ 0 +",b))
   design <- model.matrix(model, data = metadata)
   design = design[, qr(design)$pivot[seq_len(qr(design)$rank)], drop = FALSE]
 }

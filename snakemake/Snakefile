@@ -33,7 +33,8 @@ rule preProcess:
         id=IDs,
         assay_name="raw_counts"
     log:
-        "logs/preProcess/{id}.txt"
+        log="logs/preProcess/{id}.txt",
+        env="Rdatas/env/preProcess/{id}.Rdata"
     input:
         data="Rdatas/raw/{id}.rds", 
         metadata=config["metadata"]["recount3"]
@@ -49,7 +50,7 @@ rule makeResiduals:
         id=IDs
     log:
         log="logs/makeResiduals/{id}.txt",
-        env="Rdatas/env/makeResiduals_{id}.Rdata"
+        env="Rdatas/env/makeResiduals/{id}.Rdata"
     input:
         data="Rdatas/preProcess/{id}.rds"
     output:
