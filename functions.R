@@ -260,7 +260,7 @@ convert_metadata_to_df_rc3 <- function(sample_attributes, rse_local) {
   return(meta_df)
 }
 
-DESeq2_vst_lm <- function(countdata_norm, design=NULL, label=NULL){
+DESeq2_vst_lm <- function(countdata_norm, design=NULL, label=NULL, plot_file=NULL){
   counts <- countdata_norm$counts
   metadata <- countdata_norm$samples
   if(is.null(design)){
@@ -272,8 +272,9 @@ DESeq2_vst_lm <- function(countdata_norm, design=NULL, label=NULL){
   # Use vst wrapper for varianceStabilizingTransformation
   vsd <- vst(dds, blind = FALSE)
   if(!is.null(label)){
-    jpeg(paste0(plots_dir, label, "_meanSd_vst.jpg"))
-    meanSdPlot(assay(vsd))
+    if(is.null(plot_file)) plot_file = paste0(plots_dir, label, "_meanSd_vst.png")
+    png(plot_file)
+      meanSdPlot(assay(vsd))
     dev.off()
   }
   countdata_resids <- removeBatchEffect(assay(vsd), covariates = design)#removeBatchEffect(countdata.voom, covariates = design)

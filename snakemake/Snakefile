@@ -10,7 +10,7 @@ print(datasource)
 
 rule all:
     input:
-        expand("../Rdatas/residuals/{ids}.rds", ids=IDs, ds=datasource)
+        expand("Rdatas/residuals/{ids}.rds", ids=IDs, ds=datasource)
 
 rule download:
     resources: 
@@ -52,9 +52,12 @@ rule makeResiduals:
     input:
         data="Rdatas/preProcess/{id}.rds"
     output:
-        residuals="../Rdatas/residuals/{id}.rds",
+        residuals="Rdatas/residuals/{id}.rds",
         pca_panel="../data/plots/PCA/pca_panel_{id}.png",
         mean_var="../data/plots/meanVar/meanVar_{id}.png",
-        all_plots="../Rdatas/plots/all_pca_{id}.rds"
+        mean_var_resid="../data/plots/meanVar/meanVar_{id}_residual.png",
+        all_plots="Rdatas/plots/all_pca_{id}.rds",
+        env="Rdatas/env/makeResiduals_{id}.Rdata"
+
     script:
         "scripts/makeResiduals.R"

@@ -1,3 +1,5 @@
+save.image(snakemake@output[["env"]])
+
 my_logfile = snakemake@log[[1]]
 snakemake@source("logger.R")
 log4r_info("Starting.")
@@ -23,9 +25,12 @@ pca_on_raw <- pca_plot(countdata.norm$counts, color = rep("1", ncol(countdata.no
 
 print(paste0("Filtered count dimensions: ", 
              dim(countdata.norm$counts)[1], " x ", dim(countdata.norm$counts)[2]))
-countdata_resids <- DESeq2_vst_lm(countdata.norm, design = design, label = dset_name)#removeBatchEffect(countdata.voom, covariates = design)
+countdata_resids <- DESeq2_vst_lm(countdata.norm, 
+                                  design = design, 
+                                  label = dset_name, 
+                                  plot_file = snakemake@output[["mean_var"]])
 
-png(snakemake@output[["mean_var"]])
+png(snakemake@output[["mean_var_resid"]])
     meanSdPlot(countdata_resids)
 dev.off()
 
