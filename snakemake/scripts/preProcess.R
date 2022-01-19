@@ -99,6 +99,12 @@ if(dset_name == "BLOOD"){
     remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1:3])
     countdata.norm  =   countdata.norm[-remove_genes,]
 }
+# Remove top 2 genes from LIVER
+if(dset_name == "LIVER"){
+    bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
+    remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1:2])
+    countdata.norm  =   countdata.norm[-remove_genes,]
+}
 # Remove top 1 genes from COLON and STOMACH
 if(dset_name %in% c("COLON", "STOMACH")){
     bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
