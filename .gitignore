@@ -10,3 +10,4 @@ out/
 Rdatas/
 .nfs000*
 *.RDS
+snakemake/Rplots.pdf
