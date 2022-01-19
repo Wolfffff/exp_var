@@ -4,3 +4,5 @@ metadata:
     "metadata/expression_atlas_metadata.csv"
   recount3:
     "metadata/recount3_metadata.csv"
+assay_name:
+    "raw_counts"

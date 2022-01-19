@@ -7,7 +7,7 @@ source("../functions.R")
 
 # Load metadata from recount3
 log4r_info("Reading metadata")
-experimental_metadata_rc3 <- read_csv("metadata/recount3_metadata.csv")
+experimental_metadata_rc3 <- read_csv(snakemake@input[["metadata"]])
 
 log4r_info("Downloading cache")
 human_projects <- available_projects(bfc = cache)

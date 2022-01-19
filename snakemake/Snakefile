@@ -11,7 +11,7 @@ print(datasource)
 
 rule all:
     input:
-        expand("Rdatas/{ids}.rds", ids=IDs, ds=datasource)
+        expand("../data/preProcess/{ids}.rds", ids=IDs, ds=datasource)
 
 rule download:
     resources: 
@@ -20,7 +20,25 @@ rule download:
         id=IDs
     log:
         "logs/download/{id}.txt"
+    input:
+        metadata=config["metadata"]["recount3"]
     output:
         "Rdatas/{id}.rds"
     script:
         "scripts/downloadRecount3.R"
+
+rule preProcess:
+    resources: 
+        tmpdir="/scratch/tmp"
+    params:
+        id=IDs,
+        assay_name="raw_counts"
+    log:
+        "logs/preProcess/{id}.txt"
+    input:
+        data="Rdatas/{id}.rds", 
+        metadata=config["metadata"]["recount3"]
+    output:
+        "../data/preProcess/{id}.rds"
+    script:
+        "scripts/preProcess.R"
