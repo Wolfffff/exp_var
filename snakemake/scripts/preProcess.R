@@ -5,7 +5,6 @@ print = log4r_info
 log4r_info("Loading packages") 
 source("../functions.R")
 
-# Load metadata from recount3
 log4r_info("Reading metadata")
 experimental_metadata <- read_csv(snakemake@input[["metadata"]])
 
@@ -83,11 +82,12 @@ countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[
 
 log4r_info("Making design matrix...")
 countdata.norm$samples  <- remove_redundant_features(countdata.norm$samples )
+
 # Removing columns with a crazy number of levels that mess everything up.
 # (this is why we have random effects by the way)
 countdata.norm$samples  <- remove_large_factors(
-countdata.norm$samples,
-columns_to_ignore
+    countdata.norm$samples,
+    columns_to_ignore
 )
 countdata.norm$samples <- select_meta(countdata.norm$samples)
 
