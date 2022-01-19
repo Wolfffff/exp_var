@@ -8,10 +8,9 @@ IDs = pd.read_csv(input_table).loc[:,"id"].tolist()
 datasource = list(config["metadata"].keys())
 print(datasource)
 
-
 rule all:
     input:
-        expand("../data/preProcess/{ids}.rds", ids=IDs, ds=datasource)
+        expand("../Rdatas/residuals/{ids}.rds", ids=IDs, ds=datasource)
 
 rule download:
     resources: 
@@ -23,7 +22,7 @@ rule download:
     input:
         metadata=config["metadata"]["recount3"]
     output:
-        "Rdatas/{id}.rds"
+        "Rdatas/raw/{id}.rds"
     script:
         "scripts/downloadRecount3.R"
 
@@ -36,9 +35,26 @@ rule preProcess:
     log:
         "logs/preProcess/{id}.txt"
     input:
-        data="Rdatas/{id}.rds", 
+        data="Rdatas/raw/{id}.rds", 
         metadata=config["metadata"]["recount3"]
     output:
-        "../data/preProcess/{id}.rds"
+        "Rdatas/preProcess/{id}.rds"
     script:
         "scripts/preProcess.R"
+
+rule makeResiduals:
+    resources: 
+        tmpdir="/scratch/tmp"
+    params:
+        id=IDs
+    log:
+        "logs/makeResiduals/{id}.txt"
+    input:
+        data="Rdatas/preProcess/{id}.rds"
+    output:
+        residuals="../Rdatas/residuals/{id}.rds",
+        pca_panel="../data/plots/PCA/pca_panel_{id}.png",
+        mean_var="../data/plots/meanVar/meanVar_{id}.png",
+        all_plots="../Rdatas/plots/all_pca_{id}.rds"
+    script:
+        "scripts/makeResiduals.R"
