@@ -1,4 +1,5 @@
 
+
 if (snakemake@params[["source"]]=="recount3") {
     my_logfile = snakemake@log[[1]]
     snakemake@source("logger.R")
@@ -23,6 +24,9 @@ if (snakemake@params[["source"]]=="recount3") {
 
     log4r_info("Done!")
 } else if (snakemake@params[["source"]]=="EA") {
+    # TODO: move this
+    library(ExpressionAtlas)
+    
     my_logfile = snakemake@log[[1]]
     snakemake@source("logger.R")
     log4r_info("Starting.")

@@ -5,4 +5,7 @@ metadata:
   recount3:
     "metadata/recount3_metadata.csv"
 assay_name:
+  EA:
+    "counts"
+  recount3:
     "raw_counts"
