@@ -2,25 +2,54 @@ import pandas as pd
 
 configfile: "config.yaml"
 
-input_table = config["metadata"]["recount3"]
-IDs = pd.read_csv(input_table).loc[:,"id"].tolist()
+rc3_table = config["metadata"]["recount3"]
+ea_table = config["metadata"]["EA"]
+
+rc3_ids = pd.read_csv(rc3_table).loc[:,"id"].tolist()
+rc3 = {id: "recount3" for id in rc3_ids}
+
+ea_ids = pd.read_csv(ea_table).loc[:,"id"].tolist()
+ea = {id: "EA" for id in ea_ids}
+
+
+def get_source(wildcards):
+    idx = wildcards.id
+    if idx in rc3_ids:
+        return rc3[idx]
+    elif idx in ea_ids:
+        return ea[idx]
+    else:
+        return None
+
+def get_metadata(wildcards):
+    src = get_source(wildcards)
+    metadata_path = config["metadata"][src]
+    return metadata_path
+
+def get_assay(wildcards):
+    src = get_source(wildcards)
+    assay = config["assay_name"][src]
+    return assay
+
+ids = rc3_ids + ea_ids
 
 datasource = list(config["metadata"].keys())
 print(datasource)
 
 rule all:
     input:
-        expand("Rdatas/residuals/{ids}.rds", ids=IDs, ds=datasource)
+        expand("Rdatas/residuals/{ids}.rds", ids=ids, ds=datasource)
 
 rule download:
     resources: 
         tmpdir="/scratch/tmp"
     params:
-        id=IDs
+        id=ids,
+        source=get_source
     log:
         "logs/download/{id}.txt"
     input:
-        metadata=config["metadata"]["recount3"]
+        metadata=get_metadata
     output:
         "Rdatas/raw/{id}.rds"
     script:
@@ -30,14 +59,14 @@ rule preProcess:
     resources: 
         tmpdir="/scratch/tmp"
     params:
-        id=IDs,
-        assay_name="raw_counts"
+        id=ids,
+        assay_name = lambda wildcards: get_assay(wildcards)
     log:
         log="logs/preProcess/{id}.txt",
         env="Rdatas/env/preProcess/{id}.Rdata"
     input:
         data="Rdatas/raw/{id}.rds", 
-        metadata=config["metadata"]["recount3"]
+        metadata=get_metadata
     output:
         "Rdatas/preProcess/{id}.rds"
     script:
@@ -47,7 +76,7 @@ rule makeResiduals:
     resources: 
         tmpdir="/scratch/tmp"
     params:
-        id=IDs
+        id=ids
     log:
         log="logs/makeResiduals/{id}.txt",
         env="Rdatas/env/makeResiduals/{id}.Rdata"

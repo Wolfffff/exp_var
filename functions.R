@@ -51,18 +51,20 @@ feature_vec[["Healthy"]] <- c("Healthy")
 
 downloadRecount3 <- function(id){
   # Load the project
-  print(id)
+
+  # Tape to deal with acquisition issues
+  cache_path = paste("cache", id, sep = "/")
+  print(cache_path)
+  if(!dir.exists(cache_path))
+    dir.create(cache_path, showWarnings = FALSE)
+  local_cache <- recount3_cache(cache_dir = cache_path)
+  human_projects <- available_projects(bfc = local_cache)
   proj_info <- subset(
     human_projects,
     project == id & project_type == "data_sources"
   )
-  print(proj_info)
-  # Tape to deal with acquisition issues
-  cache_path = paste("cache", id, sep = "/")
-  if(!dir.exists(cache_path))
-    dir.create(cache_path, showWarnings = FALSE)
-  local_cache <- recount3_cache(cache_dir = cache_path)
   rse <- create_rse(proj_info, bfc=local_cache)
+  
   if (proj_info$file_source == "gtex") {
     metadata_df <- colData(rse)[,grepl("gtex",colnames(colData(rse)),fixed=TRUE)]
   } else if(proj_info$file_source == "tcga") {

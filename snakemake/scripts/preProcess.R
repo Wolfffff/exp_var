@@ -20,8 +20,7 @@ dset_name = snakemake@wildcards[["id"]]
 log4r_info("Reading data")
 dset <- readRDS(snakemake@input[["data"]])
 
-assay_name = snakemake@config[["assay_name"]]
-
+assay_name = snakemake@params[["assay_name"]]
 # Catch empty columns_to_ignore
 columns_to_ignore = tryCatch(
 expr = {
@@ -36,9 +35,8 @@ columns_to_ignore = c(columns_to_ignore, crap_cols)
 
 metadata <- colData(dset)
 metadata <- data.frame(metadata)
-
 counts <- assays(dset)[[assay_name]]
-
+log4r_info("Switch case")
 switch(dset_name,
 SKIN = {
     remove_cell_culture = metadata[["gtex.smtsd"]] != "Cells - Cultured fibroblasts"

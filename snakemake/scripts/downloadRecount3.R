@@ -1,22 +1,42 @@
-my_logfile = snakemake@log[[1]]
-snakemake@source("logger.R")
-log4r_info("Starting.")
 
-log4r_info("Loading packages") 
-source("../functions.R")
+if (snakemake@params[["source"]]=="recount3") {
+    my_logfile = snakemake@log[[1]]
+    snakemake@source("logger.R")
+    log4r_info("Starting.")
 
-# Load metadata from recount3
-log4r_info("Reading metadata")
-experimental_metadata_rc3 <- read_csv(snakemake@input[["metadata"]])
+    log4r_info("Loading packages") 
+    source("../functions.R")
 
-log4r_info("Downloading cache")
-human_projects <- available_projects(bfc = cache)
-id = snakemake@wildcards[["id"]]
+    log4r_info("Downloading cache")
+    # Load metadata from recount3
+    log4r_info("Reading metadata")
+    experimental_metadata_rc3 <- read_csv(snakemake@input[["metadata"]])
 
-log4r_info("Downloading data")
-exp_data_rc3 = downloadRecount3(id)
 
-log4r_info("Saving data")
-saveRDS(exp_data_rc3, file = snakemake@output[[1]])
+    id = snakemake@wildcards[["id"]]
 
-log4r_info("Done!")
+    log4r_info("Downloading data")
+    exp_data_rc3 = downloadRecount3(id)
+
+    log4r_info("Saving data")
+    saveRDS(exp_data_rc3, file = snakemake@output[[1]])
+
+    log4r_info("Done!")
+} else if (snakemake@params[["source"]]=="EA") {
+    my_logfile = snakemake@log[[1]]
+    snakemake@source("logger.R")
+    log4r_info("Starting.")
+    id = snakemake@wildcards[["id"]]
+    rnaseq_exps <- getAtlasData(id)
+
+    all_exps <- rnaseq_exps
+    exps <- names(rnaseq_exps@listData)
+
+    exp_data_ea <- lapply(exps, FUN = function(x) {
+        return(all_exps[[x]]$rnaseq)
+    })
+    names(exp_data_ea) <- exps
+    saveRDS(exp_data_ea, file = snakemake@output[[1]])
+    log4r_info("Done!")
+}
+
