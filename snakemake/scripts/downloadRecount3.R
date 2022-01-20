@@ -40,7 +40,7 @@ if (snakemake@params[["source"]]=="recount3") {
         return(all_exps[[x]]$rnaseq)
     })
     names(exp_data_ea) <- exps
-    saveRDS(exp_data_ea, file = snakemake@output[[1]])
+    saveRDS(exp_data_ea[[1]], file = snakemake@output[[1]])
     log4r_info("Done!")
 }
 
