@@ -63,9 +63,13 @@ log4r_info("Normalizing and estimating mean-variance weights...")
 countdata.list <- DGEList(counts = counts, samples = metadata, genes = rownames(dset))
 rep_names = c("technical_replicate_group", "wells.replicate", "individual")
 if (any(names(metadata) %in% rep_names)) {
-log4r_info("Summing technical replicates...")
-rep_col = names(metadata)[names(metadata) %in% rep_names]
-countdata.list <- sumTechReps(countdata.list, metadata[[rep_col]])
+    log4r_info("Summing technical replicates...")
+    rep_col = names(metadata)[names(metadata) %in% rep_names]
+    if(length(rep_col) > 1){
+        rep_col = rep_col[which.min(sapply(rep_col, function(x) levels(factor(metadata[,x]))))]
+        log4r_info(paste0("More than one rep column. Choosing ", rep_col), "")
+    }
+    countdata.list <- sumTechReps(countdata.list, metadata[,rep_col])
 }
 
 log4r_info("Calculating normalization factors...")
