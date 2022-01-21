@@ -2,7 +2,8 @@
 source(here::here("functions.R"))
 library(here)
 
-file_paths <- list.files(path = here("snakemake/Rdatas/residuals/"), pattern = "\\.rds", full.names = TRUE)
+file_paths <- list.files(path = here::here("snakemake/Rdatas/residuals/"), 
+                         pattern = "\\.rds", full.names = TRUE)
 file_names <-  gsub(pattern = "\\.rds$", replacement = "", x = basename(file_paths))
 
 library(plyr)
@@ -24,6 +25,9 @@ gene_metric_dfs <- list(
     cv = calculate_row_wise_metric(data_list,rowcvs)
 )
 
+saveRDS(gene_metric_dfs,  file = here::here("snakemake/Rdatas/mean_variance.RDS"))
+
+pak::pkg_install("sergihervas/iMKT")
 library(iMKT)
 loadPopHuman()
 
