@@ -309,9 +309,11 @@ calculate_row_wise_metric <- function(results_list,f){
     gene_vars = f(exprDf$residuals_noOut)
     summarized_list[[dset_name]] = data.frame(
         Genes = row.names(exprDf$residuals_noOut),
-        var = gene_vars)
-    }
+        var = gene_vars) %>% 
+        tidyr::separate("Genes", c("Genes", NA))
+  }
   summarized_df = purrr::reduce(summarized_list, inner_join, by = "Genes")
   colnames(summarized_df)[-1] = names(results_list)
   return(summarized_df)
 }
+

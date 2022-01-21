@@ -1,5 +1,5 @@
 # rc3 input 
-source("functions.R")
+source(here::here("functions.R"))
 library(here)
 
 file_paths <- list.files(path = here("snakemake/Rdatas/residuals/"), pattern = "\\.rds", full.names = TRUE)
@@ -20,8 +20,8 @@ library(Rfast)
 library(matrixStats)
 
 
-row_means_df = calculate_row_wise_metric(results_list_rc3,rowMeans)
-row_var_df = calculate_row_wise_metric(results_list_rc3,rowVars)
-row_sd_df = calculate_row_wise_metric(results_list_rc3,rowSds)
-row_cv_df = calculate_row_wise_metric(results_list_rc3,rowcvs)
+row_means_df = calculate_row_wise_metric(data_list,rowMeans)
+row_var_df = calculate_row_wise_metric(data_list,rowVars)
+row_sd_df = calculate_row_wise_metric(data_list,rowSds)
+row_cv_df = calculate_row_wise_metric(data_list,rowcvs)
 
