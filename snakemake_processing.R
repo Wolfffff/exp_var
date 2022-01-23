@@ -320,4 +320,24 @@ PopHumanAnalysis <- function(genes=c("gene1","gene2","..."), pops=c("pop1","pop2
   }
 }
 
-PopHumanAnalysis(genes=unique(PopHumanData$ID[1:1000]) , pops=c("CEU"), recomb=FALSE, test="standardMKT", plot=TRUE)
+df = NULL
+for (gene in unique(PopHumanData$ID)){
+  columns_to_ignore = tryCatch(
+    expr = {
+      results = PopHumanAnalysis(genes=gene, pops=c("CEU"), recomb=FALSE, test="standardMKT", plot=TRUE)
+      results_flat = r$`pop =  CEU`
+      results_flat[gene] <- gene
+      results_flat = unlist(results_flat)
+      names(results_flat) <- make.names(names(results_flat), unique=TRUE)
+      results_df = as.data.frame(results_flat)
+      colnames(results_df) <- names(results_flat)
+      print(results_df)
+      df <- rbind(df, results_df)
+    },
+    error = function(e) {
+        print("Skipped gene...")
+    }
+  )
+}
+
+do.call(rbind, listHolder)
