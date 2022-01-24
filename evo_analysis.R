@@ -11,9 +11,8 @@ p_format <- function(x, ndp=5)
   out <- format(round(as.numeric(x),ndp),ns=ndp,scientific=T,just="none")
 }
 
-
-
 library(psych)
+library(corrplot)
 merged_filtered = merged[,which(names(merged) %in% c("gene","means", "var", "sd", "cv", "alpha.symbol","Divergence.metrics.omega"))]
 cor_mat = cor(merged_filtered[,-1],method="spearman")
 

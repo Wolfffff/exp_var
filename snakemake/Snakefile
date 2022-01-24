@@ -36,7 +36,7 @@ datasource = list(config["metadata"].keys())
 
 rule all:
     input:
-        expand("Rdatas/residuals/{ids}.rds", ids=ids, ds=datasource)
+        "Rdatas/gene_metrics.RDS"
 
 rule download:
     resources: 
@@ -89,3 +89,13 @@ rule makeResiduals:
 
     script:
         "scripts/makeResiduals.R"
+
+rule gene_metrics:
+    resources: 
+        tmpdir="/scratch/tmp"    
+    input:
+        expand("Rdatas/residuals/{ids}.rds", ids=ids)
+    output:
+        "Rdatas/gene_metrics.RDS"
+    script:
+        "scripts/makeGeneMetrics.R"

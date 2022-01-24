@@ -24,4 +24,4 @@ gene_metric_dfs <- list(
     cv = calculate_row_wise_metric(data_list,rowcvs)
 )
 
-saveRDS(gene_metric_dfs,  file = here::here("snakemake/Rdatas/gene_metrics.RDS"))
+saveRDS(gene_metric_dfs,  file = snakemake@output[[1]])
