@@ -7,10 +7,7 @@ ptwas_table$Gene =  str_split_fixed(ptwas_table$Gene,'\\.',Inf)[,1]
 uniq_disease_linked_genes = unique(ptwas_table$Gene)
 
 
-# Analysis
-organism = "org.Hs.eg.db"
-BiocManager::install(organism, character.only = TRUE)
-library(organism, character.only = TRUE)
+
 
 library(clusterProfiler)
 library(plyr)
@@ -23,9 +20,12 @@ for(metric in c("means","var","sd","cv")){
     gene_ids = subset$gene
 }
 term2gene_df = ptwas_table[, c("Trait","Gene")]
-term2gene_df = data.frame(disease="1",
-                          Gene=uniq_disease_linked_genes)
+ptwas_table_merged = merge(term2gene_df,ptwas_traits, by.x = "Trait", by.y = "ID", all.x = TRUE)
+# term2gene_df = data.frame(disease="1",
+                        #   Gene=uniq_disease_linked_genes)
 
+
+newtable <- merge(table1,table2, by  = "pid") 
 ego <- enricher(gene = gene_ids,
                 universe = unique(c(uniq_disease_linked_genes,rank_df$gene)), 
                 pvalueCutoff = 10, pAdjustMethod="none",
@@ -42,9 +42,11 @@ cnetplot(gse, categorySize="pvalue", foldChange=gene_list, showCategory = 3)
 
 ridgeplot(gse) + labs(x = "enrichment distribution")
 
-rank_df = dplyr::rename(rank_df, Gene = gene)
-rank_df_with_disease = left_join(rank_df, term2gene_df, by = "Gene") %>%
-    mutate(disease = ifelse(is.na(disease), 0, 1)) %>%
+
+# %%
+# rank_df = dplyr::rename(rank_df, Gene = gene)
+rank_df_with_disease = left_join(rank_df, ptwas_table_merged, by = "Gene") %>%
+    # mutate(disease = ifelse(is.na(disease), 0, 1)) %>%
     relocate(Gene)
 
 head(rank_df_with_disease)
@@ -52,4 +54,4 @@ head(rank_df_with_disease)
 library(cowplot)
 plot = ggplot(rank_df_with_disease, aes(means, sd, groups = disease, color = disease)) + geom_point()
 save_plot("test.png", plot)
-glm(disease ~ means + sd, data = rank_df_with_disease, family = "binomial") %>% summary           
+glm(dummy() ~ means + sd, data = rank_df_with_disease, family = "binomial") %>% summary           
