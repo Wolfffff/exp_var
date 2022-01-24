@@ -11,7 +11,6 @@ rc3 = {id: "recount3" for id in rc3_ids}
 ea_ids = pd.read_csv(ea_table).loc[:,"id"].tolist()
 ea = {id: "EA" for id in ea_ids}
 
-
 def get_source(wildcards):
     idx = wildcards.id
     if idx in rc3_ids:
@@ -34,7 +33,6 @@ def get_assay(wildcards):
 ids = rc3_ids + ea_ids
 
 datasource = list(config["metadata"].keys())
-print(datasource)
 
 rule all:
     input:
