@@ -11,3 +11,4 @@ Rdatas/
 .nfs000*
 *.RDS
 snakemake/Rplots.pdf
+data/PTWAS_scan.weights.hg38.txt

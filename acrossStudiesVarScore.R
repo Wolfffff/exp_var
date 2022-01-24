@@ -1,28 +1,38 @@
 source("functions.R")
-mean_var = readRDS(here::here("snakemake/Rdatas/mean_variance.RDS"))
 
-rank_mat = ldply(mean_var$var[,-1], rank)
-rank_mat = t(rank_mat[,-1])
-colnames(rank_mat) = colnames(mean_var$var$merged)
-
+metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
+rank_list = list()
 pak::pkg_install("corrplot")
 library(corrplot)
-var_cor = cor(mean_var$var[,-1], method = "s")
-png(here::here("data/plots/SpearmanCorrelations/var_corr_plot.png"), height = 4080, width = 4080)
-corrplot.mixed(var_cor, upper = "ellipse")
-dev.off()
 
-all(cor(rank_mat) == var_cor)
+for (metric in c("means", "var", "sd", "cv")){
+    print(metric)
+    rank_mat = ldply(metric_df[[metric]][,-1], rank)
+    rank_mat = t(rank_mat[,-1])
+    rownames(rank_mat) = rownames(metric_df[[metric]][,-1])
+    colnames(rank_mat) = colnames(metric_df[[metric]][,-1])
 
-PC_scores = as.matrix(rank_mat) %*% eigen(var_cor)$vectors
-rank(PC_scores[,1])
-gene_var_rank = rank(PC_scores[,1])
-names(gene_var_rank) = (mean_var$var[,1])
-saveRDS(gene_var_rank, file = "./Rdatas/gene_var_rank.RDS")
-data.frame(gene = names(gene_var_rank), rank = gene_var_rank, row.names = NULL) %>%
-    write_csv("Rdatas/gene_var_rank.csv")
-which(gene_var_rank == 1)
+    metric_cor = cor(metric_df[[metric]][,-1], method = "s")
+    png(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_corr_plot.png")), height = 4080, width = 4080)
+    corrplot.mixed(metric_cor, upper = "ellipse")
+    dev.off()
 
+    PC_scores = as.matrix(rank_mat) %*% eigen(metric_cor)$vectors
+    
+    gene_rank = rank(PC_scores[,1])
+    names(gene_rank) = metric_df[[metric]][,1]
+    rank_list[[metric]] = gene_rank
+}
+
+rank_df = data.frame(bind_cols(rank_list))
+rank_df$gene = metric_df[[1]][,1]
+write.csv(rank_df, file=here::here("data/pca_ranks.csv"))
+
+
+
+#  Modularity
+pak::pkg_install("diogro/evolqg")
+devtools::install_github("diogro/yamda-r", subdir = "package")
 library(evolqg)
 library(yamdar)
 

@@ -14,6 +14,12 @@ feature_vec <- list()
 feature_vec[["disease"]] <- c("normal", "control", "", NA,
                               "non inflammatory bowel disease control")
 feature_vec[["treatment"]] <- c("normal", "control", "", "C", NA)
+feature_vec[["source_name"]] <- c("normal_skin","healthy children without bacterial colonization")
+feature_vec[["condition"]] <- c("Control","")
+feature_vec[["PTSD"]] <- c("No")
+feature_vec[["ptsd"]] <- c("Never")
+feature_vec[["infections.agent"]] = c("n/a","")
+feature_vec[["disease.state"]] = c("healthy")
 
 dset_name = snakemake@wildcards[["id"]]
 
@@ -39,14 +45,14 @@ counts <- assays(dset)[[assay_name]]
 log4r_info("Switch case")
 switch(dset_name,
 SKIN = {
-    remove_cell_culture = metadata[["gtex.smtsd"]] != "Cells - Cultured fibroblasts"
-    metadata = metadata[ remove_cell_culture,]
-    counts   =   counts[, remove_cell_culture]
+    selection = metadata[["gtex.smtsd"]] != "Cells - Cultured fibroblasts"
+    metadata = metadata[selection,]
+    counts   =   counts[, selection]
 },
 ESOPHAGUS = {
-    remove_cell_culture = metadata[["gtex.smtsd"]] == "Esophagus - Mucosa"
-    metadata = metadata[ remove_cell_culture,]
-    counts   =   counts[, remove_cell_culture]
+    selection = metadata[["gtex.smtsd"]] == "Esophagus - Mucosa"
+    metadata = metadata[ selection,]
+    counts   =   counts[, selection]
 }
 )
 

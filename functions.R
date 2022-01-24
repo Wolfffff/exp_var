@@ -47,6 +47,12 @@ feature_vec[["treatment"]] <- c("normal", "control", "", NA)
 feature_vec[["tcga.cgc_sample_sample_type"]] <- c("Solid Tissue Normal")
 feature_vec[["diagnosis"]] <- c("Control")
 feature_vec[["Healthy"]] <- c("Healthy")
+feature_vec[["source_name"]] <- c("normal_skin","healthy children without bacterial colonization")
+feature_vec[["condition"]] <- c("Control","")
+feature_vec[["PTSD"]] <- c("No")
+feature_vec[["ptsd"]] <- c("Never")
+feature_vec[["infections.agent"]] = c("n/a","")
+feature_vec[["disease.state"]] = c("healthy")
 
 
 downloadRecount3 <- function(id){
@@ -137,9 +143,12 @@ make_filtered_data = function(counts, metadata, feature_vec){
     if (column %in% colnames(filtered_metadata)){
       control_names_tb = table(filtered_metadata[,column], useNA = "ifany")
       control_names_tb = control_names_tb[names(control_names_tb) %in% feature_vec[[column]]]
-      if(is.na(names(control_names_tb))){
-        filtered_metadata[,column][is.na(filtered_metadata[,column])] = "control"
-        names(control_names_tb) = "control"
+      if(length(control_names_tb) == 0){
+        next
+      }     
+        if(is.na(names(control_names_tb))){
+          filtered_metadata[,column][is.na(filtered_metadata[,column])] = "control"
+          names(control_names_tb) = "control"
       }
       control_name = names(control_names_tb)[control_names_tb == max(control_names_tb)]
       filtered_counts <- filtered_counts[,filtered_metadata[,column] == control_name]
