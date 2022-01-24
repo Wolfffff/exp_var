@@ -22,6 +22,7 @@ library(vsn)
 library(viridis)
 library(recount3)
 library(tictoc)
+library(iMKT)
 
 # Set timeout to avoid failure when trying to download GTEx or other large datasets
 options(timeout = 1800)
@@ -326,7 +327,6 @@ calculate_row_wise_metric <- function(results_list,f){
   return(summarized_df)
 }
 
-library(iMKT)
 PopHumanAnalysis_modified <- function(genes=c("gene1","gene2","..."), pops=c("pop1","pop2","..."), cutoffs=c(0,0.05,0.1), recomb=TRUE/FALSE, bins=0, test=c("standardMKT","DGRP","FWW","asymptoticMKT","iMKT"), xlow=0, xhigh=1, plot=FALSE) { 
   
   ## Get PopHuman data
