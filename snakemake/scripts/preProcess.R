@@ -1,4 +1,6 @@
 save.image(snakemake@log[["env"]])
+#load("snakemake/Rdatas/env/preProcess/ERP020977.Rdata")
+#setwd(here::here("snakemake"))
 
 my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
@@ -9,17 +11,6 @@ source("../functions.R")
 
 log4r_info("Reading metadata")
 experimental_metadata <- read_csv(snakemake@input[["metadata"]])
-
-feature_vec <- list()
-feature_vec[["disease"]] <- c("normal", "control", "", NA,
-                              "non inflammatory bowel disease control")
-feature_vec[["treatment"]] <- c("normal", "control", "", "C", NA)
-feature_vec[["source_name"]] <- c("normal_skin","healthy children without bacterial colonization")
-feature_vec[["condition"]] <- c("Control","")
-feature_vec[["PTSD"]] <- c("No")
-feature_vec[["ptsd"]] <- c("Never")
-feature_vec[["infections.agent"]] = c("n/a","")
-feature_vec[["disease.state"]] = c("healthy")
 
 dset_name = snakemake@wildcards[["id"]]
 

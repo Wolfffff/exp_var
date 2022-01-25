@@ -5,10 +5,10 @@ configfile: "config.yaml"
 rc3_table = config["metadata"]["recount3"]
 ea_table = config["metadata"]["EA"]
 
-rc3_ids = pd.read_csv(rc3_table).loc[:,"id"].tolist()
+rc3_ids = pd.read_csv(rc3_table, comment='#').loc[:,"id"].tolist()
 rc3 = {id: "recount3" for id in rc3_ids}
 
-ea_ids = pd.read_csv(ea_table).loc[:,"id"].tolist()
+ea_ids = pd.read_csv(ea_table, comment='#').loc[:,"id"].tolist()
 ea = {id: "EA" for id in ea_ids}
 
 def get_source(wildcards):
