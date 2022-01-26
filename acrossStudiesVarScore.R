@@ -29,6 +29,8 @@ rank_df = data.frame(bind_cols(rank_list))
 rank_df$gene = metric_df[[1]][,1]
 write.csv(rank_df, file=here::here("data/pca_ranks.csv"))
 
+library(vegan)
+library(ape)
 res <- pcoa(abs(1 - metric_cor))
 res$values
 png("../test.png")

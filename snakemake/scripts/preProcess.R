@@ -1,6 +1,6 @@
 save.image(snakemake@log[["env"]])
 # setwd(here::here("snakemake"))
-# load("Rdatas/env/preProcess/ERP007111.Rdata")
+# load("Rdatas/env/preProcess/SRP098758.Rdata")
 
 my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
