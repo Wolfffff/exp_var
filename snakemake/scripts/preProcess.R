@@ -1,6 +1,6 @@
 save.image(snakemake@log[["env"]])
-#load("snakemake/Rdatas/env/preProcess/ERP020977.Rdata")
-#setwd(here::here("snakemake"))
+# setwd(here::here("snakemake"))
+# load("Rdatas/env/preProcess/ERP007111.Rdata")
 
 my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
@@ -106,7 +106,7 @@ if(dset_name == "LIVER"){
     countdata.norm  =   countdata.norm[-remove_genes,]
 } 
 # Remove top 1 genes from COLON, STOMACH and ESCA
-if(dset_name %in% c("COLON", "STOMACH", "ESCA")){
+if(dset_name %in% c("COLON", "STOMACH")){
     bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
     remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1])
     countdata.norm  =   countdata.norm[-remove_genes,]

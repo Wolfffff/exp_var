@@ -1,4 +1,6 @@
 save.image(snakemake@log[["env"]])
+#setwd(here::here("snakemake"))
+#load("Rdatas/env/makeResiduals/ESCA.Rdata")
 
 my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
@@ -9,7 +11,7 @@ source("../functions.R")
 
 dset_name = snakemake@wildcards[["id"]]
 
-log4r_info("Reading data")
+log4r_info(paste0("Reading data ", dset_name))
 dset <- readRDS(snakemake@input[["data"]])
 
 countdata.norm = dset$data

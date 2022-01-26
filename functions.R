@@ -54,6 +54,7 @@ feature_vec[["PTSD"]] <- c("No")
 feature_vec[["ptsd"]] <- c("Never")
 feature_vec[["infections.agent"]] = c("n/a","")
 feature_vec[["disease.state"]] = c("healthy")
+feature_vec[["cancer.type"]] = c("HC")
 
 
 downloadRecount3 <- function(id){

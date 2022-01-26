@@ -1,4 +1,5 @@
-source("functions.R")
+source(here::here("functions.R"))
+
 
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 rank_list = list()
@@ -13,7 +14,7 @@ for (metric in c("means", "var", "sd", "cv")){
     colnames(rank_mat) = colnames(metric_df[[metric]][,-1])
 
     metric_cor = cor(metric_df[[metric]][,-1], method = "s")
-    png(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_corr_plot.png")), height = 4080, width = 4080)
+    png(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_corr_plot.png")), height = 6080, width = 6080)
     corrplot.mixed(metric_cor, upper = "ellipse")
     dev.off()
 
@@ -28,7 +29,11 @@ rank_df = data.frame(bind_cols(rank_list))
 rank_df$gene = metric_df[[1]][,1]
 write.csv(rank_df, file=here::here("data/pca_ranks.csv"))
 
-
+res <- pcoa(abs(1 - metric_cor))
+res$values
+png("../test.png")
+biplot(res)
+dev.off()
 
 #  Modularity
 pak::pkg_install("diogro/evolqg")
