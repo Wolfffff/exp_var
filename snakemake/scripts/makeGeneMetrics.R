@@ -1,3 +1,9 @@
+my_logfile = snakemake@log[["log"]]
+snakemake@source("logger.R")
+log4r_info("Starting.")
+print = log4r_info
+log4r_info("Loading packages") 
+
 source(here::here("functions.R"))
 library(here)
 

@@ -35,8 +35,9 @@ ids = rc3_ids + ea_ids
 datasource = list(config["metadata"].keys())
 
 rule all:
-    input:
-        "Rdatas/gene_metrics.RDS"
+   input:
+        "Rdatas/gene_var_rank.RDS",
+        "Rdatas/gene_var_matrices.RDS"
 
 rule download:
     resources: 
@@ -90,12 +91,29 @@ rule makeResiduals:
     script:
         "scripts/makeResiduals.R"
 
-rule gene_metrics:
+rule geneMetrics:
     resources: 
-        tmpdir="/scratch/tmp"    
+        tmpdir="/scratch/tmp"
+    log:
+        log="logs/acrossStudies/gene_metrics.txt",
+        env="Rdatas/env/acrossStudies/gene_metrics.Rdata"    
     input:
         expand("Rdatas/residuals/{ids}.rds", ids=ids)
     output:
         "Rdatas/gene_metrics.RDS"
     script:
         "scripts/makeGeneMetrics.R"
+
+rule varScores:
+    resources: 
+        tmpdir="/scratch/tmp"  
+    log:
+        log="logs/acrossStudies/varScores.txt",
+        env="Rdatas/env/acrossStudies/varScores.Rdata"   
+    input:
+        "Rdatas/gene_metrics.RDS"
+    output:
+        "Rdatas/gene_var_rank.RDS",
+        "Rdatas/gene_var_matrices.RDS"
+    script:
+        "scripts/acrossStudiesVarScore.R"
