@@ -1,6 +1,6 @@
 save.image(snakemake@log[["env"]])
 # setwd(here::here("snakemake"))
-# load("Rdatas/env/preProcess/SRP098758.Rdata")
+# load("Rdatas/env/preProcess/SRP192714.Rdata")
 
 my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
@@ -58,7 +58,7 @@ metadata$sample_id <- rownames(metadata)
 
 log4r_info("Normalizing and estimating mean-variance weights...")
 countdata.list <- DGEList(counts = counts, samples = metadata, genes = rownames(dset))
-rep_names = c("technical_replicate_group", "wells.replicate", "individual")
+rep_names = c("technical_replicate_group", "wells.replicate", "individual", "sample")
 if (any(names(metadata) %in% rep_names)) {
     log4r_info("Summing technical replicates...")
     rep_col = names(metadata)[names(metadata) %in% rep_names]
