@@ -56,6 +56,7 @@ feature_vec[["infections.agent"]] = c("n/a","")
 feature_vec[["disease.state"]] = c("healthy")
 feature_vec[["cancer.type"]] = c("HC")
 feature_vec[["group"]] = c("Control", NA)
+feature_vec[["time"]] = c('Convalescent')
 
 
 downloadRecount3 <- function(id){
