@@ -1,0 +1,11 @@
+datasource: ["EA", "recount3"]
+metadata:
+  EA:
+    "metadata/EA_metadata.csv"
+  recount3:
+    "metadata/recount3_metadata.csv"
+assay_name:
+  EA:
+    "counts"
+  recount3:
+    "raw_counts"

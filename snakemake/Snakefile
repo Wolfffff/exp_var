@@ -1,0 +1,119 @@
+import pandas as pd
+
+configfile: "config.yaml"
+
+rc3_table = config["metadata"]["recount3"]
+ea_table = config["metadata"]["EA"]
+
+rc3_ids = pd.read_csv(rc3_table, comment='#').loc[:,"id"].tolist()
+rc3 = {id: "recount3" for id in rc3_ids}
+
+ea_ids = pd.read_csv(ea_table, comment='#').loc[:,"id"].tolist()
+ea = {id: "EA" for id in ea_ids}
+
+def get_source(wildcards):
+    idx = wildcards.id
+    if idx in rc3_ids:
+        return rc3[idx]
+    elif idx in ea_ids:
+        return ea[idx]
+    else:
+        return None
+
+def get_metadata(wildcards):
+    src = get_source(wildcards)
+    metadata_path = config["metadata"][src]
+    return metadata_path
+
+def get_assay(wildcards):
+    src = get_source(wildcards)
+    assay = config["assay_name"][src]
+    return assay
+
+ids = rc3_ids + ea_ids
+
+datasource = list(config["metadata"].keys())
+
+rule all:
+   input:
+        "Rdatas/gene_var_rank.RDS",
+        "Rdatas/gene_var_matrices.RDS"
+
+rule download:
+    resources: 
+        tmpdir="/scratch/tmp"
+    params:
+        id=ids,
+        source=get_source
+    log:
+        "logs/download/{id}.txt"
+    input:
+        metadata=get_metadata
+    output:
+        "Rdatas/raw/{id}.rds"
+    script:
+        "scripts/downloadRecount3.R"
+
+rule preProcess:
+    resources: 
+        tmpdir="/scratch/tmp"
+    params:
+        id=ids,
+        assay_name = lambda wildcards: get_assay(wildcards)
+    log:
+        log="logs/preProcess/{id}.txt",
+        env="Rdatas/env/preProcess/{id}.Rdata"
+    input:
+        data="Rdatas/raw/{id}.rds", 
+        metadata=get_metadata
+    output:
+        "Rdatas/preProcess/{id}.rds"
+    script:
+        "scripts/preProcess.R"
+
+rule makeResiduals:
+    resources: 
+        tmpdir="/scratch/tmp"
+    params:
+        id=ids
+    log:
+        log="logs/makeResiduals/{id}.txt",
+        env="Rdatas/env/makeResiduals/{id}.Rdata"
+    input:
+        data="Rdatas/preProcess/{id}.rds"
+    output:
+        residuals="Rdatas/residuals/{id}.rds",
+        pca_panel="../data/plots/PCA/pca_panel_{id}.png",
+        mean_var="../data/plots/meanVar/meanVar_{id}.png",
+        mean_var_resid="../data/plots/meanVar/meanVar_{id}_residual.png",
+        all_plots="Rdatas/plots/all_pca_{id}.rds"
+
+    script:
+        "scripts/makeResiduals.R"
+
+rule geneMetrics:
+    resources: 
+        tmpdir="/scratch/tmp"
+    log:
+        log="logs/acrossStudies/gene_metrics.txt",
+        env="Rdatas/env/acrossStudies/gene_metrics.Rdata"    
+    input:
+        expand("Rdatas/residuals/{ids}.rds", ids=ids)
+    output:
+        "Rdatas/gene_metrics.RDS"
+    script:
+        "scripts/makeGeneMetrics.R"
+
+rule varScores:
+    resources: 
+        tmpdir="/scratch/tmp"  
+    log:
+        log="logs/acrossStudies/varScores.txt",
+        env="Rdatas/env/acrossStudies/varScores.Rdata"   
+    input:
+        "Rdatas/gene_metrics.RDS"
+    output:
+        "Rdatas/gene_var_rank.RDS",
+        "Rdatas/gene_var_matrices.RDS"
+    script:
+        "scripts/acrossStudiesVarScore.R"

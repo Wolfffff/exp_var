@@ -1,0 +1,12 @@
+__default__:
+    account: damelo
+    partition: main
+    nodes: 1
+    qos: 1day
+    cores: 1 #Request n cores be allocated per node.
+    chdir: /Genomics/argo/users/damelo/projects/exp_var/snakemake
+    output: logs/slurm/exp_var-%j.out
+    error: logs/slurm/exp_var-%j.err
+
+
+# snakemake --cluster "sbatch -p {cluster.partition} -N {cluster.nodes} --qos {cluster.qos} -c {cluster.cores} --mem-per-cpu 1gb -e {cluster.error} -o {cluster.output}" --cluster-config cluster_config.yaml --jobs 70 all
