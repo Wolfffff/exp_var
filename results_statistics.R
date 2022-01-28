@@ -45,6 +45,11 @@ ego = enrichGO(gene  = rank_df$gene,
                          qvalueCutoff  = 0.05,
                          readable      = TRUE)
 library(enrichplot)
-png(here::here("eGO_universe.png"), height = 3840, width = 2160)
+png(here::here("data/plots/eGO_universe.png"), height = 3840, width = 2160)
 barplot(ego, showCategory=100) 
 dev.off()
+
+png(here::here("data/plots/cv_sd.png"), height = 2160, width = 2160)
+ggplot(rank_df, aes(x = cv, y = sd)) + geom_point()
+dev.off()
+
