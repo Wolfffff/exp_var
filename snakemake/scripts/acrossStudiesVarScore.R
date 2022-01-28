@@ -7,10 +7,11 @@ source(here::here("functions.R"))
 
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 
-pak::pkg_install("corrplot")
+pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc"))
 library(corrplot)
 library(vegan)
 library(ape)
+library(Hmisc)
 
 rank_list = list()
 metric_cor_list = list()
@@ -21,7 +22,7 @@ for (metric in c("means", "var", "sd", "cv")){
     rownames(rank_mat) = rownames(metric_df[[metric]][,-1])
     colnames(rank_mat) = colnames(metric_df[[metric]][,-1])
 
-    metric_cor = cor(metric_df[[metric]][,-1], method = "s")
+    metric_cor = rcorr(as.matrix(metric_df[[metric]][,-1]), type = "spearman")$r
     png(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_corr_plot.png")), height = 6080, width = 6080)
     corrplot.mixed(metric_cor, upper = "ellipse")
     dev.off()

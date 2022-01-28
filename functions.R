@@ -330,6 +330,26 @@ calculate_row_wise_metric <- function(results_list,f){
   return(summarized_df)
 }
 
+calculate_row_wise_metric_sparse <- function(results_list, f, max_missingness = 0.50){
+  summarized_list = vector("list", length = length(results_list))
+  names(summarized_list) = names(results_list)
+  n_dsets = length(results_list)
+  for (dset_name in names(results_list)) {
+    exprDf = results_list[[dset_name]]
+    gene_vars = f(exprDf$residuals_noOut)
+    summarized_list[[dset_name]] = data.frame(
+        Genes = row.names(exprDf$residuals_noOut),
+        var = gene_vars) %>% 
+        tidyr::separate("Genes", c("Genes", NA))
+  }
+  summarized_df = purrr::reduce(summarized_list, full_join, by = "Genes")
+  colnames(summarized_df)[-1] = names(results_list)
+  x = summarized_df[1,-1]  
+  rowmask = apply(summarized_df[,-1], 1, function(x) sum(is.na(x))/n_dsets < max_missingness) 
+  summarized_df = summarized_df[rowmask,]
+  return(summarized_df)
+}
+
 PopHumanAnalysis_modified <- function(genes=c("gene1","gene2","..."), pops=c("pop1","pop2","..."), cutoffs=c(0,0.05,0.1), recomb=TRUE/FALSE, bins=0, test=c("standardMKT","DGRP","FWW","asymptoticMKT","iMKT"), xlow=0, xhigh=1, plot=FALSE) { 
   
   ## Get PopHuman data
