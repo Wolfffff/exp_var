@@ -1,6 +1,6 @@
 save.image(snakemake@log[["env"]])
 # setwd(here::here("snakemake"))
-# load("Rdatas/env/preProcess/SRP192714.Rdata")
+# load("Rdatas/env/preProcess/BONE_MARROW.Rdata")
 
 my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
@@ -8,6 +8,7 @@ log4r_info("Starting.")
 print = log4r_info
 log4r_info("Loading packages") 
 source("../functions.R")
+source("scripts/getMTgenes.R")
 
 log4r_info("Reading metadata")
 experimental_metadata <- read_csv(snakemake@input[["metadata"]])
@@ -73,7 +74,17 @@ countdata.norm <- calcNormFactors(countdata.list)
 
 log4r_info("Trimming...")
 cutoff <- inv_log2_plus05(1)
+
+# Removing very low expression genes
 drop <- which(apply(cpm(countdata.norm), 1, max) < cutoff)
+countdata.norm <- countdata.norm[-drop, ]
+
+# Removing genes with low average expression
+drop <- which(apply(cpm(countdata.norm), 1, mean) < 5)
+countdata.norm <- countdata.norm[-drop, ]
+
+# Removing mitochondrial genes
+drop <- which(remove_id_ver(countdata.norm$genes[,1]) %in% mt_gene_ids)
 countdata.norm <- countdata.norm[-drop, ]
 
 # recalc with updated metadata
@@ -93,22 +104,18 @@ countdata.norm$samples <- select_meta(countdata.norm$samples)
 
 # Switch to DESeq2
 
-# Remove top 3 genes from BLOOD
+# Remove top 3 genes from BLOOD, hemoglobins
 if(dset_name == "BLOOD"){
     bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
     remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1:3])
+    print(paste("Removed genes:", paste(countdata.norm$genes[remove_genes,], collapse = " ")))
     countdata.norm  =   countdata.norm[-remove_genes,]
 }
-# Remove top 2 genes from LIVER
-if(dset_name == "LIVER"){
-    bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
-    remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1:2])
-    countdata.norm  =   countdata.norm[-remove_genes,]
-} 
-# Remove top 1 genes from COLON, STOMACH and ESCA
-if(dset_name %in% c("COLON", "STOMACH")){
+# Remove top 1 genes from STOMACH, pepsin
+if(dset_name %in% c("STOMACH")){
     bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
     remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1])
+    print(paste("Removed genes:", paste(countdata.norm$genes[remove_genes,], collapse = " ")))
     countdata.norm  =   countdata.norm[-remove_genes,]
 }
 

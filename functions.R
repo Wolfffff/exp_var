@@ -618,3 +618,9 @@ PopHumanAnalysis_modified <- function(genes=c("gene1","gene2","..."), pops=c("po
     return(outputList)
   }
 }
+
+remove_id_ver <- function(x){
+  dot_split = function(x)strsplit(x, "\\.")[[1]][1]
+  sapply(x, dot_split, USE.NAMES = FALSE)
+}
+
