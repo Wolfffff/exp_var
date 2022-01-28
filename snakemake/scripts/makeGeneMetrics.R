@@ -34,6 +34,7 @@ gene_metric_dfs <- list(
     sd = calculate_row_wise_metric_sparse(data_list, rowSds, max_missingness),
     cv = calculate_row_wise_metric_sparse(data_list, rowcvs, max_missingness)
 )
+print(paste("Kept", nrow(gene_metric_dfs[[1]]),"genes"))
 
 #saveRDS(gene_metric_dfs,  file = snakemake@output[[1]])
 
