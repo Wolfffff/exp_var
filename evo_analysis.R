@@ -24,3 +24,23 @@ mtext("Spearman Correlation Plot - Numbers are p-vals", at=3.5, line=-0.5, cex=4
 pos <- expand.grid(1:ncol(cor_test_mat$p), ncol(cor_test_mat$p):1)
 text(pos, p_format(cor_test_mat$p))
 dev.off()
+
+
+# %%
+# pi vals
+library(psych)
+library(corrplot)
+
+rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+pi_vals = read.csv(here::here("data/annotation/pi_ceu_results.csv"))
+
+merged = merge(rank_df, pi_vals, by.x = "gene", by.y = "gene")
+merged_filtered = merged[,which(names(merged) %in% c("gene","means","sd", "pi"))]
+cor_mat = cor(merged_filtered[,-1],method="spearman")
+cor_test_mat = corr.test(merged_filtered[,-1],method="spearman",adjust="fdr")
+png(here::here("data/plots/SpearmanCorrelations/pi_corr_plot_with_pvals.png"), height = 2160, width = 2160)
+corrplot(cor_mat,method='ellipse')
+mtext("Spearman Correlation Plot - Numbers are p-vals", at=3.5, line=-0.5, cex=4)
+pos <- expand.grid(1:ncol(cor_test_mat$p), ncol(cor_test_mat$p):1)
+text(pos, p_format(cor_test_mat$p))
+dev.off()

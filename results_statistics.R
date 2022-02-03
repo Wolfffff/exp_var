@@ -127,4 +127,4 @@ for(gene in unique(genes_with_pi$gene_id)){
     results_df[nrow(results_df)+1,] = results
 }
 
-write.csv(results_df, here::here("data/annotation/pi_ceu_results.csv"))
+write.csv(results_df, here::here("data/annotation/pi_ceu_results.csv"),row.names = F)
