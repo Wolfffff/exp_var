@@ -26,8 +26,7 @@ Starting PTWAS analysis -- see [ptwas.R](ptwas.R). We have the table but need to
 
 It's currently a bit of a pain to pull new data as we have to find the right features to subset to (case in case control) and other features like multiple timepoints or technical replicates.
 
-
-https://www.nature.com/articles/s41467-019-09583-2 has proved harder to use than expected and I'd appreciate guidance on the right way to use their data once you're back.
+# Examples
 
 ## Drivers of Gene Expression Variance difference
 

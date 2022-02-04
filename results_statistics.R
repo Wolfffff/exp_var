@@ -92,39 +92,27 @@ library(rtracklayer)
 
 gtf <- makeTxDbFromGFF(here::here("data/annotation/Homo_sapiens.GRCh37.87.gtf")) #change me!
 gene_annotations <- genes(gtf)
-exons <- exonsBy(gtf, by="gene")
+# exons <- exonsBy(gtf, by="gene")
 
-#make introns
-exons <- reduce(exons)
-exons <- exons[sapply(exons, length) > 1]
+# #make introns
+# exons <- reduce(exons)
+# exons <- exons[sapply(exons, length) > 1]
 
-introns <- lapply(exons, function(x) {
-    #Make a "gene" GRange object
-    gr = GRanges(seqnames=seqnames(x)[1], ranges=IRanges(start=min(start(x)),
-        end=max(end(x))), 
-        strand=strand(x)[1])
-    db = disjoin(c(x, gr))
-    ints = db[countOverlaps(db, x) == 0]
-    #Add an ID
-    if(as.character(strand(ints)[1]) == "-") {
-        ints$exon_id = c(length(ints):1)
-    } else {
-        ints$exon_id = c(1:length(ints))
-    }
-    ints
-})
-introns <- GRangesList(introns)
+# introns <- lapply(exons, function(x) {
+#     #Make a "gene" GRange object
+#     gr = GRanges(seqnames=seqnames(x)[1], ranges=IRanges(start=min(start(x)),
+#         end=max(end(x))), 
+#         strand=strand(x)[1])
+#     db = disjoin(c(x, gr))
+#     ints = db[countOverlaps(db, x) == 0]
+#     #Add an ID
+#     if(as.character(strand(ints)[1]) == "-") {
+#         ints$exon_id = c(length(ints):1)
+#     } else {
+#         ints$exon_id = c(1:length(ints))
+#     }
+#     ints
+# })
+# introns <- GRangesList(introns)
 
 # %%
-
-pi_ceu = import.bw(here::here("data/annotation/Pi_CEU_10kb.bw"))
-seqlevels(pi_ceu)<- sub('chr','',seqlevels(pi_ceu))
-
-genes_with_pi <- mergeByOverlaps(gene_annotations,pi_ceu)
-results_df = data.frame(gene = character(),pi = numeric())
-for(gene in unique(genes_with_pi$gene_id)){
-    results = c(gene, mean(genes_with_pi[genes_with_pi$gene_id == gene,]$score))
-    results_df[nrow(results_df)+1,] = results
-}
-
-write.csv(results_df, here::here("data/annotation/pi_ceu_results.csv"),row.names = F)

@@ -15,7 +15,7 @@ library(Hmisc)
 
 rank_list = list()
 metric_cor_list = list()
-for (metric in c("means", "var", "sd", "cv")){
+for (metric in c("means", "sd")){
     print(metric)
     rank_mat = ldply(metric_df[[metric]][,-1], rank)
     rank_mat = t(rank_mat[,-1])
@@ -33,7 +33,13 @@ for (metric in c("means", "var", "sd", "cv")){
     dev.off()
 
     eig = eigen(metric_cor)
+    if(all(eig$vectors[,1] < 0)){
+        eig$vectors[,1] <- -eig$vectors[,1]
+    }
+    
     PC_scores = as.matrix(rank_mat) %*% eig$vectors
+
+
     print(paste(round(eig$values/sum(eig$values) * 100, 1)[1:5], collapse = "% "))
     gene_rank = rank(PC_scores[,1])
     names(gene_rank) = metric_df[[metric]][,1]

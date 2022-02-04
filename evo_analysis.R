@@ -28,6 +28,22 @@ dev.off()
 
 # %%
 # pi vals
+
+
+pi_ceu = import.bw(here::here("data/annotation/Pi_CEU_10kb.bw"))
+seqlevels(pi_ceu)<- sub('chr','',seqlevels(pi_ceu))
+
+genes_with_pi <- mergeByOverlaps(gene_annotations,pi_ceu)
+results_df = data.frame(gene = character(),pi = numeric())
+for(gene in unique(genes_with_pi$gene_id)){
+    results = c(gene, mean(genes_with_pi[genes_with_pi$gene_id == gene,]$score))
+    results_df[nrow(results_df)+1,] = results
+}
+
+write.csv(results_df, here::here("data/annotation/pi_ceu_results.csv"),row.names = F)
+
+# %% 
+
 library(psych)
 library(corrplot)
 
@@ -44,3 +60,10 @@ mtext("Spearman Correlation Plot - Numbers are p-vals", at=3.5, line=-0.5, cex=4
 pos <- expand.grid(1:ncol(cor_test_mat$p), ncol(cor_test_mat$p):1)
 text(pos, p_format(cor_test_mat$p))
 dev.off()
+
+
+rank_df[order(rank_df$sd,decreasing=TRUE),][1:10,]
+low <- grep("ENSG00000136709",rownames(brain$residuals_noOut))
+high <- grep("ENSG00000179388",rownames(brain$residuals_noOut))
+sd(brain$residuals_noOut[high,])
+apply(brain$residuals_noOut,1,sd) %>% summary
