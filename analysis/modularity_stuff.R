@@ -8,7 +8,7 @@ library(corrplot)
 library(vegan)
 library(ape)
 
-for (metric in c("means", "var", "sd", "cv")){
+for (metric in c("mean", "sd")){
     print(metric)
     rank_mat = ldply(metric_df[[metric]][,-1], rank)
     rank_mat = t(rank_mat[,-1])

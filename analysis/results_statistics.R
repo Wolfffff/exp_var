@@ -1,0 +1,116 @@
+# %%
+source(here::here("functions.R"))
+library(here)
+
+# %%
+
+# %%
+# Read in the data for each chunk in parallel if needed. 
+file_paths <- list.files(path = here::here("snakemake/Rdatas/residuals/"), 
+                         pattern = "\\.rds", full.names = TRUE)
+file_names <-  gsub(pattern = "\\.rds$", replacement = "", x = basename(file_paths))
+
+library(plyr)
+library(doMC)
+registerDoMC(64)
+data_list <- llply(file_paths, readRDS, .parallel = TRUE)
+
+names(data_list) <- file_names
+
+# %%
+
+# %%
+# GO analysis on ea
+organism = "org.Hs.eg.db"
+metrics = c("mean", "sd")
+
+library(organism, character.only = TRUE)
+library(clusterProfiler)
+library(plyr)
+library(dplyr)
+
+rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+
+top_quantiles = list()
+upper_quantiles = list()
+lower_quantiles = list()
+for(metric in c("mean","sd")){
+    cutoff = quantile(rank_df[[metric]], .95)
+    subset = rank_df[rank_df[[metric]] >= cutoff,]$gene
+    upper_quantiles[[metric]] = subset
+    cutoff = abs(quantile(-rank_df[[metric]], .95))
+    lower_quantiles[[metric]] = rank_df[rank_df[[metric]] <= quantile(rank_df[[metric]], .05),]$gene
+}
+# %%
+
+# %%
+# GO analysis against org.Hs.eg.db
+metric = "sd"
+library(enrichplot)
+
+global_go_upper = enrichGO(gene  = top_quantiles[[metric]],
+                         OrgDb         = org.Hs.eg.db,
+                         keyType       = 'ENSEMBL',
+                         ont           = "BP",
+                         pAdjustMethod = "BH",
+                         pvalueCutoff  = 0.01,
+                         qvalueCutoff  = 0.05,
+                         readable      = TRUE)
+png(here::here("data/plots/global_go_upper.png"), height = 3840, width = 2160)
+barplot(global_go_upper, showCategory=100) 
+dev.off()
+
+global_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
+                         OrgDb         = org.Hs.eg.db,
+                         keyType       = 'ENSEMBL',
+                         ont           = "BP",
+                         pAdjustMethod = "BH",
+                         pvalueCutoff  = 0.01,
+                         qvalueCutoff  = 0.05,
+                         readable      = TRUE)
+png(here::here("data/plots/global_go_lower.png"), height = 3840, width = 2160)
+barplot(global_go_lower , showCategory=100) 
+dev.off()
+
+global_go = enrichGO(gene  = rank_df$gene,
+                         OrgDb         = org.Hs.eg.db,
+                         keyType       = 'ENSEMBL',
+                         ont           = "BP",
+                         pAdjustMethod = "BH",
+                         pvalueCutoff  = 0.01,
+                         qvalueCutoff  = 0.05,
+                         readable      = TRUE)
+png(here::here("data/plots/global_go.png"), height = 3840, width = 2160)
+barplot(global_go , showCategory=100) 
+dev.off()
+# %%
+
+# %%
+# GO analysis against our list of genes
+metric = "sd"
+library(enrichplot)
+
+local_go_upper = enrichGO(gene  = top_quantiles[[metric]],
+                         OrgDb         = rank_df$gene,
+                         keyType       = 'ENSEMBL',
+                         ont           = "BP",
+                         pAdjustMethod = "BH",
+                         pvalueCutoff  = 0.01,
+                         qvalueCutoff  = 0.05,
+                         readable      = TRUE)
+png(here::here("data/plots/rank_go_upper.png"), height = 3840, width = 2160)
+barplot(local_go_upper, showCategory=100) 
+dev.off()
+
+local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
+                         OrgDb         = rank_df$gene,
+                         keyType       = 'ENSEMBL',
+                         ont           = "BP",
+                         pAdjustMethod = "BH",
+                         pvalueCutoff  = 0.01,
+                         qvalueCutoff  = 0.05,
+                         readable      = TRUE)
+png(here::here("data/plots/rank_go_lower.png"), height = 3840, width = 2160)
+barplot(local_go_lower , showCategory=100) 
+dev.off()
+# %%

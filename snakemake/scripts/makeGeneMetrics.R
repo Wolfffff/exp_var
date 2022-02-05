@@ -29,7 +29,7 @@ library(matrixStats)
 max_missingness = 0.50
 print(paste("Calculating gene level metrics with a max missingness of:", max_missingness))
 gene_metric_dfs <- list(
-    means = calculate_row_wise_metric_sparse(data_list, rowMeans, max_missingness),
+    mean = calculate_row_wise_metric_sparse(data_list, rowMeans, max_missingness),
     var = calculate_row_wise_metric_sparse(data_list, rowVars, max_missingness),
     sd = calculate_row_wise_metric_sparse(data_list, rowSds, max_missingness),
     cv = calculate_row_wise_metric_sparse(data_list, rowcvs, max_missingness)

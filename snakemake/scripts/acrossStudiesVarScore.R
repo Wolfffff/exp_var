@@ -15,7 +15,7 @@ library(Hmisc)
 
 rank_list = list()
 metric_cor_list = list()
-for (metric in c("means", "sd")){
+for (metric in c("mean", "sd")){
     print(metric)
     rank_mat = ldply(metric_df[[metric]][,-1], rank)
     rank_mat = t(rank_mat[,-1])

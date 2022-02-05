@@ -13,7 +13,7 @@ p_format <- function(x, ndp=5)
 
 library(psych)
 library(corrplot)
-merged_filtered = merged[,which(names(merged) %in% c("gene","means", "var", "sd", "cv", "alpha.symbol","Divergence.metrics.omega"))]
+merged_filtered = merged[,which(names(merged) %in% c("gene","mean", "var", "sd", "cv", "alpha.symbol","Divergence.metrics.omega"))]
 cor_mat = cor(merged_filtered[,-1],method="spearman")
 
 # Worth looking into -- FDR corrected here.
@@ -51,7 +51,7 @@ rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
 pi_vals = read.csv(here::here("data/annotation/pi_ceu_results.csv"))
 
 merged = merge(rank_df, pi_vals, by.x = "gene", by.y = "gene")
-merged_filtered = merged[,which(names(merged) %in% c("gene","means","sd", "pi"))]
+merged_filtered = merged[,which(names(merged) %in% c("gene","mean","sd", "pi"))]
 cor_mat = cor(merged_filtered[,-1],method="spearman")
 cor_test_mat = corr.test(merged_filtered[,-1],method="spearman",adjust="fdr")
 png(here::here("data/plots/SpearmanCorrelations/pi_corr_plot_with_pvals.png"), height = 2160, width = 2160)

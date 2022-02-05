@@ -1,4 +1,3 @@
-
 # Get PopHuman data
 pak::pkg_install("sergihervas/iMKT")
 library(iMKT)
