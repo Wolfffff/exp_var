@@ -1,3 +1,4 @@
+# %%
 metric_df = readRDS(here::here("snakemake/Rdatas/mean_variance.RDS"))
 rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
 imkt_df = read.csv(here::here("data/annotation/imkt_results.csv"))
@@ -25,10 +26,17 @@ pos <- expand.grid(1:ncol(cor_test_mat$p), ncol(cor_test_mat$p):1)
 text(pos, p_format(cor_test_mat$p))
 dev.off()
 
+# %%
 
 # %%
 # pi vals
 
+library(GenomicFeatures)
+library(rtracklayer)
+# BiocManager::install("GenomicFeatures")
+
+gtf <- makeTxDbFromGFF(here::here("data/annotation/Homo_sapiens.GRCh37.87.gtf")) #change me!
+gene_annotations <- genes(gtf)
 
 pi_ceu = import.bw(here::here("data/annotation/Pi_CEU_10kb.bw"))
 seqlevels(pi_ceu)<- sub('chr','',seqlevels(pi_ceu))
@@ -41,6 +49,8 @@ for(gene in unique(genes_with_pi$gene_id)){
 }
 
 write.csv(results_df, here::here("data/annotation/pi_ceu_results.csv"),row.names = F)
+
+# %% 
 
 # %% 
 
@@ -60,10 +70,12 @@ mtext("Spearman Correlation Plot - Numbers are p-vals", at=3.5, line=-0.5, cex=4
 pos <- expand.grid(1:ncol(cor_test_mat$p), ncol(cor_test_mat$p):1)
 text(pos, p_format(cor_test_mat$p))
 dev.off()
+# %% 
 
-
+# %%
 rank_df[order(rank_df$sd,decreasing=TRUE),][1:10,]
 low <- grep("ENSG00000136709",rownames(brain$residuals_noOut))
 high <- grep("ENSG00000179388",rownames(brain$residuals_noOut))
 sd(brain$residuals_noOut[high,])
 apply(brain$residuals_noOut,1,sd) %>% summary
+#%%
