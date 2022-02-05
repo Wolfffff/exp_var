@@ -31,7 +31,6 @@ library(dplyr)
 
 rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
 
-top_quantiles = list()
 upper_quantiles = list()
 lower_quantiles = list()
 for(metric in c("mean","sd")){
@@ -48,7 +47,7 @@ for(metric in c("mean","sd")){
 metric = "sd"
 library(enrichplot)
 
-global_go_upper = enrichGO(gene  = top_quantiles[[metric]],
+global_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
                          OrgDb         = org.Hs.eg.db,
                          keyType       = 'ENSEMBL',
                          ont           = "BP",
@@ -98,7 +97,7 @@ local_go_upper = enrichGO(gene  = top_quantiles[[metric]],
                          pvalueCutoff  = 0.01,
                          qvalueCutoff  = 0.05,
                          readable      = TRUE)
-png(here::here("data/plots/rank_go_upper.png"), height = 3840, width = 2160)
+png(here::here("data/plots/local_go_upper.png"), height = 3840, width = 2160)
 barplot(local_go_upper, showCategory=100) 
 dev.off()
 
@@ -110,7 +109,7 @@ local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
                          pvalueCutoff  = 0.01,
                          qvalueCutoff  = 0.05,
                          readable      = TRUE)
-png(here::here("data/plots/rank_go_lower.png"), height = 3840, width = 2160)
+png(here::here("data/plots/local_go_lower.png"), height = 3840, width = 2160)
 barplot(local_go_lower , showCategory=100) 
 dev.off()
 # %%
