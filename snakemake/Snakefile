@@ -38,7 +38,7 @@ rule all:
    input:
         "Rdatas/gene_var_rank.RDS",
         "Rdatas/gene_var_matrices.RDS",
-        expand("Rdatas/graphs/{ids}.xml.gz", ids=ids)
+        expand("Rdatas/networkStats/{ids}.csv", ids=ids)
 
 rule download:
     resources: 
@@ -116,6 +116,18 @@ rule graph:
         "Rdatas/graphs/{id}.xml.gz"
     script:
         "scripts/make_network.py"
+
+rule network_stats:
+    log:
+        log="logs/network_stats/{id}.txt",
+    resources: 
+        tmpdir="/scratch/tmp"
+    input:
+        graph="Rdatas/graphs/{id}.xml.gz"
+    output:
+        stats="Rdatas/networkStats/{id}.csv"
+    script:
+        "scripts/network_stats.py"
 
 rule geneMetrics:
     resources: 
