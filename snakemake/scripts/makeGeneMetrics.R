@@ -41,4 +41,27 @@ print(paste("Kept", nrow(gene_metric_dfs[[1]]),"genes"))
 file.remove(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 print("Saving data")
 saveRDS(gene_metric_dfs,  file = here::here("snakemake/Rdatas/gene_metrics.RDS"))
+
+
+file_paths <- list.files(path = here::here("snakemake/Rdatas/networkStats/"), 
+                         pattern = "\\.csv", full.names = TRUE)
+file_names <-  gsub(pattern = "\\.csv$", replacement = "", x = basename(file_paths))4)
+
+print("Reading network stats files")
+networkStats_list <- llply(file_paths, read.csv, .parallel = TRUE)
+
+x = networkStats_list[[1]]
+connectivity_list = llply(networkStats_list, 
+                          function(x) dplyr::select(x, Gene, WeightedDegree_fdr_1e.2))
+
+print(paste("Calculating gene level mean connectivity unsing FDR of 1e-2 and Spearman correlations."))
+connectivity = do.call(rbind, connectivity_list) %>%
+    dplyr::filter(Gene %in% gene_metric_dfs$mean$Genes) %>%
+    group_by(Gene) %>%
+    summarise(mean = mean(WeightedDegree_fdr_1e.2, na.rm = T),
+              median = median(WeightedDegree_fdr_1e.2, na.rm = T))
+attributes(connectivity) = list("fdr" = 1e-2), "correlation" = "spearman"
+
+print("Saving data")
+saveRDS(connectivity,  file = here::here("snakemake/Rdatas/gene_connectivity.RDS"))
 print("Done!")
