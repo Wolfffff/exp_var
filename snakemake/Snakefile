@@ -37,7 +37,8 @@ datasource = list(config["metadata"].keys())
 rule all:
    input:
         "Rdatas/gene_var_rank.RDS",
-        "Rdatas/gene_var_matrices.RDS"
+        "Rdatas/gene_var_matrices.RDS",
+        expand("Rdatas/graphs/{ids}.xml.gz", ids=ids)
 
 rule download:
     resources: 
@@ -90,6 +91,31 @@ rule makeResiduals:
 
     script:
         "scripts/makeResiduals.R"
+
+rule csv_residuals:
+    threads: 1
+    log:
+        log="logs/csv_residuals/{id}.txt",
+        env="Rdatas/env/csv_residuals/{id}.Rdata"    
+    resources: 
+        tmpdir="/scratch/tmp"
+    input:
+        "Rdatas/residuals/{id}.rds",
+    output:
+        "Rdatas/residuals/csv/{id}.csv",
+    script:
+        "scripts/residuals_csv.R"
+
+rule graph:
+    threads: 1
+    resources: 
+        tmpdir="/scratch/tmp"
+    input:
+        "Rdatas/residuals/csv/{id}.csv",
+    output:
+        "Rdatas/graphs/{id}.xml.gz"
+    script:
+        "scripts/make_network.py"
 
 rule geneMetrics:
     resources: 
