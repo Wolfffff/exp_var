@@ -57,7 +57,7 @@ connectivity = do.call(rbind, connectivity_list) %>%
     group_by(Gene) %>%
     summarise(mean = mean(WeightedDegree_fdr_1e.2, na.rm = T),
               median = median(WeightedDegree_fdr_1e.2, na.rm = T))
-attributes(connectivity) = list("fdr" = 1e-2, "correlation" = "spearman")
+attributes(connectivity) = c(attributes(connectivity), list("fdr" = 1e-2, "correlation" = "spearman"))
 
 print("Saving data")
 saveRDS(connectivity,  file = here::here("snakemake/Rdatas/gene_connectivity.RDS"))

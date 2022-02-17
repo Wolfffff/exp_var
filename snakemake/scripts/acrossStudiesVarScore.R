@@ -6,6 +6,8 @@ log4r_info("Loading packages")
 source(here::here("functions.R"))
 
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
+connectivity_df = readRDS(here::here("snakemake/Rdatas/gene_connectivity.RDS"))
+
 
 pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc"))
 library(corrplot)
@@ -48,7 +50,10 @@ for (metric in c("mean", "sd")){
 }
 
 rank_df = data.frame(bind_cols(rank_list))
-rank_df$gene = metric_df[[1]][,1]
+rank_df$Gene = metric_df[[1]][,1]
+names(connectivity_df) = c("Gene", "mean_connectivity", "median_connectivity")
+rank_df = inner_join(rank_df, connectivity_df, by = "Gene") %>% dplyr::relocate(Gene) %>% as_tibble
+
 write.csv(rank_df, file=here::here("data/pca_ranks.csv"))
 saveRDS(rank_df, file=snakemake@output[[1]])
 saveRDS(metric_cor_list, file=snakemake@output[[2]])
