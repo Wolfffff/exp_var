@@ -138,7 +138,8 @@ rule geneMetrics:
     input:
         expand("Rdatas/residuals/{ids}.rds", ids=ids)
     output:
-        "Rdatas/gene_metrics.RDS"
+        "Rdatas/gene_metrics.RDS",
+        "Rdatas/gene_connectivity.RDS"
     script:
         "scripts/makeGeneMetrics.R"
 
@@ -149,7 +150,8 @@ rule varScores:
         log="logs/acrossStudies/varScores.txt",
         env="Rdatas/env/acrossStudies/varScores.Rdata"   
     input:
-        "Rdatas/gene_metrics.RDS"
+        "Rdatas/gene_metrics.RDS",
+        "Rdatas/gene_connectivity.RDS"
     output:
         "Rdatas/gene_var_rank.RDS",
         "Rdatas/gene_var_matrices.RDS"

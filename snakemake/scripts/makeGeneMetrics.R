@@ -36,16 +36,13 @@ gene_metric_dfs <- list(
 )
 print(paste("Kept", nrow(gene_metric_dfs[[1]]),"genes"))
 
-#saveRDS(gene_metric_dfs,  file = snakemake@output[[1]])
-
-file.remove(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 print("Saving data")
 saveRDS(gene_metric_dfs,  file = here::here("snakemake/Rdatas/gene_metrics.RDS"))
 
 
 file_paths <- list.files(path = here::here("snakemake/Rdatas/networkStats/"), 
                          pattern = "\\.csv", full.names = TRUE)
-file_names <-  gsub(pattern = "\\.csv$", replacement = "", x = basename(file_paths))4)
+file_names <-  gsub(pattern = "\\.csv$", replacement = "", x = basename(file_paths))
 
 print("Reading network stats files")
 networkStats_list <- llply(file_paths, read.csv, .parallel = TRUE)
@@ -60,7 +57,7 @@ connectivity = do.call(rbind, connectivity_list) %>%
     group_by(Gene) %>%
     summarise(mean = mean(WeightedDegree_fdr_1e.2, na.rm = T),
               median = median(WeightedDegree_fdr_1e.2, na.rm = T))
-attributes(connectivity) = list("fdr" = 1e-2), "correlation" = "spearman"
+attributes(connectivity) = list("fdr" = 1e-2, "correlation" = "spearman")
 
 print("Saving data")
 saveRDS(connectivity,  file = here::here("snakemake/Rdatas/gene_connectivity.RDS"))
