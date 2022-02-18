@@ -1,6 +1,8 @@
 # %%
 source(here::here("functions.R"))
 library(here)
+library(sjmisc)
+library(pryr)
 
 # %%
 
@@ -17,6 +19,27 @@ data_list <- llply(file_paths, readRDS, .parallel = TRUE)
 
 names(data_list) <- file_names
 
+residuals_noout <- list()
+for (name in names(data_list)){
+    residuals_noout[[name]] <- as.data.frame(data_list[[name]]$residuals_noOut) %>% rotate_df()
+}
+
+# %%
+# %%
+
+
+residuals_df <-bind_rows(residuals_noout,.id = 'source')
+dim(residuals_df)
+n_dsets = length(data_list)
+residuals_df <- residuals_df %>% rotate_df()
+residuals_df$genes = rownames(residuals_df)
+summarized_df <- residuals_df
+# summarized_df = purrr::reduce(summarized_list, dplyr::full_join, by = "Genes")
+# colnames(summarized_df)[-1] = names(results_list)
+# x = summarized_df[1,-(1:2)]  
+max_missingness =0.5
+rowmask = apply(summarized_df[,-c(1:2)], 1, function(x) sum(is.na(x))/n_dsets < max_missingness) 
+summarized_df = summarized_df[rowmask,]
 # %%
 
 # %%
@@ -113,3 +136,31 @@ png(here::here("data/plots/local_go_lower.png"), height = 3840, width = 2160)
 barplot(local_go_lower , showCategory=100) 
 dev.off()
 # %%
+
+
+
+
+# %%
+file_paths <- list.files(path = here::here("snakemake/Rdatas/residuals/"), 
+                         pattern = "\\.rds", full.names = TRUE)
+file_names <-  gsub(pattern = "\\.rds$", replacement = "", x = basename(file_paths))
+
+library(plyr)
+library(doMC)
+registerDoMC(64)
+data_list <- llply(file_paths, readRDS, .parallel = TRUE)
+
+names(data_list) <- file_names
+
+# %%
+
+# %%
+library("biomaRt")
+# listMarts()
+mart = useMart(biomart="ENSEMBL_MART_ENSEMBL", host="grch37.ensembl.org", path="/biomart/martservice" ,dataset="hsapiens_gene_ensembl")
+
+
+
+# %%
+
+metrics <- readRDS("snakemake/Rdatas/gene_metrics.RDS")

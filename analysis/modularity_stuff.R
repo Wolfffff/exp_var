@@ -1,5 +1,5 @@
+# %%
 source(here::here("functions.R"))
-
 
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 rank_list = list()
@@ -36,10 +36,10 @@ for (metric in c("mean", "sd")){
 rank_df = data.frame(bind_cols(rank_list))
 rank_df$gene = metric_df[[1]][,1]
 write.csv(rank_df, file=here::here("data/pca_ranks.csv"))
+# %%
 
 
-
-
+# %%
 #  Modularity
 pak::pkg_install("diogro/evolqg")
 devtools::install_github("diogro/yamda-r", subdir = "package")
@@ -51,3 +51,4 @@ names(groups) =  colnames(metric_cor)
 toHypotMatrix(groups)
 
 TestModularity(var_cor, toHypotMatrix(groups), permutations = 10000)
+# %%
