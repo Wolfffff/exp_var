@@ -9,11 +9,17 @@ metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 connectivity_df = readRDS(here::here("snakemake/Rdatas/gene_connectivity.RDS"))
 
 
-pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc"))
+pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc", "ggrepel", "wesanderson"))
 library(corrplot)
 library(vegan)
 library(ape)
 library(Hmisc)
+library(ggrepel)
+library(wesanderson)
+
+ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"), header=T)
+rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"), header=T)
+metadata_df = bind_rows(ea_df,rc3_df)
 
 rank_list = list()
 metric_cor_list = list()
@@ -30,9 +36,19 @@ for (metric in c("mean", "sd")){
     dev.off()
 
     res <- pcoa(abs(1 - metric_cor))
-    png(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_PCoA_plot.png")), height = 1080, width = 1080)
-    biplot(res)
-    dev.off()
+
+
+    pcoa_df = data.frame(res$vectors[, 1:2],
+               study = rownames(data.frame(res$vectors[, 1:2])))    
+    pcoa_df$source = metadata_df[match(pcoa_df$study, metadata_df$id), "group"]
+
+    pallet = wes_palette("Royal1", 4)
+    pallet[3] = wes_palette("Rushmore1")[3]
+    pcoa_plot = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, color = source)) + 
+        geom_point() + geom_text_repel(max.overlaps = 15) + coord_fixed() +
+         scale_color_manual(values = pallet) + 
+        ggtitle("PCoA Ordination") + labs(x = "PCoA Axis 1", y = "PCoA Axis 2") + theme_cowplot()
+    save_plot(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_PCoA_plot.png")), pcoa_plot, base_height = 7, base_asp = 1.2)
 
     eig = eigen(metric_cor)
     if(all(eig$vectors[,1] < 0)){
