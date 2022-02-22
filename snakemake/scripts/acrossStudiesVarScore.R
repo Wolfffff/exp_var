@@ -45,7 +45,7 @@ for (metric in c("mean", "sd")){
     pallet = wes_palette("Royal1", 4)
     pallet[3] = wes_palette("Rushmore1")[3]
     pcoa_plot = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, color = source)) + 
-        geom_point() + geom_text_repel(max.overlaps = 15) + coord_fixed() +
+        geom_point() + geom_text_repel(max.overlaps = 15, show.legend = FALSE) + coord_fixed() +
          scale_color_manual(values = pallet) + 
         ggtitle("PCoA Ordination") + labs(x = "PCoA Axis 1", y = "PCoA Axis 2") + theme_cowplot()
     save_plot(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_PCoA_plot.png")), pcoa_plot, base_height = 7, base_asp = 1.2)
