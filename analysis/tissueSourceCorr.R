@@ -1,4 +1,4 @@
-# Script for making pretty correlation matrices
+# Script for analysing the drivers of correlation strucuture
 
 source(here::here("functions.R"))
 
