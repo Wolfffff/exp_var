@@ -1,8 +1,8 @@
-name,id,columns_to_ignore
-BLUEPRINT EpiVar project: Genetic Drivers of Epigenetic and Transcriptional Variation in Human Immune Cells,E-ENAD-34,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id
-RNA-sequencing of 465 lymphoblastoid cell lines from the 1000 Genomes,E-GEUV-1,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id
-Mapping regulatory variation in sensory neurons using IPS lines from the HIPSCI project,E-ENAD-33,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id
-"RNA-seq of coding RNA in human fibroblasts, Peripheral Blood Mononuclear Cells (PBMCs) and induced pluripotent stem cells (iPS cells) as part of the HipSci project",E-MTAB-4748,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id;cell_line
-"RNA-seq of 359 treatment-naive pediatric patients with Crohn's disease, patients with ulcerative colitis and control individuals",E-GEOD-57945,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id
-#RNA-seq of ileal biopsies from diagnostic endoscopy of pediatric Crohn's disease patients and non inflammatory bowel disease controls,E-GEOD-101794,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id
-Transcription profiling by high throughput in pre- and post-infection of Plasmodium falciparum,E-GEOD-52166,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id
+name,id,columns_to_ignore,group
+BLUEPRINT EpiVar project: Genetic Drivers of Epigenetic and Transcriptional Variation in Human Immune Cells,E-ENAD-34,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas
+RNA-sequencing of 465 lymphoblastoid cell lines from the 1000 Genomes,E-GEUV-1,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas
+Mapping regulatory variation in sensory neurons using IPS lines from the HIPSCI project,E-ENAD-33,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas
+"RNA-seq of coding RNA in human fibroblasts, Peripheral Blood Mononuclear Cells (PBMCs) and induced pluripotent stem cells (iPS cells) as part of the HipSci project",E-MTAB-4748,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id;cell_line,Other - Expression Atlas
+"RNA-seq of 359 treatment-naive pediatric patients with Crohn's disease, patients with ulcerative colitis and control individuals",E-GEOD-57945,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas
+#RNA-seq of ileal biopsies from diagnostic endoscopy of pediatric Crohn's disease patients and non inflammatory bowel disease controls,E-GEOD-101794,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas
+Transcription profiling by high throughput in pre- and post-infection of Plasmodium falciparum,E-GEOD-52166,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas

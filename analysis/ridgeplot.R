@@ -76,24 +76,62 @@ ggplot(residuals_df_long, aes(x = value, y = source, fill = stat(quantile))) +
                     labels = c("(0, 5%]", "(5%, 95%]", "(95%, 1]")) + theme_minimal()
 ggsave("ridgeplot_raw_residuals_mean_centered", width = 8, height = 6, units = "in", dpi = 300)
 # %%
-# %%
-library(matrixStats)
-center_colmedians <- function(x) {
-    xcenter = colMedians(x)
-    x - rep(xcenter, rep.int(nrow(x), ncol(x)))
-}
-#%%
 
 #%%
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
-metric_df$sd[,-1] = metric_df$sd[,-1] %>% mutate_all(scale, scale = FALSE)
+metric_df$sd[,-1] = metric_df$sd[,-1] %>% mutate_all(scale, scale=FALSE)
 metric_df_sd_long = metric_df$sd %>% pivot_longer(cols = -Genes, names_to = "study",values_to = "value")
 ggplot(metric_df_sd_long, aes(x = value, y = study, fill = stat(quantile))) +
   stat_density_ridges(quantile_lines = TRUE,
                       calc_ecdf = TRUE,
                       geom = "density_ridges_gradient",
-                      quantiles = c(0.05, 0.95)) +
+                      quantiles = c(0.025, 0.8)) +
   scale_fill_manual(name = "Prob.", values = c("#E2FFF2", "white", "#B0E0E6"),
                     labels = c("(0, 5%]", "(5%, 95%]", "(95%, 1]")) + theme_minimal()
 ggsave("ridgeplot_sd_by_study_mean_centered.png", width = 24, height = 12, units = "in", dpi = 300)
 #%%
+
+
+#%%
+metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
+metric_df$sd[,-1] = metric_df$sd[,-1] %>% mutate_all(scale, scale = FALSE)
+metric_df_sd_long = metric_df$sd %>% pivot_longer(cols = -Genes, names_to = "study",values_to = "value")
+ggplot(metric_df_sd_long, aes(x = value,group= study,color=study)) + #, fill = stat(quantile))) +
+  geom_density()
+ggsave("stat_density_sd_by_study_mean_centered.png", width = 24, height = 12, units = "in", dpi = 300)
+#%%
+
+# %%
+# Fit chisq in loop to find best fit df -- there must be a better way
+# https://stackoverflow.com/questions/28922782/r-fitting-chi-squared-distribution-with-large-x-range 
+library(MASS)
+
+remove_na_fit_dist = function(x){
+    x<-x[!is.na(x)]
+    max_df <- 100 # max degree of freedom to test (here from 1 to 100)
+    chi_df_disp <- rep(NA,max_df)
+
+    # loop across degree of freedom
+    for (i in 1:max_df) {
+    chi_adjusted <- (x/mean(x))*i # Adjust the chi-sq distribution so that the mean matches the tested degree of freedom 
+    chi_fit <- fitdistr(chi_adjusted,"chi-squared",start=list(df=i),method="BFGS") ## Fitting
+    chi_df_disp[i] <- chi_fit$estimate/i # This is going to give you the dispersion between the fitted df and the tested df
+    }
+
+    # Find the value with the smallest dispersion (i.e. the best match between the estimated df and the tested df)
+    real_df <- which.min(abs(chi_df_disp-1))
+    real_df # print the real degree of freedom after correction
+}
+
+res = apply(metric_df$sd[,-1], 2, remove_na_fit_dist)
+# %%
+
+# write.csv(x= metric_df$sd, here::here("sd_data.csv"))
+
+# %%
+n_samples = lapply(residuals_noout, nrow)
+cor(res,unlist(n_samples)
+# %%
+
+
+max()
