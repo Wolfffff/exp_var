@@ -1,60 +1,59 @@
-﻿name,id,columns_to_ignore,class,group
-GTEx v8 data for tissue: brain,BRAIN,,control,GTEx
-GTEx v8 data for tissue: skin,SKIN,,control,GTEx
-GTEx v8 data for tissue: esophagus,ESOPHAGUS,,control,GTEx
-GTEx v8 data for tissue: blood vessel,BLOOD_VESSEL,,control,GTEx
-GTEx v8 data for tissue: adipose tissue,ADIPOSE_TISSUE,,control,GTEx
-GTEx v8 data for tissue: blood,BLOOD,,control,GTEx
-GTEx v8 data for tissue: heart,HEART,,control,GTEx
-GTEx v8 data for tissue: muscle,MUSCLE,,control,GTEx
-GTEx v8 data for tissue: colon,COLON,,control,GTEx
-GTEx v8 data for tissue: thyroid,THYROID,,control,GTEx
-GTEx v8 data for tissue: nerve,NERVE,,control,GTEx
-GTEx v8 data for tissue: lung,LUNG,,control,GTEx
-GTEx v8 data for tissue: breast,BREAST,,control,GTEx
-GTEx v8 data for tissue: testis,TESTIS,,control,GTEx
-GTEx v8 data for tissue: stomach,STOMACH,,control,GTEx
-GTEx v8 data for tissue: adrenal gland,ADRENAL_GLAND,,control,GTEx
-GTEx v8 data for tissue: pituitary,PITUITARY,,control,GTEx
-GTEx v8 data for tissue: prostate,PROSTATE,,control,GTEx
-GTEx v8 data for tissue: spleen,SPLEEN,,contol,GTEx
-GTEx v8 data for tissue: liver,LIVER,,control,GTEx
-GTEx v8 data for tissue: pancreas,PANCREAS,,control,GTEx
-GTEx v8 data for tissue: bone marrow,BONE_MARROW,,control,GTEx
-GTEx v8 data for tissue: ovary,OVARY,,control,GTEx
-GTEx v8 data for tissue: salivary gland,SALIVARY_GLAND,,,GTEx
-TCGA data for tissue: BRCA,BRCA,,case-control,TCGA
-TCGA data for tissue: KIRC,KIRC,,case-control,TCGA
-TCGA data for tissue: LUAD,LUAD,,case-control,TCGA
-TCGA data for tissue: UCEC,UCEC,,case-control,TCGA
-TCGA data for tissue: THCA,THCA,,case-control,TCGA
-TCGA data for tissue: PRAD,PRAD,,case-control,TCGA
-TCGA data for tissue: LUSC,LUSC,,case-control,TCGA
-#TCGA data for tissue: HNSC,HNSC,,case-control,TCGA
-TCGA data for tissue: COAD,COAD,,case-control,TCGA
-TCGA data for tissue: STAD,STAD,,case-control,TCGA
-TCGA data for tissue: LIHC,LIHC,,case-control,TCGA
-TCGA data for tissue: KIRP,KIRP,,case-control,TCGA
-Genetic and Epigenetic Fine Mapping of Complex Trait Associated Loci in the Human Liver,SRP187978,,control,Other - recount3
+﻿name,id,columns_to_ignore,class,group,tissue
+GTEx v8 data for tissue: brain,BRAIN,,control,GTEx,neuron
+GTEx v8 data for tissue: skin,SKIN,,control,GTEx,skin
+GTEx v8 data for tissue: esophagus,ESOPHAGUS,,control,GTEx,esophagus
+GTEx v8 data for tissue: blood vessel,BLOOD_VESSEL,,control,GTEx,blood_vessel
+GTEx v8 data for tissue: adipose tissue,ADIPOSE_TISSUE,,control,GTEx,fat
+GTEx v8 data for tissue: blood,BLOOD,,control,GTEx,blood
+GTEx v8 data for tissue: heart,HEART,,control,GTEx,heart
+GTEx v8 data for tissue: muscle,MUSCLE,,control,GTEx,muscle
+GTEx v8 data for tissue: colon,COLON,,control,GTEx,colon
+GTEx v8 data for tissue: thyroid,THYROID,,control,GTEx,thyroid
+GTEx v8 data for tissue: nerve,NERVE,,control,GTEx,neuron
+GTEx v8 data for tissue: lung,LUNG,,control,GTEx,lung
+GTEx v8 data for tissue: breast,BREAST,,control,GTEx,breast
+GTEx v8 data for tissue: testis,TESTIS,,control,GTEx,testis
+GTEx v8 data for tissue: stomach,STOMACH,,control,GTEx,stomach
+GTEx v8 data for tissue: adrenal gland,ADRENAL_GLAND,,control,GTEx,adrenal
+GTEx v8 data for tissue: pituitary,PITUITARY,,control,GTEx,pituitary
+GTEx v8 data for tissue: prostate,PROSTATE,,control,GTEx,prostate
+GTEx v8 data for tissue: spleen,SPLEEN,,contol,GTEx,spleen
+GTEx v8 data for tissue: liver,LIVER,,control,GTEx,liver
+GTEx v8 data for tissue: pancreas,PANCREAS,,control,GTEx,pancreas
+GTEx v8 data for tissue: bone marrow,BONE_MARROW,,control,GTEx,marrow
+GTEx v8 data for tissue: ovary,OVARY,,control,GTEx,ovary
+GTEx v8 data for tissue: salivary gland,SALIVARY_GLAND,,,GTEx,salivary
+TCGA data for tissue: BRCA,BRCA,,case-control,TCGA,breast
+TCGA data for tissue: KIRC,KIRC,,case-control,TCGA,kidney
+TCGA data for tissue: LUAD,LUAD,,case-control,TCGA,lung
+TCGA data for tissue: UCEC,UCEC,,case-control,TCGA,uterus
+TCGA data for tissue: THCA,THCA,,case-control,TCGA,thyroid
+TCGA data for tissue: PRAD,PRAD,,case-control,TCGA,prostate
+TCGA data for tissue: LUSC,LUSC,,case-control,TCGA,lung
+#TCGA data for tissue: HNSC,HNSC,,case-control,TCGA,epithelial
+TCGA data for tissue: COAD,COAD,,case-control,TCGA,colon
+TCGA data for tissue: STAD,STAD,,case-control,TCGA,stomach
+TCGA data for tissue: LIHC,LIHC,,case-control,TCGA,liver
+TCGA data for tissue: KIRP,KIRP,,case-control,TCGA,kidney
+Genetic and Epigenetic Fine Mapping of Complex Trait Associated Loci in the Human Liver,SRP187978,,control,Other - recount3,liver
 #_Genetics_of_gene_expression_in_macrophage_immune_response_Open_access,ERP020977,,multi-group,Other - recount3
-RNA-seq transcript and gene data on zika exposed and zika naïve samples,SRP192714,,case-control,Other - recount3
-#A blood RNA signature for predicting the treatment outcome in the Tuberculosis Treatment Response Cohort,SRP092402,,case-control,Other - recount3
-HipSci___RNAseq___healthy_volunteers,ERP007111,,control,Other - recount3
-"Blood extracellular vesicle long RNA sequencing of human blood from pancreatic ductal adenocarcinoma (PDAC) chronic pancreatitis (CP) and healthy individuals",SRP212755,,Other - recount3
-A network of transcriptome modules demonstrates mechanistic pathways of both virus induced and non-viral asthma exacerbations in children [blood],SRP150552,,longitudinal,Other - recount3
-Cell type-specific immune phenotypes predict loss of insulin secretion in new-onset type 1 diabetes,SRP174638,,longitudinal,Other - recount3
-A blood RNA signature for tuberculosis disease risk in household contact study - GC6 cohort.,SRP098758,,longitudinal,Other - recount3
-"Transcriptome profiling from adipose tissue during low-caloric diet reveals predictors of long-term weight and glycemic outcomes in obese, non-diabetic subjects",SRP101294,,control,Other - recount3
-Blood RNAseq of TB contacts samples,ERP115010,,control,Other - recount3
-Analysis of parent-of-origin bias in gene expression levels,SRP095272,,control,Other - recount3
-Gene expression associated with PTSD in World Trade Center responders: An RNA sequencing study,SRP102999,,case-cotrol,Other - recount3
-"producing reference epigenomes of human gastrointestinal epithelial cells vascular endothelial cells and cells of reproductive organs",DRP001797,Other - recount3
-"RNA-seq of tumor-educated platelets enables blood-based pan-cancer, multiclass and molecular pathway cancer diagnostics",SRP057500,cell.type,multi-group,Other - recount3
-RNA Expression in fusiform gyrus of AD and Control subjects,SRP181886,,case-control,Other - recount3
-RNA-seq analysis of hepatocellular carcinoma with portal vein tumor thrombosis,SRP069212,,case-control,Other - recount3
-Elucidating the etiology and molecular pathogenicity of infectious diarrhea by high throughput RNA sequencing,SRP059039,,multi-group,Other - recount3
-Natural selection has contributed to functional immune response differences between human hunter-gatherers and agriculturalists,SRP162654,,multi-group,Other - recount3
-Molecular Hallmarks of Naturally Acquired Immunity to Malaria,SRP032775,,paired-exposure,Other - recount3
-Cell type specific gene expression patterns associated with posttraumatic stress disorder in World Trade Center responders,SRP145493,,paired-exposure,Other - recount3
-Gene Networks Specific for Innate Immunity Define Post-traumatic Stress Disorder [RNA-Seq],SRP051848,,?,Other - recount3
-Transcriptome analysis of psoriasis in a large case-control sample: RNA-seq provides insights into disease mechanisms,SRP035988,,case-control,Other - recount3
+RNA-seq transcript and gene data on zika exposed and zika naïve samples,SRP192714,,case-control,Other - recount3,blood
+#A blood RNA signature for predicting the treatment outcome in the Tuberculosis Treatment Response Cohort,SRP092402,,case-control,Other - recount3,blood
+HipSci___RNAseq___healthy_volunteers,ERP007111,,control,Other - recount3,skin
+"Blood extracellular vesicle long RNA sequencing of human blood from pancreatic ductal adenocarcinoma (PDAC) chronic pancreatitis (CP) and healthy individuals",SRP212755,,multi-group,Other - recount3,blood
+A network of transcriptome modules demonstrates mechanistic pathways of both virus induced and non-viral asthma exacerbations in children [blood],SRP150552,,longitudinal,Other - recount3,blood
+Cell type-specific immune phenotypes predict loss of insulin secretion in new-onset type 1 diabetes,SRP174638,,longitudinal,Other - recount3,immune
+A blood RNA signature for tuberculosis disease risk in household contact study - GC6 cohort.,SRP098758,,longitudinal,Other - recount3,blood
+"Transcriptome profiling from adipose tissue during low-caloric diet reveals predictors of long-term weight and glycemic outcomes in obese, non-diabetic subjects",SRP101294,,control,Other - recount3,fat
+Blood RNAseq of TB contacts samples,ERP115010,,control,Other - recount3,blood
+Analysis of parent-of-origin bias in gene expression levels,SRP095272,,control,Other - recount3,blood
+Gene expression associated with PTSD in World Trade Center responders: An RNA sequencing study,SRP102999,,case-cotrol,Other - recount3,blood
+"RNA-seq of tumor-educated platelets enables blood-based pan-cancer, multiclass and molecular pathway cancer diagnostics",SRP057500,cell.type,multi-group,Other - recount3,platelets
+RNA Expression in fusiform gyrus of AD and Control subjects,SRP181886,,case-control,Other - recount3,neuron
+RNA-seq analysis of hepatocellular carcinoma with portal vein tumor thrombosis,SRP069212,,case-control,Other - recount3,liver
+Elucidating the etiology and molecular pathogenicity of infectious diarrhea by high throughput RNA sequencing,SRP059039,,multi-group,Other - recount3,blood
+Natural selection has contributed to functional immune response differences between human hunter-gatherers and agriculturalists,SRP162654,,multi-group,Other - recount3,blood
+Molecular Hallmarks of Naturally Acquired Immunity to Malaria,SRP032775,,paired-exposure,Other - recount3,blood
+Cell type specific gene expression patterns associated with posttraumatic stress disorder in World Trade Center responders,SRP145493,,paired-exposure,Other - recount3,blood
+Gene Networks Specific for Innate Immunity Define Post-traumatic Stress Disorder [RNA-Seq],SRP051848,,?,Other - recount3,immune
+Transcriptome analysis of psoriasis in a large case-control sample: RNA-seq provides insights into disease mechanisms,SRP035988,,case-control,Other - recount3,skin
