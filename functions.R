@@ -644,3 +644,13 @@ remove_id_ver <- function(x){
   sapply(x, dot_split, USE.NAMES = FALSE)
 }
 
+library(dplyr)
+library(wesanderson)
+
+quantile_violin_plot = function(x,y, ntiles = 10){
+    df = data.frame(x=x,y=y)
+    df = df %>% mutate(quantilegroup = ntile(x, ntiles))
+    ggplot(df, aes(x=factor(quantilegroup),group=quantilegroup,y)) + geom_violin(fill = wes_palette("Royal2")[5]) +
+    scale_x_discrete(labels=c(1:ntiles))
+}
+
