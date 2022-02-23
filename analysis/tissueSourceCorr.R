@@ -92,9 +92,10 @@ p_tissue = mcmc_intervals(fit$draws("c")) +
 p_source = mcmc_intervals(fit$draws("b")) + 
     scale_y_discrete(labels = levels(corr_df$source))
 
-p_study = mcmc_intervals(fit$draws("as"))
-
+p_study = mcmc_intervals(fit$draws("as")) +
+    scale_y_discrete(labels = ids)
 
 library(patchwork)
 p_model = p_study + (p_tissue/p_source)
-save_plot("test.png", p_model, base_height = 7, base_asp = 1, ncol = 2, nrow = 2)
+save_plot(here::here("data/plots/correlationModeling.png"), 
+          p_model, base_height = 7, base_asp = 1, ncol = 2, nrow = 2)
