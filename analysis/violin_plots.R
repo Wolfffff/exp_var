@@ -5,15 +5,58 @@ ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"), header=T)
 rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"), header=T)
 metadata_df = bind_rows(ea_df,rc3_df)
 rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
-library(dplyr)
 
-quantile_violin_plot = function(x,y){
-    df = data.frame(x=x,y=y)
-    df = df %>% mutate(quantilegroup = ntile(x, 10))
-    ggplot(df, aes(x=factor(quantilegroup),group=quantilegroup,y)) + geom_violin(fill = wes_palette("Royal2")[5]) +
-    scale_x_discrete(labels=c(1:10))
-}
-library(wesanderson)
+
 
 quantile_violin_plot(rank_df$sd,rank_df$mean) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1)# + theme_minimal() + theme(legend.position = "none")
 ggsave("example.jpg")
+
+
+# %%
+# %%
+ptwas_table <- read.table(here::here("data/annotation/ptwas_table3_sig_genetrait_interactions.txt"), header=T, sep=" ")
+ptwas_traits <- read.csv(here::here("data/annotation/ptwas_traits.csv"))
+ptwas_metadata <- read.csv(here::here("data/annotation/ptwas_metadata.csv"))
+
+library(stringr)
+ptwas_table$Gene =  str_split_fixed(ptwas_table$Gene,'\\.',Inf)[,1]
+uniq_disease_linked_genes = unique(ptwas_table$Gene)
+
+organism = "org.Hs.eg.db"
+library(organism, character.only = TRUE)
+# %%
+
+# %%
+library(clusterProfiler)
+library(plyr)
+library(dplyr)
+
+rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+term2gene_df = ptwas_table[, c("Trait","Gene")]
+ptwas_table_merged = merge(term2gene_df,ptwas_traits, by.x = "Trait", by.y = "ID", all.x = TRUE)
+# %%
+
+rank_df = dplyr::rename(rank_df, Gene = gene)
+cat_df = ptwas_table_merged
+rank_df_with_disease = rank_df %>% mutate(disease = if_else(Gene %in% cat_df$Gene, 1, 0))
+
+lapply(log_reg_results, print)
+
+library(ggpubr)
+library(ggplot2)
+library(purrr)
+# Boxplot ranks
+for (cat in unique(ptwas_table_merged$Category)){
+    if(is.na(cat)){
+        next
+    }
+    cat_df = ptwas_table_merged#[ptwas_table_merged$Category == cat,]
+    rank_df_with_disease = rank_df %>% mutate(disease = if_else(Gene %in% cat_df$Gene, 1, 0))
+    quantile_violin_plot( rank_df_with_disease$disease,rank_df_with_disease$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+    ggsave(here::here(paste0(cat, ".jpg")), width = 18, height = 6, units = "in", dpi = 300)
+}
+rank_df_with_disease = rank_df %>% mutate(disease = if_else(Gene %in% ptwas_table_merged$Gene, 1, 0))
+quantile_violin_plot( rank_df_with_disease$disease,rank_df_with_disease$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+ggsave(here::here("ptwas_table_merged.jpg")), width = 18, height = 6, units = "in", dpi = 300)
+
+# %%

@@ -149,8 +149,8 @@ metric_df_sd_long = metric_df$sd %>% pivot_longer(cols = -Genes, names_to = "stu
 metric_df_sd_long_scaled = metric_df_copy$sd %>% pivot_longer(cols = -Genes, names_to = "study",values_to = "value")
 
 rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
-high_gene = rank_df[which(rank_df$sd >= sort(rank_df$sd, decreasing=TRUE)[5]),]$Gene
-low_gene = rank_df[which(rank_df$sd <= sort(rank_df$sd)[5]),]$Gene
+high_gene = rank_df[which(rank_df$sd >= sort(rank_df$sd, decreasing=TRUE)[1]),]$Gene
+low_gene = rank_df[which(rank_df$sd <= sort(rank_df$sd)[1]),]$Gene
 
 high_df = metric_df_sd_long[metric_df_sd_long$Genes %in% high_gene,]
 low_df = metric_df_sd_long[metric_df_sd_long$Genes %in% low_gene,]
