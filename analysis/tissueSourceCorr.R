@@ -47,15 +47,14 @@ fit_stan <- ulam(
     alist(
         corr ~ normal( mu , sigma ),
         mu <- a + as[s1] + as[s2] + b[n_source],
-        as[index] ~ normal(0, 1),
-        b[n_source] ~ normal(0, 1),
+        as[index] ~ normal(0, .3),
+        b[n_source] ~ normal(0, .3),
         a ~ normal( 0 , 1 ),
         sigma ~ exponential( 1 )
     ), data = rethinking_data, chains = 1, cores = 1, iter = 1)
 mod <- cmdstan_model( cmdstanr_model_write(rethinking::stancode(fit_stan)) )
 fit <- mod$sample(
   data = rethinking_data, 
-  seed = 123, 
   chains = 4, 
   parallel_chains = 4,
   adapt_delta = 0.99, max_treedepth = 15
@@ -73,5 +72,3 @@ fit$summary() %>%
     relocate(id) %>% 
     print(n=60)
 
-levels(corr_df$source)
-ids
