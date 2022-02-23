@@ -87,15 +87,18 @@ mcmc_hist(fit$draws("mu"))
 
 
 p_tissue = mcmc_intervals(fit$draws("c")) + 
-    scale_y_discrete(labels = c("Different tissue", "Same tissue"))
+    scale_y_discrete(labels = c("Different tissue", "Same tissue")) +
+    ggtitle("B. Tissue")
 
 p_source = mcmc_intervals(fit$draws("b")) + 
-    scale_y_discrete(labels = levels(corr_df$source))
+    scale_y_discrete(labels = levels(corr_df$source)) +
+    ggtitle("C. Source")
 
 p_study = mcmc_intervals(fit$draws("as")) +
-    scale_y_discrete(labels = ids)
+    scale_y_discrete(labels = ids) +
+    ggtitle("A. Study")
 
-library(patchwork)
-p_model = p_study + (p_tissue/p_source)
+p_model = p_study + (p_tissue/p_source)  + 
+  plot_annotation(title = 'Modeling the driver of between-study correlations')
 save_plot(here::here("data/plots/correlationModeling.png"), 
-          p_model, base_height = 7, base_asp = 1, ncol = 2, nrow = 2)
+          p_model, base_height = 6, base_asp = 1, ncol = 2, nrow = 2)
