@@ -14,7 +14,10 @@ source(here::here("functions.R"))
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"), header=T, comment.char = "#")
 rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"), header=T, comment.char = "#")
-metadata_df = bind_rows(ea_df,rc3_df)
+metadata_df = bind_rows(ea_df,rc3_df) %>%
+    mutate(group = gsub("Other - Expression Atlas", "Other", group),
+           group = gsub("Other - recount3", "Other", group),)
+
 corr_mat = readRDS(here::here("snakemake/Rdatas/gene_var_matrices.RDS"))$sd
 
 ids = rownames(corr_mat)
@@ -69,28 +72,26 @@ fit <- mod$sample(
 fit$summary() %>% as.data.frame()
 
 fit$summary() %>% 
-    dplyr::filter(grepl('b', variable)) %>% 
-    mutate(source = levels(corr_df$source)) %>% 
+    dplyr::filter(grepl('b', variable)) %>%
+    mutate(source = levels(corr_df$source)) %>%
     relocate(source)
 
-fit$summary() %>% 
+fit$summary() %>%
     dplyr::filter(grepl('c', variable))
 
-fit$summary() %>% 
-    dplyr::filter(grepl('as', variable)) %>% 
-    mutate(id = ids) %>% 
-    relocate(id) %>% 
+fit$summary() %>%
+    dplyr::filter(grepl('as', variable)) %>%
+    mutate(id = ids) %>%
+    relocate(id) %>%
     print(n=60)
 
 library(bayesplot)
-mcmc_hist(fit$draws("mu"))
 
-
-p_tissue = mcmc_intervals(fit$draws("c")) + 
+p_tissue = mcmc_intervals(fit$draws("c")) +
     scale_y_discrete(labels = c("Different tissue", "Same tissue")) +
     ggtitle("B. Tissue")
 
-p_source = mcmc_intervals(fit$draws("b")) + 
+p_source = mcmc_intervals(fit$draws("b")) +
     scale_y_discrete(labels = levels(corr_df$source)) +
     ggtitle("C. Source")
 
