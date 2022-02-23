@@ -59,7 +59,4 @@ X.text.size = 3, grid.hline = FALSE,
           
 dev.off()
 
-
-
-# %%
-gene_metrics = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
+# TODO: make tissue specific mapping

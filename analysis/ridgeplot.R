@@ -133,5 +133,19 @@ n_samples = lapply(residuals_noout, nrow)
 cor(res,unlist(n_samples)
 # %%
 
+metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
+metric_df$sd[,-1] = metric_df$sd[,-1] %>% mutate_all(scale, scale = FALSE)
+metric_df_sd_long = metric_df$sd %>% pivot_longer(cols = -Genes, names_to = "study",values_to = "value")
 
-max()
+rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+high_gene = rank_df[which(rank_df$sd == max(rank_df$sd)),]$Gene
+low_gene = rank_df[which(rank_df$sd == min(rank_df$sd)),]$Gene
+
+high_df = metric_df_sd_long[metric_df_sd_long$Genes %in% high_gene,]
+low_df = metric_df_sd_long[metric_df_sd_long$Genes %in% low_gene,]
+
+ggplot(metric_df_sd_long, aes(x = value,group= study,color=study)) + #, fill = stat(quantile))) +
+  geom_density() + geom_rug(data = low_df,aes(x=value), color = "red") + geom_rug(data = high_df,aes(x=value), color = "blue") + theme_minimal() + theme(legend.position = "none")
+ggsave("stat_density_sd_by_study_mean_centered_rug.png", width = 24, height = 12, units = "in", dpi = 300)
+
+
