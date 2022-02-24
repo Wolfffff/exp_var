@@ -143,6 +143,8 @@ metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 metric_df_copy = metric_df
 
 metric_df$sd[,-1] = metric_df$sd[,-1] %>% mutate_all(scale, scale = FALSE)
+# quantile normalize
+# metric_df_copy$sd[,-1] = as.data.frame(normalize.quantiles(as.matrix(metric_df_copy$sd[,-1])))
 metric_df_copy$sd[,-1] = metric_df_copy$sd[,-1] %>% mutate_all(scale, scale = TRUE)
 
 metric_df_sd_long = metric_df$sd %>% pivot_longer(cols = -Genes, names_to = "study",values_to = "value")

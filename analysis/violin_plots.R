@@ -52,11 +52,11 @@ for (cat in unique(ptwas_table_merged$Category)){
     }
     cat_df = ptwas_table_merged#[ptwas_table_merged$Category == cat,]
     rank_df_with_disease = rank_df %>% mutate(disease = if_else(Gene %in% cat_df$Gene, 1, 0))
-    quantile_violin_plot( rank_df_with_disease$disease,rank_df_with_disease$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+    quantile_violin_plot(rank_df_with_disease$sd,rank_df_with_disease$disease,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
     ggsave(here::here(paste0("data/plots/violin_plots/",cat, ".jpg")), width = 18, height = 6, units = "in", dpi = 300)
 }
 rank_df_with_disease = rank_df %>% mutate(disease = if_else(Gene %in% ptwas_table_merged$Gene, 1, 0))
-quantile_violin_plot( rank_df_with_disease$disease,rank_df_with_disease$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+quantile_violin_plot(rank_df_with_disease$disease,rank_df_with_disease$sd,ntiles=2) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
 ggsave(here::here("data/plots/violin_plots/ptwas_table_merged.jpg"), width = 18, height = 6, units = "in", dpi = 300)
 
 # %%
@@ -72,7 +72,7 @@ pi_vals = read.csv(here::here("data/annotation/pi_ceu_results.csv"))
 
 merged = merge(rank_df, pi_vals, by.x = "gene", by.y = "gene")
 merged_filtered = merged[,which(names(merged) %in% c("gene","mean","sd", "pi"))]
-quantile_violin_plot( merged_filtered$pi  ,merged_filtered$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
-ggsave(here::here("data/plots/violin_plots/pi.jpg"), width = 18, height = 6, units = "in", dpi = 300)
+quantile_violin_plot( merged_filtered$pi  ,merged_filtered$sd,ntiles=10) + ylab("SD Rank") + xlab("pi value quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+ggsave(here::here("data/plots/violin_plots/pi.jpg"), width = 18, height = 6, units = "in", dpi = 300) + xlab
 
 # %%
