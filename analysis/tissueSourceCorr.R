@@ -94,8 +94,10 @@ fit_stan <- ulam(
 mod <- cmdstan_model(cmdstanr_model_write(rethinking::stancode(fit_stan)))
 fit <- mod$sample(
   data = rethinking_data,
-  chains = 4,
-  parallel_chains = 4,
+  chains = 8,
+  parallel_chains = 8,
+  iter_warmup = 2000,
+  iter_sampling = 2000,
   adapt_delta = 0.99, max_treedepth = 15
 )
 fit$summary() %>% as.data.frame()
