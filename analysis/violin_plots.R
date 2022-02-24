@@ -53,10 +53,26 @@ for (cat in unique(ptwas_table_merged$Category)){
     cat_df = ptwas_table_merged#[ptwas_table_merged$Category == cat,]
     rank_df_with_disease = rank_df %>% mutate(disease = if_else(Gene %in% cat_df$Gene, 1, 0))
     quantile_violin_plot( rank_df_with_disease$disease,rank_df_with_disease$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
-    ggsave(here::here(paste0(cat, ".jpg")), width = 18, height = 6, units = "in", dpi = 300)
+    ggsave(here::here(paste0("data/plots/violin_plots/",cat, ".jpg")), width = 18, height = 6, units = "in", dpi = 300)
 }
 rank_df_with_disease = rank_df %>% mutate(disease = if_else(Gene %in% ptwas_table_merged$Gene, 1, 0))
 quantile_violin_plot( rank_df_with_disease$disease,rank_df_with_disease$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
-ggsave(here::here("ptwas_table_merged.jpg")), width = 18, height = 6, units = "in", dpi = 300)
+ggsave(here::here("data/plots/violin_plots/ptwas_table_merged.jpg"), width = 18, height = 6, units = "in", dpi = 300)
+
+# %%
+
+
+# %%
+library(psych)
+library(corrplot)
+
+rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+rank_df = dplyr::rename(rank_df, gene = Gene)
+pi_vals = read.csv(here::here("data/annotation/pi_ceu_results.csv"))
+
+merged = merge(rank_df, pi_vals, by.x = "gene", by.y = "gene")
+merged_filtered = merged[,which(names(merged) %in% c("gene","mean","sd", "pi"))]
+quantile_violin_plot( merged_filtered$pi  ,merged_filtered$sd,ntiles=100) + ylab("SD Rank") + xlab("metric quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+ggsave(here::here("data/plots/violin_plots/pi.jpg"), width = 18, height = 6, units = "in", dpi = 300)
 
 # %%
