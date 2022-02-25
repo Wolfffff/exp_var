@@ -1,18 +1,19 @@
 # Script for analysing the drivers of correlation strucuture
 
-install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
-cmdstanr::install_cmdstan()
+# install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+# cmdstanr::install_cmdstan()
+# pak::pkg_install(c("coda", "mvtnorm", "devtools", "loo", "dagitty", "shape", 
+#                    "bayesplot", "patchwork", "sjmisc"))
+# pak::pkg_install("rmcelreath/rethinking")
 
-pak::pkg_install(c("coda", "mvtnorm", "devtools", "loo", "dagitty", "shape", 
-                   "bayesplot", "patchwork", "sjmisc"))
-pak::pkg_install("rmcelreath/rethinking")
+source(here::here("functions.R"))
+
 
 library(rethinking)
 library(cmdstanr)
 library(bayesplot)
 library(patchwork)
 
-source(here::here("functions.R"))
 
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"),
@@ -64,8 +65,8 @@ corr_df = tibble(corr = atanh(lt(corr_mat)),
     mutate(pair2 = pair) %>%
     separate(pair2, c("Study1", "Study2"), sep = ":") %>%
     mutate(source = factor(source),
-           s1 = match(corr_df$Study1, ids),
-           s2 = match(corr_df$Study2, ids),
+           s1 = match(Study1, ids),
+           s2 = match(Study2, ids),
            n_source = as.numeric(source),
            n_bool_tissue = as.numeric(bool_tissue) + 1)
 
@@ -87,7 +88,7 @@ fit_stan <- ulam(
         as[index] ~ normal(0, 0.25),
         b[n_source] ~ normal(0, 0.25),
         c[n_bool_tissue] ~ normal(0, 0.25),
-        d ~ normal(0, 1),
+        d ~ normal(0, 0.5),
         a ~ normal(0, 1),
         sigma ~ exponential(1)
     ), data = rethinking_data, chains = 1, cores = 1, iter = 2)
@@ -98,7 +99,7 @@ fit <- mod$sample(
   parallel_chains = 8,
   iter_warmup = 2000,
   iter_sampling = 2000,
-  adapt_delta = 0.99, max_treedepth = 15
+  adapt_delta = 0.99, max_treedepth = 14
 )
 fit$summary() %>% as.data.frame()
 
