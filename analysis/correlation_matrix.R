@@ -55,7 +55,7 @@ heat.lim = c(-1, 1), X.text = round(as.matrix(M4), 2),
 X.text.size = 3, grid.hline = FALSE,
 # bottom.label.text.angle = 90,
           grid.vline = FALSE, legend.width = 11, legend.text.size = 36,legend.height = 0.5,
-          legend.vspace = -.2) + theme_minimal()
+          legend.vspace = -0.2) + theme_minimal()
           
 dev.off()
 

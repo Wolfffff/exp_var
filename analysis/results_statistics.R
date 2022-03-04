@@ -31,7 +31,13 @@ for (name in names(data_list)){
 residuals_df <-bind_rows(residuals_noout,.id = 'source')
 dim(residuals_df)
 n_dsets = length(data_list)
-residuals_df <- residuals_df %>% rotate_df()
+source = residuals_df$source
+
+residuals_array = as.matrix(residuals_df[,-1])
+residuals_array <- Rfast::transpose(residuals_array)
+
+
+residuals_df <- residuals_df[1:10, 1:10] %>% rotate_df()
 residuals_df$genes = rownames(residuals_df)
 summarized_df <- residuals_df
 # summarized_df = purrr::reduce(summarized_list, dplyr::full_join, by = "Genes")
@@ -58,53 +64,11 @@ upper_quantiles = list()
 lower_quantiles = list()
 for(metric in c("mean","sd")){
     cutoff = quantile(rank_df[[metric]], .95)
-    subset = rank_df[rank_df[[metric]] >= cutoff,]$gene
+    subset = rank_df[rank_df[[metric]] >= cutoff,]$Gene
     upper_quantiles[[metric]] = subset
     cutoff = abs(quantile(-rank_df[[metric]], .95))
-    lower_quantiles[[metric]] = rank_df[rank_df[[metric]] <= quantile(rank_df[[metric]], .05),]$gene
+    lower_quantiles[[metric]] = rank_df[rank_df[[metric]] <= quantile(rank_df[[metric]], .05),]$Gene
 }
-# %%
-
-# %%
-# GO analysis against org.Hs.eg.db
-metric = "sd"
-library(enrichplot)
-
-global_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
-                         OrgDb         = org.Hs.eg.db,
-                         keyType       = 'ENSEMBL',
-                         ont           = "BP",
-                         pAdjustMethod = "BH",
-                         pvalueCutoff  = 0.01,
-                         qvalueCutoff  = 0.05,
-                         readable      = TRUE)
-png(here::here("data/plots/global_go_upper.png"), height = 3840, width = 2160)
-barplot(global_go_upper, showCategory=100) 
-dev.off()
-
-global_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
-                         OrgDb         = org.Hs.eg.db,
-                         keyType       = 'ENSEMBL',
-                         ont           = "BP",
-                         pAdjustMethod = "BH",
-                         pvalueCutoff  = 0.01,
-                         qvalueCutoff  = 0.05,
-                         readable      = TRUE)
-png(here::here("data/plots/global_go_lower.png"), height = 3840, width = 2160)
-barplot(global_go_lower , showCategory=100) 
-dev.off()
-
-global_go = enrichGO(gene  = rank_df$gene,
-                         OrgDb         = org.Hs.eg.db,
-                         keyType       = 'ENSEMBL',
-                         ont           = "BP",
-                         pAdjustMethod = "BH",
-                         pvalueCutoff  = 0.01,
-                         qvalueCutoff  = 0.05,
-                         readable      = TRUE)
-png(here::here("data/plots/global_go.png"), height = 3840, width = 2160)
-barplot(global_go , showCategory=100) 
-dev.off()
 # %%
 
 # %%
@@ -112,26 +76,28 @@ dev.off()
 metric = "sd"
 library(enrichplot)
 
-local_go_upper = enrichGO(gene  = top_quantiles[[metric]],
-                         OrgDb         = rank_df$gene,
-                         keyType       = 'ENSEMBL',
-                         ont           = "BP",
-                         pAdjustMethod = "BH",
-                         pvalueCutoff  = 0.01,
-                         qvalueCutoff  = 0.05,
-                         readable      = TRUE)
+local_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
+                          universe = rank_df$Gene,
+                          OrgDb         = org.Hs.eg.db,
+                          keyType       = 'ENSEMBL',
+                          ont           = "BP",
+                          pAdjustMethod = "BH",
+                          pvalueCutoff  = 0.01,
+                          qvalueCutoff  = 0.05,
+                          readable      = TRUE)
 png(here::here("data/plots/local_go_upper.png"), height = 3840, width = 2160)
 barplot(local_go_upper, showCategory=100) 
 dev.off()
 
 local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
-                         OrgDb         = rank_df$gene,
-                         keyType       = 'ENSEMBL',
-                         ont           = "BP",
-                         pAdjustMethod = "BH",
-                         pvalueCutoff  = 0.01,
-                         qvalueCutoff  = 0.05,
-                         readable      = TRUE)
+                          universe = rank_df$Gene,
+                          OrgDb         = org.Hs.eg.db,
+                          keyType       = 'ENSEMBL',
+                          ont           = "BP",
+                          pAdjustMethod = "BH",
+                          pvalueCutoff  = 0.01,
+                          qvalueCutoff  = 0.05,
+                          readable      = TRUE)
 png(here::here("data/plots/local_go_lower.png"), height = 3840, width = 2160)
 barplot(local_go_lower , showCategory=100) 
 dev.off()
