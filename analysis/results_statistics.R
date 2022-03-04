@@ -44,7 +44,7 @@ local_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
                           readable      = TRUE)
 
 pw_upper <- pairwise_termsim(local_go_upper) 
-p1 <- emapplot(pw_upper, showCategory = 20) + theme(legend.position = "none")
+p1 <- emapplot(pw_upper, showCategory = 20) + theme_cowplot() + theme(legend.position = "none")
 p1$data$color = mean(p1$data$color)
 local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
                           universe = rank_df$Gene,
@@ -56,9 +56,9 @@ local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
                           qvalueCutoff  = 0.05,
                           readable      = TRUE)
 pw_lower <- pairwise_termsim(local_go_lower) 
-p2 <- emapplot(pw_lower, showCategory = 20) + theme(legend.position = "none")
+p2 <- emapplot(pw_lower, showCategory = 20) + theme_cowplot() + theme(legend.position = "none")
 p2$data$color = mean(p1$data$color)
-save_plot(here::here("data/plots/local_go_lower.png"), plot_grid(p1, p2, labels = c("High variation", "Low variation")), base_height = 7, base_asp = 1.5, ncol = 2)
+save_plot(here::here("data/plots/local_go_lowerUpper.png"), plot_grid(p1, p2, labels = c("High variation", "Low variation")), base_height = 7, base_asp = 1.5, ncol = 2)
 # %%
 
 
