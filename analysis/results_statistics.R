@@ -10,21 +10,18 @@ library(pryr)
 organism = "org.Hs.eg.db"
 metrics = c("mean", "sd")
 
-library(organism, character.only = TRUE)
-library(clusterProfiler)
-library(plyr)
-library(dplyr)
-
 rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+
+tail_size = 0.05
 
 upper_quantiles = list()
 lower_quantiles = list()
 for(metric in c("mean","sd")){
-    cutoff = quantile(rank_df[[metric]], .95)
+    cutoff = quantile(rank_df[[metric]],1 - tail_size)
     subset = rank_df[rank_df[[metric]] >= cutoff,]$Gene
     upper_quantiles[[metric]] = subset
-    cutoff = abs(quantile(-rank_df[[metric]], .95))
-    lower_quantiles[[metric]] = rank_df[rank_df[[metric]] <= quantile(rank_df[[metric]], .05),]$Gene
+    cutoff = abs(quantile(rank_df[[metric]], tail_size))
+    lower_quantiles[[metric]] = rank_df[rank_df[[metric]] <= cutoff,]$Gene
 }
 # %%
 
