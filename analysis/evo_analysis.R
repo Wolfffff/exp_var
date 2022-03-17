@@ -1,3 +1,4 @@
+# File for evo analysis including mapping PopHuman
 # %%
 metric_df = readRDS(here::here("snakemake/Rdatas/mean_variance.RDS"))
 rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
