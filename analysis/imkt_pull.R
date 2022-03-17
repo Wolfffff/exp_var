@@ -25,9 +25,3 @@ for (gene in unique(PopHumanData$ID)){
 }
 write.csv(imkt_results, file=here::here("data/annotations/imkt_results.csv"))
 # %%
-
-
-# 
-# High pi - high variance
-# Low pi - low variance
-# 

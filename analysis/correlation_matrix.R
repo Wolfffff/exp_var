@@ -1,4 +1,4 @@
-# Script for making pretty correlation matrices
+# Script for making superheat correlation plots -- 
 
 source(here::here("functions.R"))
 
@@ -11,6 +11,7 @@ library(corrplot)
 library(vegan)
 library(ape)
 library(Hmisc)
+library(superheat)
 
 rank_list = list()
 metric_cor_list = list()
@@ -21,42 +22,27 @@ rank_mat = t(rank_mat[,-1])
 rownames(rank_mat) = rownames(metric_df[[metric]][,-1])
 colnames(rank_mat) = colnames(metric_df[[metric]][,-1])
 
-M = rcorr(as.matrix(metric_df[[metric]][,-1]), type = "spearman")$r
-ord = corrMatOrder(M, order = 'AOE')
-M2 = M[ord, ord]
-png(here::here(paste0(metric,"_corr_plot_unordered.png")), height = 6080, width = 6080)
-corrplot.mixed(M2, upper = "ellipse")
-dev.off()
 
-M2
-library(superheat)
-M.size <- scale(M) + 2
+mat = as.matrix(metric_df[[metric]][,-1])
+ord1 = match(colnames(mat),metadata_df$id)
+ord2 = clusters = metadata_df$group[match(colnames(mat),metadata_df$id)]
+leveled = factor(ord2,levels = c("GTEx", "TCGA", "Other - Expression Atlas", "Other - recount3"))
+ord3 = sort.int(leveled,index.return=T)
+ord3_ix = ord3$ix
+ord3_x = ord3$`x`
 
 
-# png("superheat.png", height = 2160, width = 2160)
-# superheat(M,#, row.dendrogram=TRUE, col.dendrogram=TRUE,
-# heat.lim = c(-1, 1), X.text = round(as.matrix(M), 1),
-# X.text.size = M.size, grid.hline = FALSE,
-#           grid.vline = FALSE)
-# dev.off()
 
+mat = mat[,ord3_ix]
+M = rcorr(mat, type = "spearman")$r
 
-metadata_df = metadata_df[match(rownames(M2),metadata_df$id),]
-M3 = M2[match(metadata_df$id,rownames(M2)),match(metadata_df$id,rownames(M2))]
-
-corr_mat_df <- as.data.frame(M3)
-clusters = metadata_df$group[match(rownames(M3),metadata_df$id)]
-M4 = M3[order(clusters),order(clusters)]
-clusters = metadata_df$group[match(rownames(M4),metadata_df$id)]
 
 png("superheat.png", height = 2160, width = 2160)
-superheat(M4, membership.cols = clusters, order.cols = order(clusters), order.rows = order(clusters),#, row.dendrogram=TRUE, col.dendrogram=TRUE,
-heat.lim = c(-1, 1), X.text = round(as.matrix(M4), 2),
+superheat(M, membership.cols = ord3_x,#, row.dendrogram=TRUE, col.dendrogram=TRUE,
+heat.lim = c(-1, 1),# X.text = round(as.matrix(M4), 2),
 X.text.size = 3, grid.hline = FALSE,
 # bottom.label.text.angle = 90,
           grid.vline = FALSE, legend.width = 11, legend.text.size = 36,legend.height = 0.5,
           legend.vspace = -0.2) + theme_minimal()
           
 dev.off()
-
-# TODO: make tissue specific mapping
