@@ -36,13 +36,18 @@ ord3_x = ord3$`x`
 mat = mat[,ord3_ix]
 M = rcorr(mat, type = "spearman")$r
 
-
-png("superheat.png", height = 2160, width = 2160)
-superheat(M, membership.cols = ord3_x,#, row.dendrogram=TRUE, col.dendrogram=TRUE,
-heat.lim = c(-1, 1),# X.text = round(as.matrix(M4), 2),
-X.text.size = 3, grid.hline = FALSE,
-# bottom.label.text.angle = 90,
-          grid.vline = FALSE, legend.width = 11, legend.text.size = 36,legend.height = 0.5,
-          legend.vspace = -0.2) + theme_minimal()
-          
+ord3_x = as.character(ord3_x)
+ord3_x[grepl("Other", ord3_x)] = "Other"
+png("data/plots/SpearmanCorrelations/sd_corr_plot_superheat.png", height = 2160, width = 2160)
+superheat(M, membership.cols = ord3_x, #, row.dendrogram=TRUE, col.dendrogram=TRUE,
+          heat.lim = c(-1, 1), # X.text = round(as.matrix(M4), 2),
+          bottom.label.text.size = 15, 
+          left.label.col = "white",
+          bottom.label.col = c("#b3e2cd","#fdcdac","#e5d8bd"),
+          grid.hline = FALSE,
+          # bottom.label.text.angle = 90,
+          grid.vline = FALSE, 
+          legend.width = 11, legend.text.size = 36,
+          legend.height = 0.5, legend.vspace = -0.2
+          ) + theme_minimal()          
 dev.off()
