@@ -57,6 +57,7 @@ for (metric in c("mean", "sd")){
     
     PC_scores = as.matrix(rank_mat) %*% eig$vectors
 
+    saveRDS(PC_scores, file=snakemake@output[[3]])
 
     print(paste(round(eig$values/sum(eig$values) * 100, 1)[1:5], collapse = "% "))
     gene_rank = rank(PC_scores[,1])

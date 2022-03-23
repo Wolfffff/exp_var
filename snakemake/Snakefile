@@ -154,6 +154,8 @@ rule varScores:
         "Rdatas/gene_connectivity.RDS"
     output:
         "Rdatas/gene_var_rank.RDS",
-        "Rdatas/gene_var_matrices.RDS"
+        "Rdatas/gene_var_matrices.RDS",
+        "Rdatas/gene_rank_pca_scores.RDS"
+
     script:
         "scripts/acrossStudiesVarScore.R"
