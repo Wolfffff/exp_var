@@ -9,7 +9,7 @@ metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 connectivity_df = readRDS(here::here("snakemake/Rdatas/gene_connectivity.RDS"))
 
 
-pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc", "ggrepel", "wesanderson"))
+#pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc", "ggrepel", "wesanderson"))
 library(corrplot)
 library(vegan)
 library(ape)
@@ -17,8 +17,8 @@ library(Hmisc)
 library(ggrepel)
 library(wesanderson)
 
-ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"), header=T)
-rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"), header=T)
+ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"), header=T, comment.char = "#")
+rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"), header=T, comment.char = "#")
 metadata_df = bind_rows(ea_df,rc3_df)
 
 rank_list = list()
@@ -48,7 +48,7 @@ for (metric in c("mean", "sd")){
         geom_point() + geom_text_repel(max.overlaps = 15, show.legend = FALSE) + coord_fixed() +
          scale_color_manual(values = pallet) + 
         ggtitle("PCoA Ordination") + labs(x = "PCoA Axis 1", y = "PCoA Axis 2") + theme_cowplot()
-    save_plot(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_PCoA_plot.png")), pcoa_plot, base_height = 7, base_asp = 1.2)
+    save_plot(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_PCoA_plot.png")), pcoa_plot, base_height = 7, base_asp = 2)
 
     eig = eigen(metric_cor)
     if(all(eig$vectors[,1] < 0)){
@@ -57,14 +57,13 @@ for (metric in c("mean", "sd")){
     
     PC_scores = as.matrix(rank_mat) %*% eig$vectors
 
-    saveRDS(PC_scores, file=snakemake@output[[3]])
-
     print(paste(round(eig$values/sum(eig$values) * 100, 1)[1:5], collapse = "% "))
     gene_rank = rank(PC_scores[,1])
     names(gene_rank) = metric_df[[metric]][,1]
     rank_list[[metric]] = gene_rank
     metric_cor_list[[metric]] = metric_cor
 }
+saveRDS(PC_scores, file=snakemake@output[[3]])
 
 rank_df = data.frame(bind_cols(rank_list))
 rank_df$Gene = metric_df[[1]][,1]

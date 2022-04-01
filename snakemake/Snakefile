@@ -40,20 +40,20 @@ rule all:
         "Rdatas/gene_var_matrices.RDS",
         expand("Rdatas/networkStats/{ids}.csv", ids=ids)
 
-rule download:
-    resources: 
-        tmpdir="/scratch/tmp"
-    params:
-        id=ids,
-        source=get_source
-    log:
-        "logs/download/{id}.txt"
-    input:
-        metadata=get_metadata
-    output:
-        "Rdatas/raw/{id}.rds"
-    script:
-        "scripts/downloadRecount3.R"
+# rule download:
+#     resources: 
+#         tmpdir="/scratch/tmp"
+#     params:
+#         id=ids,
+#         source=get_source
+#     log:
+#         "logs/download/{id}.txt"
+#     input:
+#         metadata=get_metadata
+#     output:
+#         "Rdatas/raw/{id}.rds"
+#     script:
+#         "scripts/downloadRecount3.R"
 
 rule preProcess:
     resources: 

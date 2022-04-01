@@ -12,6 +12,7 @@ library(vegan)
 library(ape)
 library(Hmisc)
 library(superheat)
+library(ggthemes)
 
 rank_list = list()
 metric_cor_list = list()
@@ -31,8 +32,6 @@ ord3 = sort.int(leveled,index.return=T)
 ord3_ix = ord3$ix
 ord3_x = ord3$`x`
 
-
-
 mat = mat[,ord3_ix]
 M = rcorr(mat, type = "spearman")$r
 
@@ -51,3 +50,9 @@ superheat(M, membership.cols = ord3_x, #, row.dendrogram=TRUE, col.dendrogram=TR
           legend.height = 0.5, legend.vspace = -0.2
           ) + theme_minimal()          
 dev.off()
+
+plot = data.frame(Correlations = M[lower.tri(M)]) %>%
+    ggplot(aes(Correlations)) + geom_histogram(bins = 100) +
+    theme_tufte() + labs(x = "Spearman correlations across studies", y = "Counts") 
+save_plot("test.png", plot = plot, base_height = 4, base_asp = 1)
+

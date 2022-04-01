@@ -129,9 +129,10 @@ p_study = mcmc_intervals(fit$draws("as")) +
     scale_y_discrete(labels = paste0(paste(ids, grp, sep = " ("), ")")) +
     ggtitle("A. Pairwise random effect - Study (Source)")
 
-p_model = p_study + (p_tissue / p_source)  +
-  plot_annotation(title = "Modeling the driver of across-study variance correlations",
-    caption = "Linear effect model coefficients with Fisher z-transformed spearman correlations as the response. \n A: The pairwise random effect captures the non-independence of the correlation values and estimates the contribution \n of each study to the correlation. For example: comparisons involving bone_marrow tend to be lower than the others. \n B and C: Fixed effect estimates: correlations among studies that use the same tissue are higher, and correlations \ninvolving studies in the \"Other\" category (non gTEX and TCGA) tend to be lower.")
+p_model = p_study + (p_tissue / p_source)  
+#+
+  #plot_annotation(title = "Modeling the driver of across-study variance correlations",
+   # caption = "Linear effect model coefficients with Fisher z-transformed spearman correlations as the response. \n A: The pairwise random effect captures the non-independence of the correlation values and estimates the contribution \n of each study to the correlation. For example: comparisons involving bone_marrow tend to be lower than the others. \n B and C: Fixed effect estimates: correlations among studies that use the same tissue are higher, and correlations \ninvolving studies in the \"Other\" category (non gTEX and TCGA) tend to be lower.")
 save_plot(here::here("data/plots/correlationModeling.png"),
           p_model, base_height = 6, base_asp = 1, ncol = 2, nrow = 2)
 

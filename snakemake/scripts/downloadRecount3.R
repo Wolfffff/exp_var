@@ -6,7 +6,7 @@ if (snakemake@params[["source"]]=="recount3") {
     log4r_info("Starting.")
 
     log4r_info("Loading packages") 
-    source("../functions.R")
+    source(here::here("functions.R"))
 
     log4r_info("Downloading cache")
     # Load metadata from recount3
@@ -24,12 +24,17 @@ if (snakemake@params[["source"]]=="recount3") {
 
     log4r_info("Done!")
 } else if (snakemake@params[["source"]]=="EA") {
-    # TODO: move this
-    library(ExpressionAtlas)
-    
     my_logfile = snakemake@log[[1]]
     snakemake@source("logger.R")
     log4r_info("Starting.")
+
+    # TODO: move this
+    library(ExpressionAtlas)
+    
+    log4r_info("Loading packages") 
+    source(here::here("functions.R"))
+
+
     id = snakemake@wildcards[["id"]]
     rnaseq_exps <- getAtlasData(id)
 
