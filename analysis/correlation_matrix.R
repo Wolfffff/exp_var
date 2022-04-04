@@ -13,6 +13,7 @@ library(ape)
 library(Hmisc)
 library(superheat)
 library(ggthemes)
+library(patchwork)
 
 rank_list = list()
 metric_cor_list = list()
@@ -38,7 +39,8 @@ M = rcorr(mat, type = "spearman")$r
 ord3_x = as.character(ord3_x)
 ord3_x[grepl("Other", ord3_x)] = "Other"
 png("data/plots/SpearmanCorrelations/sd_corr_plot_superheat.png", height = 2160, width = 2160)
-superheat(M, membership.cols = ord3_x, #, row.dendrogram=TRUE, col.dendrogram=TRUE,
+makeSuperheat = function() {
+plot = superheat(M, membership.cols = ord3_x, #, row.dendrogram=TRUE, col.dendrogram=TRUE,
           heat.lim = c(-1, 1), # X.text = round(as.matrix(M4), 2),
           bottom.label.text.size = 15, 
           left.label.col = "white",
@@ -48,11 +50,36 @@ superheat(M, membership.cols = ord3_x, #, row.dendrogram=TRUE, col.dendrogram=TR
           grid.vline = FALSE, 
           legend.width = 11, legend.text.size = 36,
           legend.height = 0.5, legend.vspace = -0.2
-          ) + theme_minimal()          
+          ) 
+return(plot)  
+          }    
+makeSuperheat()
 dev.off()
 
-plot = data.frame(Correlations = M[lower.tri(M)]) %>%
+melted_cormat <- reshape2::melt(M)
+#plot heatmap
+{
+heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
+    geom_tile() +
+    scale_fill_viridis_c(alpha = 1)  + theme_minimal() +
+    labs(y = "", x = "", fill = "") +
+    theme(axis.text.x = element_blank(), legend.position = "bottom", legend.key.width= unit(3, 'cm'))
+b_size_df = data.frame(start = c(0, 24, 35), end = c(24, 35, 60))  + .5
+heatmap = heatmap + geom_rect(data = b_size_df, color = "#36454F", alpha = 0, size = 1,
+                                aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
+                                    ymin=start, ymax=end))
+}
+save_plot(here::here("data/plots/SpearmanCorrelations/sd_corr_plot_heatmap.png"), heatmap, base_height = 8, base_asp = 1)
+
+
+
+
+
+p1 = data.frame(Correlations = M[lower.tri(M)]) %>%
     ggplot(aes(Correlations)) + geom_histogram(bins = 100) +
     theme_tufte() + labs(x = "Spearman correlation across studies", y = "Counts") 
 save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = plot, base_height = 4, base_asp = 1.5)
 
+p2 =  makeSuperheat()
+panel = p1 +  wrap_elements(panel = ~p2)
+save_plot("test.png", panel)
