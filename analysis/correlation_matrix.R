@@ -53,6 +53,6 @@ dev.off()
 
 plot = data.frame(Correlations = M[lower.tri(M)]) %>%
     ggplot(aes(Correlations)) + geom_histogram(bins = 100) +
-    theme_tufte() + labs(x = "Spearman correlations across studies", y = "Counts") 
-save_plot("test.png", plot = plot, base_height = 4, base_asp = 1)
+    theme_tufte() + labs(x = "Spearman correlation across studies", y = "Counts") 
+save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = plot, base_height = 4, base_asp = 1.5)
 
