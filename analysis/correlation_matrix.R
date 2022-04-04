@@ -63,7 +63,7 @@ heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
     geom_tile() +
     scale_fill_viridis_c(alpha = 1)  + theme_minimal() +
     labs(y = "", x = "", fill = "") +
-    theme(axis.text.x = element_blank(), legend.position = "bottom", legend.key.width= unit(3, 'cm'))
+    theme(axis.text.x = element_blank(), legend.position = "bottom", legend.key.width= unit(4, 'cm'))
 b_size_df = data.frame(start = c(0, 24, 35), end = c(24, 35, 60))  + .5
 heatmap = heatmap + geom_rect(data = b_size_df, color = "#36454F", alpha = 0, size = 1,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
@@ -75,11 +75,10 @@ save_plot(here::here("data/plots/SpearmanCorrelations/sd_corr_plot_heatmap.png")
 
 
 
-p1 = data.frame(Correlations = M[lower.tri(M)]) %>%
+histogram = data.frame(Correlations = M[lower.tri(M)]) %>%
     ggplot(aes(Correlations)) + geom_histogram(bins = 100) +
     theme_tufte() + labs(x = "Spearman correlation across studies", y = "Counts") 
-save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = plot, base_height = 4, base_asp = 1.5)
+save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = histogram, base_height = 4, base_asp = 1.5)
 
-p2 =  makeSuperheat()
-panel = p1 +  wrap_elements(panel = ~p2)
-save_plot("test.png", panel)
+panel = heatmap / histogram  + plot_layout(heights = c(3, 1), widths = c(1, 1))
+save_plot("test.png", panel, base_height = 6, base_asp = 1.75, ncol = 1, nrow = 2)
