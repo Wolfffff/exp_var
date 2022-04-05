@@ -36,26 +36,6 @@ ord3_x = ord3$`x`
 mat = mat[,ord3_ix]
 M = rcorr(mat, type = "spearman")$r
 
-ord3_x = as.character(ord3_x)
-ord3_x[grepl("Other", ord3_x)] = "Other"
-png("data/plots/SpearmanCorrelations/sd_corr_plot_superheat.png", height = 2160, width = 2160)
-makeSuperheat = function() {
-plot = superheat(M, membership.cols = ord3_x, #, row.dendrogram=TRUE, col.dendrogram=TRUE,
-          heat.lim = c(-1, 1), # X.text = round(as.matrix(M4), 2),
-          bottom.label.text.size = 15, 
-          left.label.col = "white",
-          bottom.label.col = c("#b3e2cd","#fdcdac","#e5d8bd"),
-          grid.hline = FALSE,
-          # bottom.label.text.angle = 90,
-          grid.vline = FALSE, 
-          legend.width = 11, legend.text.size = 36,
-          legend.height = 0.5, legend.vspace = -0.2
-          ) 
-return(plot)  
-          }    
-makeSuperheat()
-dev.off()
-
 melted_cormat <- reshape2::melt(M)
 #plot heatmap
 {
@@ -73,10 +53,6 @@ heatmap = heatmap + geom_rect(data = b_size_df, color = "#36454F", alpha = 0, si
 save_plot("test.png", heatmap, base_height = 6, base_asp = 1.4)
 
 save_plot(here::here("data/plots/SpearmanCorrelations/sd_corr_plot_heatmap.png"), heatmap, base_height = 8, base_asp = 1)
-
-
-
-
 
 histogram = data.frame(Correlations = M[lower.tri(M)]) %>%
     ggplot(aes(Correlations)) + geom_histogram(bins = 100) +
