@@ -61,7 +61,10 @@ library(wesanderson)
 library(patchwork)
 scaled = scaled + xlim(-3,10)
 unscaled = unscaled + xlim(-1,2)
-scaled + inset_element(unscaled, 0.33, 0.33, 1, 1)
+density_plot = scaled + inset_element(unscaled, 0.33, 0.33, 1, 1)
+density_plot
 ggsave(here::here("data/plots/sd_dist.png"), width = 12, height = 6, units = "in", dpi = 300)
+
+saveRDS(list(scaled = scaled, unscaled = unscaled), here::here("snakemake/Rdatas/plots/density_plot.RDS"))
 # %%
 

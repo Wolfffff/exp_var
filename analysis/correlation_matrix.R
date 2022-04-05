@@ -80,5 +80,22 @@ histogram = data.frame(Correlations = M[lower.tri(M)]) %>%
     theme_tufte() + labs(x = "Spearman correlation across studies", y = "Counts") 
 save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = histogram, base_height = 4, base_asp = 1.5)
 
-panel = heatmap / histogram  + plot_layout(heights = c(3, 1), widths = c(1, 1))
-save_plot("test.png", panel, base_height = 6, base_asp = 1.75, ncol = 1, nrow = 2)
+PCoA = readRDS(here::here("snakemake/Rdatas/plots/PCoA_plot_sd.RDS"))
+density = readRDS(here::here("snakemake/Rdatas/plots/density_plot.RDS"))
+density = density[["scaled"]] + ggtitle("D.") + inset_element(density[["unscaled"]], 0.33, 0.33, 1, 1)
+layout <- 
+"AAACC
+AAACC
+AAADD
+BBBDD"
+panel = heatmap + ggtitle("A.") +
+        histogram + ggtitle("B.") +
+        PCoA + theme(legend.position = c(0.05, 0.14), 
+                     legend.title = element_blank(), 
+                     legend.background = element_blank(), 
+                     legend.box.background = element_rect(colour = "black"),
+                     legend.margin =margin(r=1,l=1,t=1,b=1)) + ggtitle("C.") +
+        density  +
+        plot_layout(design = layout)
+save_plot("test.png", panel, base_height = 6, base_asp = 1.4, ncol = 2, nrow = 2)
+
