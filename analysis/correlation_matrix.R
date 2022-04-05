@@ -61,14 +61,17 @@ melted_cormat <- reshape2::melt(M)
 {
 heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
     geom_tile() +
-    scale_fill_viridis_c(alpha = 1)  + theme_minimal() +
+    scale_fill_viridis_c(alpha = 1)  + theme_tufte() +
     labs(y = "", x = "", fill = "") +
-    theme(axis.text.x = element_blank(), legend.position = "bottom", legend.key.width= unit(4, 'cm'))
+    scale_x_discrete(breaks = c(12, 30, 47), label = c("gTEX", "TCGA", "Other")) +
+    theme(legend.position = "bottom", legend.key.width= unit(4, 'cm')) 
 b_size_df = data.frame(start = c(0, 24, 35), end = c(24, 35, 60))  + .5
 heatmap = heatmap + geom_rect(data = b_size_df, color = "#36454F", alpha = 0, size = 1,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
                                     ymin=start, ymax=end))
 }
+save_plot("test.png", heatmap, base_height = 6, base_asp = 1.4)
+
 save_plot(here::here("data/plots/SpearmanCorrelations/sd_corr_plot_heatmap.png"), heatmap, base_height = 8, base_asp = 1)
 
 
@@ -82,7 +85,13 @@ save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = h
 
 PCoA = readRDS(here::here("snakemake/Rdatas/plots/PCoA_plot_sd.RDS"))
 density = readRDS(here::here("snakemake/Rdatas/plots/density_plot.RDS"))
-density = density[["scaled"]] + ggtitle("D.") + inset_element(density[["unscaled"]], 0.33, 0.33, 1, 1)
+density[["scaled"]] = density[["scaled"]] + ggtitle("D.") + 
+                      theme_tufte() + theme(legend.position = "none")
+density[["unscaled"]] = density[["unscaled"]] + 
+                        theme_tufte() + theme(legend.position = "none")
+density =  density[["scaled"]] +
+            inset_element(density[["unscaled"]], 
+                          0.33, 0.33, 1, 1)
 layout <- 
 "AAACC
 AAACC
@@ -90,11 +99,11 @@ AAADD
 BBBDD"
 panel = heatmap + ggtitle("A.") +
         histogram + ggtitle("B.") +
-        PCoA + theme(legend.position = c(0.05, 0.14), 
+        PCoA + theme_tufte() + theme(legend.position = c(0.1, 0.14), 
                      legend.title = element_blank(), 
                      legend.background = element_blank(), 
                      legend.box.background = element_rect(colour = "black"),
-                     legend.margin =margin(r=1,l=1,t=1,b=1)) + ggtitle("C.") +
+                     legend.margin =margin(r=1.5,l=1.5,t=0.5,b=0.5)) + ggtitle("C.") +
         density  +
         plot_layout(design = layout)
 save_plot("test.png", panel, base_height = 6, base_asp = 1.4, ncol = 2, nrow = 2)
