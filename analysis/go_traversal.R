@@ -26,7 +26,7 @@ level4_BP_terms <- getAllBPChildren(level3_BP_terms)  # 9135 terms
 level5_BP_terms <- getAllBPChildren(level4_BP_terms)  # 15023 terms
 levels_1_5 = list(level1_BP_terms, level2_BP_terms, level3_BP_terms, level4_BP_terms, level5_BP_terms)
 
-level = 1
+level = 2
 if(level == 1) go_terms <- level1_BP_terms
 if(level > 1)  go_terms <- setdiff(levels_1_5[[level]], do.call(c, levels_1_5[1:(level - 1)]))
 
@@ -60,8 +60,8 @@ for (term in go_terms) {
   go_gene_overlapping[[term]] <- go_gene_overlap
 }
 
-lapply(go_gene_overlapping,dim)
-lapply(go_gene_groups,dim)
+ldply(go_gene_overlapping,dim) %>% filter(V1 > 20)
+qldply(go_gene_groups,dim)
 names(go_gene_groups)
 save.image(file='go_traversal.RData')
 
