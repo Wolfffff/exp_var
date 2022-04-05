@@ -122,7 +122,7 @@ p_tissue = mcmc_intervals(fit$draws("c")) +
     ggtitle("B. Pairwise tissue congruence effect") + theme_tufte() +  
     theme(plot.title = element_text(size = 30),
           axis.title = element_text(size = 18),
-          axis.text = element_text(size = 12)) +
+          axis.text = element_text(size = 18)) +
     labs(x = "Coefficient estimate")
 
 p_source = mcmc_intervals(fit$draws("b")) +
@@ -130,14 +130,14 @@ p_source = mcmc_intervals(fit$draws("b")) +
     ggtitle("C. Pairwise source effect") + theme_tufte() +  
     theme(plot.title = element_text(size = 30),
           axis.title = element_text(size = 18),
-          axis.text = element_text(size = 12)) +
+          axis.text = element_text(size = 18)) +
     labs(x = "Coefficient estimate")
 p_study = mcmc_intervals(fit$draws("as")) +
     scale_y_discrete(labels = paste0(paste(ids, grp, sep = " ("), ")")) +
     ggtitle("A. Per-study random effect") + theme_tufte()  +  
     theme(plot.title = element_text(size = 30),
           axis.title = element_text(size = 18),
-          axis.text = element_text(size = 12)) +
+          axis.text = element_text(size = 18)) +
     labs(x = "Coefficient estimate")
 p_model = p_study + (p_tissue / p_source)  
 #+
