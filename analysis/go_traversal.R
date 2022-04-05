@@ -19,13 +19,18 @@ metrics = c("mean", "sd")
 rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
 
 # go_terms <- Level2GOTermBP(level = 1, organism = "Human")
-go_terms <-  getAllBPChildren("GO:0008150")
-# level2_BP_terms <- getAllBPChildren(level1_BP_terms)  # 256 terms
-# level3_BP_terms <- getAllBPChildren(level2_BP_terms)  # 3059 terms
-# level4_BP_terms <- getAllBPChildren(level3_BP_terms)  # 9135 terms
-# level5_BP_terms <- getAllBPChildren(level4_BP_terms)  # 15023 terms
-ensembl = useMart("ensembl",dataset="hsapiens_gene_ensembl")
+level1_BP_terms <- getAllBPChildren("GO:0008150")
+level2_BP_terms <- getAllBPChildren(level1_BP_terms)  # 256 terms
+level3_BP_terms <- getAllBPChildren(level2_BP_terms)  # 3059 terms
+level4_BP_terms <- getAllBPChildren(level3_BP_terms)  # 9135 terms
+level5_BP_terms <- getAllBPChildren(level4_BP_terms)  # 15023 terms
+levels_1_5 = list(level1_BP_terms, level2_BP_terms, level3_BP_terms, level4_BP_terms, level5_BP_terms)
 
+level = 1
+if(level == 1) go_terms <- level1_BP_terms
+if(level > 1)  go_terms <- setdiff(levels_1_5[[level]], do.call(c, levels_1_5[1:(level - 1)]))
+
+ensembl = useMart("ensembl",dataset="hsapiens_gene_ensembl")
 
 # %%
 
