@@ -107,5 +107,5 @@ panel = heatmap + ggtitle("A.") +
                      legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.)) + ggtitle("C.") +
         density  +
         plot_layout(design = layout)
-save_plot("test.png", panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
+save_plot(here::here("data/plots/fig1_panel.png"), panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 
