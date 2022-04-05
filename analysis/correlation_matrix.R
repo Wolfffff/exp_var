@@ -99,12 +99,13 @@ AAADD
 BBBDD"
 panel = heatmap + ggtitle("A.") +
         histogram + ggtitle("B.") +
-        PCoA + theme_tufte() + theme(legend.position = c(0.1, 0.14), 
+        PCoA + theme_tufte() + theme(legend.position = c(0.25, 0.14), 
                      legend.title = element_blank(), 
                      legend.background = element_blank(), 
                      legend.box.background = element_rect(colour = "black"),
-                     legend.margin =margin(r=1.5,l=1.5,t=0.5,b=0.5)) + ggtitle("C.") +
+                     legend.text = element_text(size = 10),
+                     legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.)) + ggtitle("C.") +
         density  +
         plot_layout(design = layout)
-save_plot("test.png", panel, base_height = 6, base_asp = 1.4, ncol = 2, nrow = 2)
+save_plot("test.png", panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 
