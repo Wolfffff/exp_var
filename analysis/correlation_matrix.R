@@ -61,26 +61,37 @@ save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = h
 
 PCoA = readRDS(here::here("snakemake/Rdatas/plots/PCoA_plot_sd.RDS"))
 density = readRDS(here::here("snakemake/Rdatas/plots/density_plot.RDS"))
-density[["scaled"]] = density[["scaled"]] + ggtitle("D.") + 
-                      theme_tufte() + theme(legend.position = "none")
+density[["scaled"]] = density[["scaled"]] + 
+                      theme_tufte() + theme(legend.position = "none") +
+                      ggtitle("D.") + 
+                      theme(plot.title = element_text(size = 30)) +
+                      theme(axis.title = element_text(size = 18),
+                            axis.text = element_text(size = 12)) 
 density[["unscaled"]] = density[["unscaled"]] + 
                         theme_tufte() + theme(legend.position = "none")
-density =  density[["scaled"]] +
-            inset_element(density[["unscaled"]], 
-                          0.33, 0.33, 1, 1)
+density = density[["scaled"]] +
+          inset_element(density[["unscaled"]], 
+                        0.33, 0.33, 1, 1)
 layout <- 
 "AAACC
 AAACC
 AAADD
 BBBDD"
-panel = heatmap + ggtitle("A.") +
-        histogram + ggtitle("B.") +
+panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
+                                        axis.title = element_text(size = 18),
+                                        axis.text = element_text(size = 12)) +
+        histogram + ggtitle("B.") + theme(plot.title = element_text(size = 30),
+                                          axis.title = element_text(size = 18),
+                                          axis.text = element_text(size = 12)) +
         PCoA + theme_tufte() + theme(legend.position = c(0.25, 0.14), 
                      legend.title = element_blank(), 
                      legend.background = element_blank(), 
                      legend.box.background = element_rect(colour = "black"),
-                     legend.text = element_text(size = 10),
-                     legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.)) + ggtitle("C.") +
+                     legend.text = element_text(size = 12),
+                     legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.),
+                     axis.title = element_text(size = 18),
+                     axis.text = element_text(size = 12)) + 
+                     ggtitle("C.") + theme(plot.title = element_text(size = 30)) +
         density  +
         plot_layout(design = layout)
 save_plot(here::here("data/plots/fig1_panel.png"), panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
