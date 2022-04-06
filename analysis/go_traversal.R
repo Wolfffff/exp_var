@@ -74,6 +74,7 @@ GO <- as.list(GOTERM)
 my.term <- GO$[[term]]@Term
 # %%
 
+# %%
 library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
@@ -83,15 +84,32 @@ quantile_lower = as.vector(quantile(rank_df$sd, seq(0, 1, length.out = n_classes
 classifyQuantileFast = function(x){
   laply(x, function(rank) paste0("quantile_", str_pad(sum(rank >= quantile_lower), 2, pad = 0)))
 }
-x = classifyQuantileFast(rank_df$sd)
-rank_class_df = tibble(gene = rank_df$Gene, quantile = x)
+rank_class_df = tibble(gene = rank_df$Gene, 
+                       quantile = classifyQuantileFast(rank_df$sd))
 
 shannon <- function(x) -sum(((x <- na.omit(x[x!=0]))/sum(x)) * log(x/sum(x)))
 
+termTable <- function(x){
+  out = as.data.frame(matrix(0, ncol = n_classes, nrow = 1))
+  names(out) = paste0("quantile_", str_pad(1:n_classes, 2, pad = 0))
+  counts = table(rank_class_df$quantile[match(x$ensembl_gene_id, rank_class_df$gene)])
+  out = out + counts[names(out)]
+  out[is.na(out)] = 0
+  out
+} 
 
 x = go_gene_overlapping[[1]]
 shannonGOterm = function(x){
-  tx = table(rank_class_df$quantile[match(x$ensembl_gene_id, rank_class_df$gene)])
+  tx = termTable(x)
   shannon(tx/sum(tx))
 }
-ldply(go_gene_overlapping, shannonGOterm)
+mask = filter(ldply(go_gene_overlapping,dim), V1 > 20)$`.id`
+goTerm_shannon = ldply(go_gene_overlapping[mask], shannonGOterm)
+png("test.png")
+hist(goTerm_shannon$V1)
+dev.off()
+
+single_quant = goTerm_shannon %>%
+  filter(V1 < 1.6)
+go_gene_overlapping[[single_quant[2,1]]] |> termTable()
+# %%
