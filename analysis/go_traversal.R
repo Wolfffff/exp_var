@@ -26,7 +26,7 @@ level4_BP_terms <- getAllBPChildren(level3_BP_terms)  # 9135 terms
 level5_BP_terms <- getAllBPChildren(level4_BP_terms)  # 15023 terms
 levels_1_5 = list(level1_BP_terms, level2_BP_terms, level3_BP_terms, level4_BP_terms, level5_BP_terms)
 
-level = 2
+level = 3
 if(level == 1) go_terms <- level1_BP_terms
 if(level > 1)  go_terms <- setdiff(levels_1_5[[level]], do.call(c, levels_1_5[1:(level - 1)]))
 
@@ -78,7 +78,7 @@ my.term <- GO$[[term]]@Term
 library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
-n_classes = 10
+n_classes = 4
 quantile_lower = as.vector(quantile(rank_df$sd, seq(0, 1, length.out = n_classes + 1))[1:n_classes])
 
 classifyQuantileFast = function(x){
@@ -97,6 +97,11 @@ termTable <- function(x){
   out[is.na(out)] = 0
   out
 } 
+chiSqTest = function(x){
+  obs = termTable(x) 
+  freq = sum(obs)/n_classes
+  chisq.test(obs)$p.value
+}
 
 x = go_gene_overlapping[[1]]
 shannonGOterm = function(x){
@@ -110,6 +115,23 @@ hist(goTerm_shannon$V1)
 dev.off()
 
 single_quant = goTerm_shannon %>%
-  filter(V1 < 1.6)
-go_gene_overlapping[[single_quant[2,1]]] |> termTable()
+  filter(V1 < quantile(V1, 0.05)) %>%
+  arrange(V1)
+ldply(go_gene_overlapping[single_quant[,1]], termTable)
+ldply(go_gene_overlapping[single_quant[,1]], chiSqTest) %>% 
+  mutate(V1 = V1*nrow(goTerm_shannon)) %>%  
+  filter(V1 < 0.05)
+
+
+png("test.png")
+plot(sort(goTerm_shannon$V1))
+dev.off()
+
+library(reshape2)
+df2 = ldply(go_gene_overlapping[single_quant[,1]], termTable) %>% melt
+
+p = ggplot(data=df2, aes(x=.id, y=value, fill=variable)) +
+geom_bar(stat="identity", color="black", position=position_dodge())+
+  theme_minimal()
+save_plot("test.png", p)
 # %%
