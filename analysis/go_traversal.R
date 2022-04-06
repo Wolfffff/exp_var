@@ -74,14 +74,17 @@ GO <- as.list(GOTERM)
 my.term <- GO$[[term]]@Term
 # %%
 
+library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
-n_classes = 4
-quantile_table = tibble()
+n_classes = 10
 quantile_lower = as.vector(quantile(rank_df$sd, seq(0, 1, length.out = n_classes + 1))[1:n_classes])
 
 classifyQuantileFast = function(x){
-  laply(x, function(rank) paste0("quantile_", sum(rank >= quantile_lower)))
+  laply(x, function(rank) paste0("quantile_", str_pad(sum(rank >= quantile_lower), 2, pad = 0)))
 }
 x = classifyQuantileFast(rank_df$sd)
-table(x)
+rank_class_df = tibble(gene = rank_df$Gene, quantile = x)
+
+
+
