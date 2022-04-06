@@ -86,5 +86,12 @@ classifyQuantileFast = function(x){
 x = classifyQuantileFast(rank_df$sd)
 rank_class_df = tibble(gene = rank_df$Gene, quantile = x)
 
+shannon <- function(x) -sum(((x <- na.omit(x[x!=0]))/sum(x)) * log(x/sum(x)))
 
 
+x = go_gene_overlapping[[1]]
+shannonGOterm = function(x){
+  tx = table(rank_class_df$quantile[match(x$ensembl_gene_id, rank_class_df$gene)])
+  shannon(tx/sum(tx))
+}
+ldply(go_gene_overlapping, shannonGOterm)
