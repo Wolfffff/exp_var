@@ -78,7 +78,7 @@ my.term <- GO$[[term]]@Term
 library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
-n_classes = 10
+n_classes = 4
 quantile_lower = as.vector(quantile(rank_df$sd, seq(0, 1, length.out = n_classes + 1))[1:n_classes])
 
 classifyQuantileFast = function(x){
@@ -118,8 +118,9 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
                      function(x) c(p.value = chiSqTest(x), 
                                    N = nrow(x), 
                                    H = shannonGOterm(x))) %>% 
-  mutate(p.adjusted = p.adjust(p.value)) %>% 
-  arrange(p.adjusted) %>% 
+  mutate(p.adjusted = p.adjust(p.value),
+         significant = p.adjusted < 0.01) %>% 
+  arrange(H) %>% 
   filter(N > 100) %>%
   as.tibble
 
@@ -128,7 +129,7 @@ png("test.png")
 plot(sort(goTerm_shannon$V1))
 dev.off()
 
-n_plots = 20
+n_plots = 30
 library(reshape2)
 df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "top")
 n_terms = nrow(sig_terms_df)
@@ -138,4 +139,8 @@ geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap
   theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1),
                           legend.position = "none") 
 save_plot("test.png", p, base_height = 6)
+
+p = ggplot(sig_terms_df, aes(N, H, color = significant)) + geom_point()
+save_plot("test.png", p, base_height = 6)
+
 # %%
