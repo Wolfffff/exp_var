@@ -78,7 +78,7 @@ my.term <- GO$[[term]]@Term
 library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
-n_classes = 4
+n_classes = 10
 quantile_lower = as.vector(quantile(rank_df$sd, seq(0, 1, length.out = n_classes + 1))[1:n_classes])
 
 classifyQuantileFast = function(x){
@@ -99,7 +99,6 @@ termTable <- function(x){
 } 
 chiSqTest = function(x){
   obs = termTable(x) 
-  freq = sum(obs)/n_classes
   chisq.test(obs)$p.value
 }
 
@@ -114,24 +113,29 @@ png("test.png")
 hist(goTerm_shannon$V1)
 dev.off()
 
-single_quant = goTerm_shannon %>%
-  filter(V1 < quantile(V1, 0.05)) %>%
-  arrange(V1)
 ldply(go_gene_overlapping[single_quant[,1]], termTable)
-ldply(go_gene_overlapping[single_quant[,1]], chiSqTest) %>% 
-  mutate(V1 = V1*nrow(goTerm_shannon)) %>%  
-  filter(V1 < 0.05)
+sig_terms_df = ldply(go_gene_overlapping[mask], 
+                     function(x) c(p.value = chiSqTest(x), 
+                                   N = nrow(x), 
+                                   H = shannonGOterm(x))) %>% 
+  mutate(p.adjusted = p.adjust(p.value)) %>% 
+  arrange(p.adjusted) %>% 
+  filter(N > 100) %>%
+  as.tibble
 
 
 png("test.png")
 plot(sort(goTerm_shannon$V1))
 dev.off()
 
+n_plots = 20
 library(reshape2)
-df2 = ldply(go_gene_overlapping[single_quant[,1]], termTable) %>% melt
-
-p = ggplot(data=df2, aes(x=.id, y=value, fill=variable)) +
-geom_bar(stat="identity", color="black", position=position_dodge())+
-  theme_minimal()
-save_plot("test.png", p)
+df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "top")
+n_terms = nrow(sig_terms_df)
+df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots):n_terms]], termTable) %>% melt %>% mutate(class = "bottom")
+p = ggplot(data=rbind(df1, df2), aes(x=.id, y=value, fill=variable)) +
+geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
+  theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1),
+                          legend.position = "none") 
+save_plot("test.png", p, base_height = 6)
 # %%
