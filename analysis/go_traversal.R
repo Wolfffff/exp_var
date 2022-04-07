@@ -80,10 +80,6 @@ save.image(file='go_traversal.RData')
 
 
 # %%
-# %%
-complete_list <- ldply(go_gene_overlapping,rbind)
-list_of_go_genes = unique(complete_list$ensembl)
-# %%
 
 # %%
 
@@ -93,16 +89,16 @@ list_of_go_genes = unique(complete_list$ensembl)
 library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
-n_classes = 4
+n_classes = 10
 quantile_lower = as.vector(quantile(rank_df$sd, seq(0, 1, length.out = n_classes + 1))[1:n_classes])
 
 classifyQuantileFast = function(x){
   laply(x, function(rank) paste0("quantile_", str_pad(sum(rank >= quantile_lower), 2, pad = 0)))
 }
-rank_class_df = tibble(gene = rank_df$Gene, 
-                       quantile = classifyQuantileFast(rank_df$sd))
+rank_class_df = tibble(gene = rank_df$Gene, quantile = classifyQuantileFast(rank_df$sd))
 
 shannon <- function(x) -sum(((x <- na.omit(x[x!=0]))/sum(x)) * log(x/sum(x)))
+skewness <- function(x) skewness(na.omit(x[x!=0]))
 
 termTable <- function(x){
   out = as.data.frame(matrix(0, ncol = n_classes, nrow = 1))
@@ -122,6 +118,7 @@ shannonGOterm = function(x){
   tx = termTable(x)
   shannon(tx/sum(tx))
 }
+
 mask = filter(ldply(go_gene_overlapping,dim), V1 > 20)$`.id`
 goTerm_shannon = ldply(go_gene_overlapping[mask], shannonGOterm)
 png("test.png")
@@ -153,9 +150,20 @@ p = ggplot(data=rbind(df1, df2), aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
   theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1),
                           legend.position = "none") 
-save_plot("test.png", p, base_height = 6)
+save_plot("test.png", p, base_height = 18)
 
 p = ggplot(sig_terms_df, aes(N, H, color = significant)) + geom_point()
 save_plot("test.png", p, base_height = 6)
 
+# %%
+
+# %%
+complete_list <- ldply(go_gene_overlapping,rbind)
+list_of_go_genes = unique(complete_list$ensembl)
+df = data.frame(ensembl=list_of_go_genes)
+tx = termTable(df)
+df = transpose(data.frame(tx))
+df$V2 <- factor(seq_along(df$V1), levels = rownames(df))
+p = ggplot(df,aes(x=V2,y=V1))+geom_bar(stat="identity")
+save_plot("test.png", p, base_height = 6)
 # %%
