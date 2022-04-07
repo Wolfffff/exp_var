@@ -4,6 +4,13 @@ library(here)
 library(sjmisc)
 library(pryr)
 library(GOxploreR)
+library(moments)
+library(data.table)
+library("AnnotationDbi")
+library("org.Hs.eg.db")
+GO <- as.list(GOTERM)
+
+
 # %%
 
 # %%
@@ -26,11 +33,11 @@ level4_BP_terms <- getAllBPChildren(level3_BP_terms)  # 9135 terms
 level5_BP_terms <- getAllBPChildren(level4_BP_terms)  # 15023 terms
 levels_1_5 = list(level1_BP_terms, level2_BP_terms, level3_BP_terms, level4_BP_terms, level5_BP_terms)
 
-level = 3
+level = 2
 if(level == 1) go_terms <- level1_BP_terms
 if(level > 1)  go_terms <- setdiff(levels_1_5[[level]], do.call(c, levels_1_5[1:(level - 1)]))
 
-ensembl = useMart("ensembl",dataset="hsapiens_gene_ensembl")
+# ensembl = useMart("ensembl",dataset="hsapiens_gene_ensembl")
 
 # %%
 
@@ -39,7 +46,12 @@ call_go <- function(id) {
   tryCatch({
       gene.data = mget(c(id),org.Hs.egGO2ALLEGS)
       entrezgene = unlist(gene.data)
-      genes <- getBM(filters="entrezgene_id", attributes=c("ensembl_gene_id","entrezgene_id"), values=entrezgene, mart=ensembl)
+      genes = data.frame(entrez=entrezgene)
+      genes$ensembl = mapIds(org.Hs.eg.db,
+                       keys=genes$entrez, 
+                        column="ENSEMBL",
+                        keytype="ENTREZID",
+                        multiVals="first")
       genes
   }, error = function(e) {
     print(e)
@@ -55,23 +67,26 @@ go_gene_groups <- lapply(go_terms, call_go)
 names(go_gene_groups) <- go_terms
 go_gene_overlapping <- list()
 for (term in go_terms) {
-  go_gene_overlap <- go_gene_groups[[term]][go_gene_groups[[term]]$ensembl_gene_id %in% rank_df$Gene,]
-  go_gene_overlap <- go_gene_overlap[!duplicated(go_gene_overlap$ensembl_gene_id),]
+  go_gene_overlap <- go_gene_groups[[term]][go_gene_groups[[term]]$ensembl %in% rank_df$Gene,]
+  go_gene_overlap <- go_gene_overlap[!duplicated(go_gene_overlap$ensembl),]
+  term <- GO[[term]]@Term
   go_gene_overlapping[[term]] <- go_gene_overlap
 }
 
 ldply(go_gene_overlapping,dim) %>% filter(V1 > 20)
-qldply(go_gene_groups,dim)
 names(go_gene_groups)
 save.image(file='go_traversal.RData')
 
 
-# %%
-
 
 # %%
-GO <- as.list(GOTERM)
-my.term <- GO$[[term]]@Term
+# %%
+complete_list <- ldply(go_gene_overlapping,rbind)
+list_of_go_genes = unique(complete_list$ensembl)
+# %%
+
+# %%
+
 # %%
 
 # %%
@@ -92,7 +107,7 @@ shannon <- function(x) -sum(((x <- na.omit(x[x!=0]))/sum(x)) * log(x/sum(x)))
 termTable <- function(x){
   out = as.data.frame(matrix(0, ncol = n_classes, nrow = 1))
   names(out) = paste0("quantile_", str_pad(1:n_classes, 2, pad = 0))
-  counts = table(rank_class_df$quantile[match(x$ensembl_gene_id, rank_class_df$gene)])
+  counts = table(rank_class_df$quantile[match(x$ensembl, rank_class_df$gene)])
   out = out + counts[names(out)]
   out[is.na(out)] = 0
   out
