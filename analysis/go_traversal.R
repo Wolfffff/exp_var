@@ -120,7 +120,7 @@ shannonGOterm = function(x){
 }
 skewnessGOterm = function(x){
   tx = termTable(x)
-  skewness2(tx/sum(tx))
+  skewness2(tx)
 }
 skewnessGOterm(x)
 
@@ -142,6 +142,10 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
   filter(N > 100) %>%
   as.tibble
 
+p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point()
+save_plot("test.png", p, base_height = 5)
+
+
 
 png("test.png")
 plot(sort(goTerm_shannon$V1))
@@ -154,12 +158,12 @@ n_terms = nrow(sig_terms_df)
 df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots):n_terms]], termTable) %>% melt %>% mutate(class = "bottom")
 p = ggplot(data=rbind(df1, df2), aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
-  theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1),
+  theme_classic() + theme(axis.text.x = element_text(angle = 55, hjust = 1),
                           legend.position = "none") 
-save_plot("test.png", p, base_height = 18)
+save_plot("test.png", p, base_height = 10)
 
 p = ggplot(sig_terms_df, aes(N, H, color = significant)) + geom_point()
-save_plot("test.png", p, base_height = 6)
+save_plot("test.png", p, base_height = 10)
 
 # %%
 
