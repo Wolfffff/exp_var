@@ -98,7 +98,7 @@ classifyQuantileFast = function(x){
 rank_class_df = tibble(gene = rank_df$Gene, quantile = classifyQuantileFast(rank_df$sd))
 
 shannon <- function(x) -sum(((x <- na.omit(x[x!=0]))/sum(x)) * log(x/sum(x)))
-skewness <- function(x) skewness(na.omit(x[x!=0]))
+skewness2 <- function(x) skewness(na.omit(x[x!=0]))
 
 termTable <- function(x){
   out = as.data.frame(matrix(0, ncol = n_classes, nrow = 1))
@@ -118,6 +118,11 @@ shannonGOterm = function(x){
   tx = termTable(x)
   shannon(tx/sum(tx))
 }
+skewnessGOterm = function(x){
+  tx = termTable(x)
+  skewness2(tx/sum(tx))
+}
+skewnessGOterm(x)
 
 mask = filter(ldply(go_gene_overlapping,dim), V1 > 20)$`.id`
 goTerm_shannon = ldply(go_gene_overlapping[mask], shannonGOterm)
@@ -129,7 +134,8 @@ ldply(go_gene_overlapping[single_quant[,1]], termTable)
 sig_terms_df = ldply(go_gene_overlapping[mask], 
                      function(x) c(p.value = chiSqTest(x), 
                                    N = nrow(x), 
-                                   H = shannonGOterm(x))) %>% 
+                                   H = shannonGOterm(x),
+                                   Skew = skewnessGOterm(x))) %>% 
   mutate(p.adjusted = p.adjust(p.value),
          significant = p.adjusted < 0.01) %>% 
   arrange(H) %>% 
