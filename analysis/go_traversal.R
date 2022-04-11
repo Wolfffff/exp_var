@@ -153,9 +153,8 @@ p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label =
                            theme(plot.title = element_text(size = 30),
                                           axis.title = element_text(size = 18),
                                           axis.text = element_text(size = 18),
-                                          strip.text.x = element_text(size = 32),
-                                          plot.margin = unit(c(0,0,0,3), "cm"))
-save_plot("test.png", p, base_height = 8)
+                                          strip.text.x = element_text(size = 32))
+save_plot("test.png", p, base_width = 6.5*2, base_height = 11*0.25*2)
 
 p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
 save_plot("test.png", p, base_height = 5)
