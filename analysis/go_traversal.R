@@ -82,13 +82,16 @@ save.image(file='go_traversal.RData')
 # %%
 
 # %%
-
-# %%
-
-# %%
 library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
+rank_df_overlap = rank_df[rank_df$Gene %in% list_of_go_genes,]
+rank_df_overlap <- rank_df_overlap %>% arrange(sd)
+rank_df_overlap$sd <- seq(1,nrow(rank_df_overlap))
+
+# Rerank based only on genes represented in
+rank_df <- rank_df_overlap
+
 n_classes = 10
 quantile_lower = as.vector(quantile(rank_df$sd, seq(0, 1, length.out = n_classes + 1))[1:n_classes])
 
@@ -120,15 +123,13 @@ shannonGOterm = function(x){
 }
 skewnessGOterm = function(x){
   tx = termTable(x)
-  skewness2(tx)
+  vec = transpose(tx)$V1
+  vec_repped <- rep(seq(1, length(vec)), vec)
+  skewness(vec_repped)
 }
-skewnessGOterm(x)
 
 mask = filter(ldply(go_gene_overlapping,dim), V1 > 20)$`.id`
 goTerm_shannon = ldply(go_gene_overlapping[mask], shannonGOterm)
-png("test.png")
-hist(goTerm_shannon$V1)
-dev.off()
 
 ldply(go_gene_overlapping[single_quant[,1]], termTable)
 sig_terms_df = ldply(go_gene_overlapping[mask], 
@@ -138,32 +139,40 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
                                    Skew = skewnessGOterm(x))) %>% 
   mutate(p.adjusted = p.adjust(p.value),
          significant = p.adjusted < 0.01) %>% 
-  arrange(H) %>% 
-  filter(N > 100) %>%
+  arrange(Skew) %>% 
+  filter(N > 10) %>%
   as.tibble
 
 p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point()
 save_plot("test.png", p, base_height = 5)
 
+library(ggrepel)
+p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label = sig_terms_df$.id)
+save_plot("test.png", p, base_height = 8)
+
+p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
+save_plot("test.png", p, base_height = 5)
 
 
 png("test.png")
 plot(sort(goTerm_shannon$V1))
 dev.off()
 
-n_plots = 30
+n_plots = 5
 library(reshape2)
-df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "top")
+df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "Highest Skew")
 n_terms = nrow(sig_terms_df)
-df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots):n_terms]], termTable) %>% melt %>% mutate(class = "bottom")
+df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots):n_terms]], termTable) %>% melt %>% mutate(class = "Lowest Skew")
 p = ggplot(data=rbind(df1, df2), aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
   theme_classic() + theme(axis.text.x = element_text(angle = 55, hjust = 1),
-                          legend.position = "none") 
+                          legend.position = "none") + xlab("GO Term") + ylab("Skew") 
 save_plot("test.png", p, base_height = 10)
 
-p = ggplot(sig_terms_df, aes(N, H, color = significant)) + geom_point()
-save_plot("test.png", p, base_height = 10)
+
+# %%
+
+# %%
 
 # %%
 
@@ -171,6 +180,24 @@ save_plot("test.png", p, base_height = 10)
 complete_list <- ldply(go_gene_overlapping,rbind)
 list_of_go_genes = unique(complete_list$ensembl)
 df = data.frame(ensembl=list_of_go_genes)
+tx = termTable(df)
+df = transpose(data.frame(tx))
+df$V2 <- factor(seq_along(df$V1), levels = rownames(df))
+p = ggplot(df,aes(x=V2,y=V1))+geom_bar(stat="identity")
+save_plot("test.png", p, base_height = 6)
+# %%
+
+
+
+
+# %%
+# Lets explore the genes that don't appear in GO terms!
+rank_df_excl_overlap = rank_df[!(rank_df$Gene %in% list_of_go_genes),]
+
+p = ggplot(rank_df_excl_overlap,aes(x=sd)) + geom_histogram()
+save_plot("test.png", p, base_height = 6)
+
+df = data.frame(ensembl=rank_df_excl_overlap$Gene)
 tx = termTable(df)
 df = transpose(data.frame(tx))
 df$V2 <- factor(seq_along(df$V1), levels = rownames(df))
