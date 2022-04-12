@@ -149,7 +149,7 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
 p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point()
 save_plot("test.png", p, base_height = 5)
 
-p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label = sig_terms_df$.id) +
+p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label = sig_terms_df$.id, max.overlaps = 27) +
   theme_tufte() +
   xlab("Shannon Entropy") + ylab("Skewness") +
                            theme(plot.title = element_text(size = 30),
@@ -160,6 +160,8 @@ p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label =
                             annotate("text", x = 1.5, y = 1, label = 'bold("Low variation bias")',parse=TRUE) +
                             annotate("text", x = 1.5, y = -1, label = 'bold("High variation bias")', parse = TRUE)
 save_plot("test.png", p, base_width = 6.5*2, base_height = 11*0.25*2)
+save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), p, base_width = 6.5*2, base_height = 11*0.25*2)
+
 
 p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
 save_plot("test.png", p, base_height = 5)
@@ -178,23 +180,27 @@ df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
-  scale_fill_viridis_d(option="magma") + 
-  theme_tufte() + theme(axis.text.x = element_text(size=18,angle = 0, hjust = 0.5),
-                          legend.position = "none") + xlab("") + ylab("") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + 
+  theme_tufte() + theme(axis.text.x = element_text(size=18,angle = 0, hjust = 0.5)) + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 30),
-                                          axis.title = element_text(size = 18),
-                                          axis.text = element_text(size = 30),
-                                          strip.text.x = element_text(size = 32))
+                                legend.title = element_text(size = 25),
+                                legend.text = element_text(size = 15),
+                                axis.title = element_text(size = 18),
+                                axis.text = element_text(size = 24),
+                                strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
-  scale_fill_viridis_d(option="magma") + 
-  theme_tufte() + theme(axis.text.x = element_text(size=24,angle = 0, hjust = 0.5),
-                          legend.position = "none") + xlab("") + ylab("") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + 
+  theme_tufte() + theme(axis.text.x = element_text(size=24,angle = 0, hjust = 0.5)) + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 30),
-                                          axis.title = element_text(size = 18),
-                                          axis.text = element_text(size = 24),
-                                          strip.text.x = element_text(size = 32))
-save_plot("test.png", p1+p2 + plot_layout(ncol=1), base_height = 6.5*2.2,base_width=13*2.2)
+                                legend.title = element_text(size = 25),
+                                legend.text = element_text(size = 15),
+                                axis.title = element_text(size = 18),
+                                axis.text = element_text(size = 24),
+                                strip.text.x = element_text(size = 32))
+save_plot("test.png", p1+p2 + plot_layout(ncol=1, guides = "collect"), base_height = 6.5*2.2,base_width=13*2.2)
+save_plot(here::here("data/plots/GOterm_decile_barplot.png"), p1+p2 + plot_layout(ncol=1), base_height = 6.5*2.2,base_width=13*2.2)
+
 # %%
 
 # %%
