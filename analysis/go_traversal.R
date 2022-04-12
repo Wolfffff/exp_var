@@ -1,5 +1,7 @@
 # %%
 source(here::here("functions.R"))
+library(ggthemes)
+library(ggrepel)
 library(here)
 library(sjmisc)
 library(pryr)
@@ -85,6 +87,8 @@ save.image(file='go_traversal.RData')
 library(stringr)
 
 rank_df = read.csv("data/pca_ranks.csv")
+complete_list <- ldply(go_gene_overlapping,rbind)
+list_of_go_genes = unique(complete_list$ensembl)
 rank_df_overlap = rank_df[rank_df$Gene %in% list_of_go_genes,]
 rank_df_overlap <- rank_df_overlap %>% arrange(sd)
 rank_df_overlap$sd <- seq(1,nrow(rank_df_overlap))
@@ -101,7 +105,6 @@ classifyQuantileFast = function(x){
 rank_class_df = tibble(gene = rank_df$Gene, quantile = classifyQuantileFast(rank_df$sd))
 
 shannon <- function(x) -sum(((x <- na.omit(x[x!=0]))/sum(x)) * log(x/sum(x)))
-skewness2 <- function(x) skewness(na.omit(x[x!=0]))
 
 termTable <- function(x){
   out = as.data.frame(matrix(0, ncol = n_classes, nrow = 1))
@@ -146,7 +149,6 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
 p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point()
 save_plot("test.png", p, base_height = 5)
 
-library(ggrepel)
 p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label = sig_terms_df$.id) +
   theme_tufte() +
   xlab("Shannon Entropy") + ylab("Skewness") +
@@ -155,8 +157,8 @@ p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label =
                                           axis.text = element_text(size = 18),
                                           strip.text.x = element_text(size = 32)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
-                            annotate("text", x = 1.5, y = 1, label = 'bold("Low variance bias")',parse=TRUE) +
-                            annotate("text", x = 1.5, y = -1, label = 'bold("High variance bias")', parse = TRUE)
+                            annotate("text", x = 1.5, y = 1, label = 'bold("Low variation bias")',parse=TRUE) +
+                            annotate("text", x = 1.5, y = -1, label = 'bold("High variation bias")', parse = TRUE)
 save_plot("test.png", p, base_width = 6.5*2, base_height = 11*0.25*2)
 
 p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
@@ -169,21 +171,23 @@ dev.off()
 
 n_plots = 5
 library(reshape2)
-df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "Lowest Skew")
+df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "High variation bias")
 n_terms = nrow(sig_terms_df)
-df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots -4):n_terms]], termTable) %>% melt %>% mutate(class = "Highest Skew")
+df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots -4):n_terms]], termTable) %>% melt %>% mutate(class = "Low variation bias")
 df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
+  scale_fill_viridis_d(option="magma") + 
   theme_tufte() + theme(axis.text.x = element_text(size=18,angle = 0, hjust = 0.5),
                           legend.position = "none") + xlab("") + ylab("") +
                           theme(plot.title = element_text(size = 30),
                                           axis.title = element_text(size = 18),
-                                          axis.text = element_text(size = 24),
+                                          axis.text = element_text(size = 30),
                                           strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
+  scale_fill_viridis_d(option="magma") + 
   theme_tufte() + theme(axis.text.x = element_text(size=24,angle = 0, hjust = 0.5),
                           legend.position = "none") + xlab("") + ylab("") +
                           theme(plot.title = element_text(size = 30),
@@ -198,8 +202,6 @@ save_plot("test.png", p1+p2 + plot_layout(ncol=1), base_height = 6.5*2.2,base_wi
 # %%
 
 # %%
-complete_list <- ldply(go_gene_overlapping,rbind)
-list_of_go_genes = unique(complete_list$ensembl)
 df = data.frame(ensembl=list_of_go_genes)
 tx = termTable(df)
 df = transpose(data.frame(tx))
