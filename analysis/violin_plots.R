@@ -11,11 +11,11 @@ rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
 
 
 
-quantile_violin_plot(rank_df$sd,rank_df$mean) + 
+p = quantile_violin_plot(rank_df$sd,rank_df$mean) + 
     ylab("SD Rank") + 
     xlab("metric quantile") + 
-    geom_boxplot(width=0.1) # + theme_minimal() + theme(legend.position = "none")
-ggsave("example.jpg")
+    geom_boxplot(width=0.1) + theme_classic() + theme(legend.position = "none")
+save_plot("test.png", p)
 
 
 # %%
@@ -55,13 +55,19 @@ pi_vals = read.csv(here::here("data/annotation/pi_ceu_results.csv"))
 
 merged = merge(rank_df, pi_vals, by.x = "gene", by.y = "gene")
 merged_filtered = merged[,which(names(merged) %in% c("gene","mean","sd", "pi"))]
-quantile_violin_plot( merged_filtered$pi  ,merged_filtered$sd,ntiles=10) + ylab("SD Rank") + xlab("pi value quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
-ggsave(here::here("data/plots/violin_plots/pi.jpg"), width = 18, height = 6, units = "in", dpi = 300) 
+p = quantile_violin_plot( merged_filtered$pi  ,merged_filtered$sd,ntiles=10) + 
+    ylab("SD Rank") + xlab("pi value quantile") + geom_boxplot(width=0.1) + 
+    stat_summary(fun = "mean", geom = "point", color = "red")
+save_plot("test.png", p)
+save_plot(here::here("data/plots/violin_plots/pi.jpg"), p, base_height = 6, base_asp = 1.) 
+
+conditional_Spearman(merged$sd ~ merged$pi, conditional.by = merged$mean)
 
 # %%
 
 # %%
-quantile_violin_plot(rank_df$median_connectivity, rank_df$sd, ntiles=10) + ylab("SD Rank") + xlab("Median connectivity quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
-ggsave(here::here("data/plots/violin_plots/connectivity.jpg"), width = 18, height = 6, units = "in", dpi = 300)
+p = quantile_violin_plot(rank_df$median_connectivity, rank_df$sd, ntiles=10) + ylab("SD Rank") + xlab("Median connectivity quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+save_plot(here::here("data/plots/violin_plots/connectivity.jpg"), p, base_height = 6, base_asp = 1.) 
+
 
 # %%
