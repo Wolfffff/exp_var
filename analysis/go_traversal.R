@@ -198,8 +198,9 @@ geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap
                                 axis.title = element_text(size = 18),
                                 axis.text = element_text(size = 24),
                                 strip.text.x = element_text(size = 32))
-save_plot("test.png", p1+p2 + plot_layout(ncol=1, guides = "collect"), base_height = 6.5*2.2,base_width=13*2.2)
-save_plot(here::here("data/plots/GOterm_decile_barplot.png"), p1+p2 + plot_layout(ncol=1), base_height = 6.5*2.2,base_width=13*2.2)
+p = p1+ p2 + plot_layout(ncol=1, guides = "collect")
+save_plot("test.png", p, base_height = 6.5*2.2,base_width=13*2.2)
+save_plot(here::here("data/plots/GOterm_decile_barplot.png"), p, base_height = 6.5*2.2,base_width=13*2.2)
 
 # %%
 
