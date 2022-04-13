@@ -61,7 +61,11 @@ p = quantile_violin_plot( merged_filtered$pi  ,merged_filtered$sd,ntiles=10) +
 save_plot("test.png", p)
 save_plot(here::here("data/plots/violin_plots/pi.jpg"), p, base_height = 6, base_asp = 1.) 
 
-conditional_Spearman(merged$sd ~ merged$pi, conditional.by = merged$mean)
+library(ppcor)
+merged = merged[complete.cases(merged),]
+pcor(merged[,c("sd", "pi", "mean")], method = "spearman") 
+pcor(rank_df[,c("sd", "mean_connectivity", "mean")], method = "spearman") 
+
 
 # %%
 
