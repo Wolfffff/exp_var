@@ -6,7 +6,7 @@ imkt_df = read.csv(here::here("data/annotation/imkt_results.csv"))
 imkt_df$gene = str_split_fixed(imkt_df$gene,'\\.',Inf)[,1]
 imkt_df = imkt_df[,-which(names(imkt_df) %in% c("X"))]
 
-merged = merge(rank_df, imkt_df, by.x = "gene", by.y = "gene")
+merged <- merge(rank_df, imkt_df, by.x = "Gene", by.y = "gene")
 
 p_format <- function(x, ndp=5)
 {
@@ -15,7 +15,7 @@ p_format <- function(x, ndp=5)
 
 library(psych)
 library(corrplot)
-merged_filtered = merged[,which(names(merged) %in% c("gene","mean", "sd", "alpha.symbol","Divergence.metrics.omega"))]
+merged_filtered = merged[,which(names(merged) %in% c("gene","mean", "sd", "alpha.symbol","Divergence.metrics.omega","Divergence.metrics.Ka","Divergence.metrics.Ks","Fishers.exact.test.P.value", "MKT.table.Divergence1", "MKT.table.Divergence2"))]
 cor_mat = cor(merged_filtered[,-1],method="spearman")
 
 # Worth looking into -- FDR corrected here.
@@ -27,7 +27,24 @@ pos <- expand.grid(1:ncol(cor_test_mat$p), ncol(cor_test_mat$p):1)
 text(pos, p_format(cor_test_mat$p))
 dev.off()
 
+merged_filtered$KaKs <- merged_filtered$Divergence.metrics.Ka/merged_filtered$Divergence.metrics.Ks
+merged_filtered <- merged_filtered[isnumeric(merged_filtered$KaKs),]
+
 # %%
+
+# %%
+# %%
+# %%
+mod = lm(sd ~ scale(KaKs) + scale(mean),merged_filtered)
+mod.summary = summary(mod)
+mod.summary
+
+p <- ggplot(merged_filtered, aes(x = rank(pi), y = sd)) + geom_point(alpha = 0.1)
+save_plot("test.png", p)
+quantile_violin_plot( merged_filtered$pi  ,merged_filtered$sd,ntiles=10) + ylab("SD Rank") + xlab("pi value quantile") + geom_boxplot(width=0.1) + stat_summary(fun = "mean", geom = "point", color = "red")
+ggsave(here::here("data/plots/violin_plots/pi.jpg"), width = 18, height = 6, units = "in", dpi = 300) 
+# %%
+
 
 # %%
 # pi vals
