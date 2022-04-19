@@ -9,7 +9,8 @@ metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
 connectivity_df = readRDS(here::here("snakemake/Rdatas/gene_connectivity.RDS"))
 
 
-#pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc", "ggrepel", "wesanderson"))
+#pak::pkg_install(c("corrplot", "vegan", "ape", "Hmisc", "ggrepel", "wesanderson", "missMDA"))
+library(missMDA)
 library(corrplot)
 library(vegan)
 library(ape)
@@ -25,12 +26,14 @@ rank_list = list()
 metric_cor_list = list()
 for (metric in c("mean", "sd")){
     print(metric)
-    rank_mat = ldply(metric_df[[metric]][,-1], rank)
+    rank_mat = ldply(metric_df[[metric]][,-1], rank, na.last = "keep")
     rank_mat = t(rank_mat[,-1])
-    rownames(rank_mat) = rownames(metric_df[[metric]][,-1])
+    rownames(rank_mat) = metric_df[[metric]][, 1]
     colnames(rank_mat) = colnames(metric_df[[metric]][,-1])
 
-    metric_cor = rcorr(as.matrix(metric_df[[metric]][,-1]), type = "spearman")$r
+    metric_matrix = as.matrix(metric_df[[metric]][,-1])
+    metric_matrix = metric_matrix[complete.cases(metric_matrix), ]
+    metric_cor = rcorr(metric_matrix, type = "spearman")$r
 
     res <- pcoa(abs(1 - metric_cor))
 
@@ -51,11 +54,14 @@ for (metric in c("mean", "sd")){
     if(all(eig$vectors[,1] < 0)){
         eig$vectors[,1] <- -eig$vectors[,1]
     }
-    
-    PC_scores = as.matrix(rank_mat) %*% eig$vectors
 
-    print(paste(round(eig$values/sum(eig$values) * 100, 1)[1:5], collapse = "% "))
-    gene_rank = rank(PC_scores[,1])
+    nb <- estim_ncpPCA(rank_mat,method.cv = "gcv",  ncp.min = 0, ncp.max = 10, verbose = FALSE)
+    imputed_rank = imputePCA(rank_mat, ncp = nb$ncp, verbose = FALSE)
+
+    PC_scores = as.matrix(imputed_rank$completeObs) %*% eig$vectors
+    vars = apply(PC_scores, 2, function(x) var(x))
+    print(paste(round(vars/sum(vars) * 100, 1)[1:5], collapse = "% "))
+    gene_rank = rank(PC_scores[,1], na.last = "keep")
     names(gene_rank) = metric_df[[metric]][,1]
     rank_list[[metric]] = gene_rank
     metric_cor_list[[metric]] = metric_cor

@@ -19,13 +19,14 @@ rank_list = list()
 metric_cor_list = list()
 metric = "sd"
 print(metric)
-rank_mat = ldply(metric_df[[metric]][,-1], rank)
+rank_mat = ldply(metric_df[[metric]][,-1], rank, na.last = "keep")
 rank_mat = t(rank_mat[,-1])
-rownames(rank_mat) = rownames(metric_df[[metric]][,-1])
+rownames(rank_mat) = metric_df[[metric]][, 1]
 colnames(rank_mat) = colnames(metric_df[[metric]][,-1])
 
+metric_matrix = as.matrix(metric_df[[metric]][,-1])
+mat = metric_matrix[complete.cases(metric_matrix), ]
 
-mat = as.matrix(metric_df[[metric]][,-1])
 ord1 = match(colnames(mat),metadata_df$id)
 ord2 = clusters = metadata_df$group[match(colnames(mat),metadata_df$id)]
 leveled = factor(ord2,levels = c("GTEx", "TCGA", "Other - Expression Atlas", "Other - recount3"))
