@@ -43,11 +43,11 @@ melted_cormat <- reshape2::melt(M)
 heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
     geom_tile() +
     scale_fill_viridis_c(alpha = 1)  + theme_tufte() +
-    labs(y = "", x = "", fill = "") +
+    labs(y = "", x = "GTEx                                     TCGA                                 Other", fill = "") +
     scale_x_discrete(breaks = c(12, 30, 47), label = c("gTEX", "TCGA", "Other")) +
     theme(legend.position = "bottom", legend.key.width= unit(4, 'cm')) 
 b_size_df = data.frame(start = c(0, 24, 35), end = c(24, 35, 60))  + .5
-heatmap = heatmap + geom_rect(data = b_size_df, color = "#36454F", alpha = 0, size = 1,
+heatmap = heatmap + geom_rect(data = b_size_df, color = "black", alpha = 0, size = 2,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
                                     ymin=start, ymax=end))
 }
@@ -66,34 +66,39 @@ density[["scaled"]] = density[["scaled"]] +
                       theme_tufte() + theme(legend.position = "none") +
                       ggtitle("D.") + 
                       theme(plot.title = element_text(size = 30)) +
-                      theme(axis.title = element_text(size = 18),
-                            axis.text = element_text(size = 12)) 
+                      theme(axis.title = element_text(size = 28),
+                            axis.text = element_text(size = 15)) 
 density[["unscaled"]] = density[["unscaled"]] + 
-                        theme_tufte() + theme(legend.position = "none")
+                        theme_tufte() + theme(legend.position = "none") +
+                        theme(axis.title.y = element_blank()) 
 density = density[["scaled"]] +
           inset_element(density[["unscaled"]], 
                         0.33, 0.33, 1, 1)
-layout <- 
+{layout <- 
 "AAACC
 AAACC
 AAADD
-BBBDD"
+BBBDD"}
 panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
                                         axis.title = element_text(size = 18),
-                                        axis.text = element_text(size = 12)) +
+                                        axis.text = element_text(size = 15),
+                                        legend.text = element_text(size = 15)) +
         histogram + ggtitle("B.") + theme(plot.title = element_text(size = 30),
-                                          axis.title = element_text(size = 18),
-                                          axis.text = element_text(size = 12)) +
-        PCoA + theme_tufte() + theme(legend.position = c(0.25, 0.14), 
+                                          axis.title = element_text(size = 28),
+                                          axis.text = element_text(size = 15)) +
+        PCoA + theme_tufte() + scale_x_continuous(limits = c(-.45, .4)) + scale_y_continuous(limits = c(-.5, .4)) +
+               theme(legend.position = c(0.5, 0.14), 
                      legend.title = element_blank(), 
                      legend.background = element_blank(), 
                      legend.box.background = element_rect(colour = "black"),
-                     legend.text = element_text(size = 12),
+                     legend.text = element_text(size = 18),
                      legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.),
-                     axis.title = element_text(size = 18),
-                     axis.text = element_text(size = 12)) + 
-                     ggtitle("C.") + theme(plot.title = element_text(size = 30)) +
+                     axis.title = element_text(size = 28),
+                     axis.text = element_text(size = 15)) + 
+                     ggtitle("C.") + theme(plot.title = element_text(size = 30)) + 
+                     guides(color=guide_legend(ncol=2, override.aes = list(size=3))) +
         density  +
         plot_layout(design = layout)
+save_plot(here::here("test.png"), panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 save_plot(here::here("data/plots/fig1_panel.png"), panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 
