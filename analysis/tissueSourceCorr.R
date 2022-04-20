@@ -138,7 +138,7 @@ p_study = mcmc_intervals(fit$draws("as")) +
     theme(plot.title = element_text(size = 30),
           axis.title = element_text(size = 28),
           axis.text.x = element_text(size = 26),
-          axis.text.y = element_text(size = 20)) +
+          axis.text.y = element_text(size = 19)) +
     labs(x = "Coefficient estimate")
 p_model = p_study + (p_tissue / p_source)  
 #+
