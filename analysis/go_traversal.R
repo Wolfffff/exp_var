@@ -178,26 +178,26 @@ df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots+1):n_terms]], 
 df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
-geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + 
-  theme_tufte() + theme(axis.text.x = element_text(size=18,angle = 0, hjust = 0.5)) + xlab("") + ylab("Counts") + labs(fill = "Decile") +
-                          theme(plot.title = element_text(size = 30),
-                                legend.title = element_text(size = 25),
-                                legend.text = element_text(size = 15),
-                                axis.title = element_text(size = 18),
-                                axis.text = element_text(size = 24),
-                                axis.text.x = element_text(size = 32),
+geom_bar(stat="identity", color="black", position=position_dodge()) + 
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low variation bias") +
+  theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
+                          theme(plot.title = element_text(size = 50),
+                                legend.title = element_text(size = 32),
+                                legend.text = element_text(size = 28),
+                                axis.title = element_text(size = 32),
+                                axis.text = element_text(size = 28),
+                                axis.text.x = element_text(size=38,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
-geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + 
-  theme_tufte() + theme(axis.text.x = element_text(size=24,angle = 0, hjust = 0.5)) + xlab("") + ylab("Counts") + labs(fill = "Decile") +
-                          theme(plot.title = element_text(size = 30),
-                                legend.title = element_text(size = 25),
-                                legend.text = element_text(size = 15),
-                                axis.title = element_text(size = 18),
-                                axis.text = element_text(size = 24),
-                                axis.text.x = element_text(size = 32),
+geom_bar(stat="identity", color="black", position=position_dodge()) + 
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High variation bias") +
+  theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
+                          theme(plot.title = element_text(size = 50),
+                                legend.title = element_text(size = 32),
+                                legend.text = element_text(size = 28),
+                                axis.title = element_text(size = 32),
+                                axis.text = element_text(size = 28),
+                                axis.text.x = element_text(size=38,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
 p = p1+ p2 + plot_layout(ncol=1, guides = "collect")
 save_plot("test.png", p, base_height = 6.5*2.2,base_width=13*2.2)
