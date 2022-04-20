@@ -22,7 +22,6 @@ for(t in tissues){
     rank_list = list()
     metric_cor_list = list()
     for (metric in c("mean", "sd")){
-        #print(paste(t, metric))
         studies = metadata_df[metadata_df$tissue == t, "id"]
         if(tissue_counts[t] > 1){
             rank_mat = ldply(metric_df[[metric]][, studies], rank, na.last = "keep")
@@ -53,6 +52,6 @@ for(t in tissues){
     rank_df$Gene = metric_df[[1]][,1]
     rank_df = relocate(rank_df, Gene)
     rank_df = rank_df[complete.cases(rank_df),]
-    #print(nrow(rank_df))
+    print(c(t, nrow(rank_df)))
     write.csv(rank_df, file=here::here(paste0("data/pca_ranks_tissue/", t, ".csv")), row.names = FALSE)
 }
