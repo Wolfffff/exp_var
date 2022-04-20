@@ -43,7 +43,7 @@ melted_cormat <- reshape2::melt(M)
 heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
     geom_tile() +
     scale_fill_viridis_c(alpha = 1)  + theme_tufte() +
-    labs(y = "", x = "GTEx                                     TCGA                                 Other", fill = "") +
+    labs(y = "", x = "GTEx                TCGA                  Other", fill = "") +
     scale_x_discrete(breaks = c(12, 30, 47), label = c("gTEX", "TCGA", "Other")) +
     theme(legend.position = "bottom", legend.key.width= unit(4, 'cm')) 
 b_size_df = data.frame(start = c(0, 24, 35), end = c(24, 35, 60))  + .5
@@ -67,7 +67,7 @@ density[["scaled"]] = density[["scaled"]] +
                       ggtitle("D.") + 
                       theme(plot.title = element_text(size = 30)) +
                       theme(axis.title = element_text(size = 28),
-                            axis.text = element_text(size = 15)) 
+                            axis.text = element_text(size = 18)) 
 density[["unscaled"]] = density[["unscaled"]] + 
                         theme_tufte() + theme(legend.position = "none") +
                         theme(axis.title.y = element_blank()) 
@@ -80,12 +80,12 @@ AAACC
 AAADD
 BBBDD"}
 panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
-                                        axis.title = element_text(size = 18),
+                                        axis.title.x = element_text(size = 30),
                                         axis.text = element_text(size = 15),
-                                        legend.text = element_text(size = 15)) +
+                                        legend.text = element_text(size = 18)) +
         histogram + ggtitle("B.") + theme(plot.title = element_text(size = 30),
                                           axis.title = element_text(size = 28),
-                                          axis.text = element_text(size = 15)) +
+                                          axis.text = element_text(size = 18)) +
         PCoA + theme_tufte() + scale_x_continuous(limits = c(-.45, .4)) + scale_y_continuous(limits = c(-.5, .4)) +
                theme(legend.position = c(0.5, 0.14), 
                      legend.title = element_blank(), 
@@ -94,11 +94,11 @@ panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
                      legend.text = element_text(size = 18),
                      legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.),
                      axis.title = element_text(size = 28),
-                     axis.text = element_text(size = 15)) + 
+                     axis.text = element_text(size = 18)) + 
                      ggtitle("C.") + theme(plot.title = element_text(size = 30)) + 
                      guides(color=guide_legend(ncol=2, override.aes = list(size=3))) +
         density  +
         plot_layout(design = layout)
 save_plot(here::here("test.png"), panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
-save_plot(here::here("data/plots/fig1_panel.png"), panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
+save_plot(here::here("data/plots/fig1.png"), panel, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 
