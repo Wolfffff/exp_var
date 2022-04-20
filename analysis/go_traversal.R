@@ -182,22 +182,22 @@ geom_bar(stat="identity", color="black", position=position_dodge()) +
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low variation bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 32),
-                                legend.text = element_text(size = 28),
+                                legend.title = element_text(size = 35),
+                                legend.text = element_text(size = 32),
                                 axis.title = element_text(size = 32),
                                 axis.text = element_text(size = 28),
-                                axis.text.x = element_text(size=38,angle = 0, hjust = 0.5),
+                                axis.text.x = element_text(size=40,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High variation bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 32),
-                                legend.text = element_text(size = 28),
+                                legend.title = element_text(size = 35),
+                                legend.text = element_text(size = 32),
                                 axis.title = element_text(size = 32),
                                 axis.text = element_text(size = 28),
-                                axis.text.x = element_text(size=38,angle = 0, hjust = 0.5),
+                                axis.text.x = element_text(size=40,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
 p = p1+ p2 + plot_layout(ncol=1, guides = "collect")
 save_plot("test.png", p, base_height = 6.5*2.2,base_width=13*2.2)
