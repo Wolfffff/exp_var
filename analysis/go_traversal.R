@@ -134,7 +134,6 @@ skewnessGOterm = function(x){
 mask = filter(ldply(go_gene_overlapping,dim), V1 > 20)$`.id`
 goTerm_shannon = ldply(go_gene_overlapping[mask], shannonGOterm)
 
-ldply(go_gene_overlapping[single_quant[,1]], termTable)
 sig_terms_df = ldply(go_gene_overlapping[mask], 
                      function(x) c(p.value = chiSqTest(x), 
                                    N = nrow(x), 
@@ -175,7 +174,7 @@ n_plots = 5
 library(reshape2)
 df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "High variation bias")
 n_terms = nrow(sig_terms_df)
-df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots -4):n_terms]], termTable) %>% melt %>% mutate(class = "Low variation bias")
+df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots+1):n_terms]], termTable) %>% melt %>% mutate(class = "Low variation bias")
 df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
@@ -187,6 +186,7 @@ geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap
                                 legend.text = element_text(size = 15),
                                 axis.title = element_text(size = 18),
                                 axis.text = element_text(size = 24),
+                                axis.text.x = element_text(size = 32),
                                 strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap(~class, ncol = 1, scale="free") +
@@ -197,6 +197,7 @@ geom_bar(stat="identity", color="black", position=position_dodge()) + facet_wrap
                                 legend.text = element_text(size = 15),
                                 axis.title = element_text(size = 18),
                                 axis.text = element_text(size = 24),
+                                axis.text.x = element_text(size = 32),
                                 strip.text.x = element_text(size = 32))
 p = p1+ p2 + plot_layout(ncol=1, guides = "collect")
 save_plot("test.png", p, base_height = 6.5*2.2,base_width=13*2.2)
