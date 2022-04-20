@@ -121,28 +121,31 @@ p_tissue = mcmc_intervals(fit$draws("c")) +
     scale_y_discrete(labels = c("Different tissue", "Same tissue")) +
     ggtitle("B. Pairwise tissue congruence effect") + theme_tufte() +  
     theme(plot.title = element_text(size = 30),
-          axis.title = element_text(size = 18),
-          axis.text = element_text(size = 18)) +
+          axis.title = element_text(size = 28),
+          axis.text = element_text(size = 26)) +
     labs(x = "Coefficient estimate")
 
 p_source = mcmc_intervals(fit$draws("b")) +
     scale_y_discrete(labels = levels(corr_df$source)) +
     ggtitle("C. Pairwise source effect") + theme_tufte() +  
     theme(plot.title = element_text(size = 30),
-          axis.title = element_text(size = 18),
-          axis.text = element_text(size = 18)) +
+          axis.title = element_text(size = 28),
+          axis.text = element_text(size = 26)) +
     labs(x = "Coefficient estimate")
 p_study = mcmc_intervals(fit$draws("as")) +
     scale_y_discrete(labels = paste0(paste(ids, grp, sep = " ("), ")")) +
     ggtitle("A. Per-study random effect") + theme_tufte()  +  
     theme(plot.title = element_text(size = 30),
-          axis.title = element_text(size = 18),
-          axis.text = element_text(size = 18)) +
+          axis.title = element_text(size = 28),
+          axis.text.x = element_text(size = 26),
+          axis.text.y = element_text(size = 20)) +
     labs(x = "Coefficient estimate")
 p_model = p_study + (p_tissue / p_source)  
 #+
   #plot_annotation(title = "Modeling the driver of across-study variance correlations",
    # caption = "Linear effect model coefficients with Fisher z-transformed spearman correlations as the response. \n A: The pairwise random effect captures the non-independence of the correlation values and estimates the contribution \n of each study to the correlation. For example: comparisons involving bone_marrow tend to be lower than the others. \n B and C: Fixed effect estimates: correlations among studies that use the same tissue are higher, and correlations \ninvolving studies in the \"Other\" category (non gTEX and TCGA) tend to be lower.")
+save_plot(here::here("test.png"),
+          p_model, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 save_plot(here::here("data/plots/correlationModeling.png"),
           p_model, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 
