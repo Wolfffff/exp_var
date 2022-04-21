@@ -42,17 +42,18 @@ for(t in tissues){
 
                 gene_rank = rank(PC_scores[,1], na.last = "keep")
                 names(gene_rank) = metric_df[[metric]][,1]
-            } 
+            
             # else{
             #     metric_df[[metric]][, studies] 
             #     gene_rank = rank(metric_df[[metric]][, studies], na.last = "keep")
             # }
-            rank_list[[metric]] = gene_rank
+        rank_list[[metric]] = gene_rank
         
         rank_df = data.frame(bind_cols(rank_list))
         rank_df$Gene = metric_df[[1]][,1]
         rank_df = relocate(rank_df, Gene)
         rank_df = rank_df[complete.cases(rank_df),]
+        }
         print(c(t, tissue_counts[t], nrow(rank_df)))
         write.csv(rank_df, file=here::here(paste0("data/pca_ranks_tissue/", t, ".csv")), row.names = FALSE)
     }
