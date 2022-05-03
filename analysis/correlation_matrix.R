@@ -86,12 +86,13 @@ panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
         histogram + ggtitle("B.") + theme(plot.title = element_text(size = 30),
                                           axis.title = element_text(size = 28),
                                           axis.text = element_text(size = 18)) +
-        PCoA + theme_tufte() + scale_x_continuous(limits = c(-.45, .4)) + scale_y_continuous(limits = c(-.5, .4)) +
+        PCoA + theme_tufte() + 
+        #scale_x_continuous(limits = c(-.45, .4)) + scale_y_continuous(limits = c(-.5, .4)) +
                theme(legend.position = "bottom", 
                      legend.title = element_blank(), 
                      legend.background = element_blank(), 
                      legend.box.background = element_rect(colour = "black"),
-                     legend.text = element_text(size = 18),
+                     legend.text = element_text(size = 20),
                      legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.),
                      axis.title = element_text(size = 28),
                      axis.text = element_text(size = 18)) + 

@@ -41,7 +41,11 @@ local_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
                           readable      = TRUE)
 
 pw_upper <- pairwise_termsim(local_go_upper) 
-p1 <- emapplot(pw_upper, showCategory = 15) + theme(legend.position = "none") + ggtitle("High variation") + theme(plot.title = element_text(size=28))
+pw_upper <- simplify(pw_upper, cutoff=0.7, by="p.adjust", select_fun=min)
+p1 <- emapplot(pw_upper, showCategory = 10, cex_label_category = 1.1) + 
+    theme(legend.position = "none") + 
+    ggtitle("High variation") + 
+    theme(plot.title = element_text(size=28))
 p1$data$color = mean(p1$data$color)
 local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
                           universe = rank_df$Gene,
@@ -53,7 +57,11 @@ local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
                           qvalueCutoff  = 0.05,
                           readable      = TRUE)
 pw_lower <- pairwise_termsim(local_go_lower) 
-p2 <- emapplot(pw_lower, showCategory = 15) + theme(legend.position = "none") + ggtitle("Low variation") + theme(plot.title = element_text(size=28))
+pw_lower <- simplify(pw_lower, cutoff=0.7, by="p.adjust", select_fun=min)
+p2 <- emapplot(pw_lower, showCategory = 10, cex_label_category = 1.1) + 
+    theme(legend.position = "none") + 
+    ggtitle("Low variation") +
+    theme(plot.title = element_text(size=28))
 p2$data$color = mean(p1$data$color)
 #p2$data$name[3] = "RNA splicing, via transesterification\n reactions with bulged adenosine as nucleophile"
 
@@ -61,8 +69,6 @@ p12 = p1 + p2 + plot_layout(ncol=2)
 
 save_plot(here::here("data/plots/local_go_lowerUpper.png"), p12, base_height = 6, base_asp = 2)
 # %%
-
-
 
 
 

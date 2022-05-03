@@ -65,20 +65,20 @@ call_go <- function(id) {
 library(GO.db)
 library(biomaRt)
 
-go_gene_groups <- lapply(go_terms, call_go)
-names(go_gene_groups) <- go_terms
-go_gene_overlapping <- list()
-for (term in go_terms) {
-  go_gene_overlap <- go_gene_groups[[term]][go_gene_groups[[term]]$ensembl %in% rank_df$Gene,]
-  go_gene_overlap <- go_gene_overlap[!duplicated(go_gene_overlap$ensembl),]
-  term <- GO[[term]]@Term
-  go_gene_overlapping[[term]] <- go_gene_overlap
-}
+# go_gene_groups <- lapply(go_terms, call_go)
+# names(go_gene_groups) <- go_terms
+# go_gene_overlapping <- list()
+# for (term in go_terms) {
+#   go_gene_overlap <- go_gene_groups[[term]][go_gene_groups[[term]]$ensembl %in% rank_df$Gene,]
+#   go_gene_overlap <- go_gene_overlap[!duplicated(go_gene_overlap$ensembl),]
+#   term <- GO[[term]]@Term
+#   go_gene_overlapping[[term]] <- go_gene_overlap
+# }
 
-ldply(go_gene_overlapping,dim) %>% filter(V1 > 20)
-names(go_gene_groups)
-save.image(file='go_traversal.RData')
-
+# ldply(go_gene_overlapping,dim) %>% filter(V1 > 20)
+# names(go_gene_groups)
+# save.image(file='go_traversal.RData')
+load('go_traversal.RData')
 
 
 # %%
@@ -148,7 +148,9 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
 p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point()
 save_plot("test.png", p, base_height = 5)
 
-p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label = sig_terms_df$.id, max.overlaps = 27) +
+entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) + 
+  geom_point() + 
+  geom_label_repel(label = sig_terms_df$.id, max.overlaps = 27) +
   theme_tufte() +
   xlab("Shannon Entropy") + ylab("Skewness") +
                            theme(plot.title = element_text(size = 30),
@@ -158,8 +160,8 @@ p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point() + geom_label_repel(label =
                             geom_hline(yintercept=0, linetype = "dashed") +
                             annotate("text", x = 1.5, y = 1, label = 'bold("Low variation bias")',parse=TRUE) +
                             annotate("text", x = 1.5, y = -1, label = 'bold("High variation bias")', parse = TRUE)
-save_plot("test.png", p, base_width = 6.5*2, base_height = 11*0.25*2)
-save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), p, base_width = 6.5*2, base_height = 11*0.25*2)
+save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
+save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
 
 
 p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
@@ -179,7 +181,7 @@ df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low variation bias") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("D. Low variation bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
                                 legend.title = element_text(size = 35),
@@ -190,7 +192,7 @@ geom_bar(stat="identity", color="black", position=position_dodge()) +
                                 strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High variation bias") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("E. High variation bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
                                 legend.title = element_text(size = 35),
@@ -202,7 +204,8 @@ geom_bar(stat="identity", color="black", position=position_dodge()) +
 p = p1+ p2 + plot_layout(ncol=1, guides = "collect")
 save_plot("test.png", p, base_height = 6.5*2.2,base_width=13*2.2)
 save_plot(here::here("data/plots/GOterm_decile_barplot.png"), p, base_height = 6.5*2.2,base_width=13*2.2)
-
+high_term = p2
+low_term = p1
 # %%
 
 # %%
@@ -230,4 +233,98 @@ df = transpose(data.frame(tx))
 df$V2 <- factor(seq_along(df$V1), levels = rownames(df))
 p = ggplot(df,aes(x=V2,y=V1))+geom_bar(stat="identity")
 save_plot("test.png", , base_height = 6)
+# %%
+
+# %%
+source(here::here("functions.R"))
+library(here)
+library(sjmisc)
+library(pryr)
+# %%
+
+# %%
+# GO analysis on ea
+organism = "org.Hs.eg.db"
+metrics = c("mean", "sd")
+
+rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+
+tail_size = 0.05
+
+upper_quantiles = list()
+lower_quantiles = list()
+for(metric in c("mean","sd")){
+    cutoff = quantile(rank_df[[metric]],1 - tail_size)
+    subset = rank_df[rank_df[[metric]] >= cutoff,]$Gene
+    upper_quantiles[[metric]] = subset
+    cutoff = abs(quantile(rank_df[[metric]], tail_size))
+    lower_quantiles[[metric]] = rank_df[rank_df[[metric]] <= cutoff,]$Gene
+}
+# %%
+
+# %%
+# GO analysis against our list of genes
+metric = "sd"
+library(enrichplot)
+
+local_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
+                          universe = rank_df$Gene,
+                          OrgDb         = org.Hs.eg.db,
+                          keyType       = 'ENSEMBL',
+                          ont           = "BP",
+                          pAdjustMethod = "BH",
+                          pvalueCutoff  = 0.01,
+                          qvalueCutoff  = 0.05,
+                          readable      = TRUE)
+
+pw_upper <- pairwise_termsim(local_go_upper) 
+pw_upper <- simplify(pw_upper, cutoff=0.7, by="p.adjust", select_fun=min)
+plot_upper <- emapplot(pw_upper, showCategory = 10, cex_label_category = 1.2) + 
+      ggtitle("A. High variation") +
+          theme_tufte() + 
+          theme(legend.position = "none") + 
+          theme(plot.title = element_text(size=28),
+                axis.title = element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank()) 
+plot_upper$data$color = mean(plot_upper$data$color)
+local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
+                          universe = rank_df$Gene,
+                          OrgDb         = org.Hs.eg.db,
+                          keyType       = 'ENSEMBL',
+                          ont           = "BP",
+                          pAdjustMethod = "BH",
+                          pvalueCutoff  = 0.01,
+                          qvalueCutoff  = 0.05,
+                          readable      = TRUE)
+pw_lower <- pairwise_termsim(local_go_lower) 
+pw_lower <- simplify(pw_lower, cutoff=0.7, by="p.adjust", select_fun=min)
+plot_lower <- emapplot(pw_lower, showCategory = 10, cex_label_category = 1.2) + 
+    ggtitle("B. Low variation") +           
+          theme_tufte() + 
+          theme(legend.position = "none") + 
+          theme(plot.title = element_text(size=28),
+                axis.title = element_blank(),
+                axis.text = element_blank(),
+                axis.ticks = element_blank()) 
+plot_lower$data$color = mean(plot_lower$data$color)
+#p2$data$name[3] = "RNA splicing, via transesterification\n reactions with bulged adenosine as nucleophile"
+
+p12 = plot_upper + plot_lower + plot_layout(ncol=2)
+
+save_plot(here::here("data/plots/local_go_lowerUpper.png"), p12, base_height = 6, base_asp = 2)
+# %%
+
+
+# %%
+{layout <- 
+"AABB
+CCCC
+DDDD"}
+fig3 =  plot_upper + 
+        plot_lower + 
+        entropy_by_skewness + ggtitle("C. Entropy by Skewness") + 
+        (p1+ p2 + plot_layout(ncol=1, guides = "collect")) + plot_layout(design = layout)
+
+save_plot("test.png", fig3, base_height = 10*2.2,base_width=10*2.2)
 # %%
