@@ -181,7 +181,7 @@ df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("D. Low variation bias") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low variation bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
                                 legend.title = element_text(size = 35),
@@ -192,7 +192,7 @@ geom_bar(stat="identity", color="black", position=position_dodge()) +
                                 strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("E. High variation bias") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High variation bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
                                 legend.title = element_text(size = 35),
@@ -273,10 +273,10 @@ local_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
                           keyType       = 'ENSEMBL',
                           ont           = "BP",
                           pAdjustMethod = "BH",
-                          pvalueCutoff  = 0.01,
-                          qvalueCutoff  = 0.05,
+                          pvalueCutoff  = 0.001,
+                          qvalueCutoff  = 0.001,
                           readable      = TRUE)
-
+write_csv(local_go_upper@result, here::here("data/annotation/go_upper_quantile.csv"))
 pw_upper <- pairwise_termsim(local_go_upper) 
 pw_upper <- simplify(pw_upper, cutoff=0.7, by="p.adjust", select_fun=min)
 plot_upper <- emapplot(pw_upper, showCategory = 10, cex_label_category = 1.2) + 
@@ -294,13 +294,14 @@ local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
                           keyType       = 'ENSEMBL',
                           ont           = "BP",
                           pAdjustMethod = "BH",
-                          pvalueCutoff  = 0.01,
-                          qvalueCutoff  = 0.05,
+                          pvalueCutoff  = 0.001,
+                          qvalueCutoff  = 0.001,
                           readable      = TRUE)
+write_csv(local_go_lower@result, here::here("data/annotation/go_lower_quantile.csv"))
 pw_lower <- pairwise_termsim(local_go_lower) 
 pw_lower <- simplify(pw_lower, cutoff=0.7, by="p.adjust", select_fun=min)
 plot_lower <- emapplot(pw_lower, showCategory = 10, cex_label_category = 1.2) + 
-    ggtitle("B. Low variation") +           
+    ggtitle("B. Low variation") +            
           theme_tufte() + 
           theme(legend.position = "none") + 
           theme(plot.title = element_text(size=28),
