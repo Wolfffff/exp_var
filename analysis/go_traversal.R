@@ -276,7 +276,7 @@ local_go_upper = enrichGO(gene  = upper_quantiles[[metric]],
                           pvalueCutoff  = 0.001,
                           qvalueCutoff  = 0.001,
                           readable      = TRUE)
-write_csv(local_go_upper@result |> filter(p.adjust > 0.01, Count > 4), here::here("data/annotation/go_upper_quantile.csv"))
+write_csv(local_go_upper@result |> filter(p.adjust < 0.01, Count > 4), here::here("data/annotation/go_upper_quantile.csv"))
 pw_upper <- pairwise_termsim(local_go_upper) 
 pw_upper <- simplify(pw_upper, cutoff=0.7, by="p.adjust", select_fun=min)
 plot_upper <- emapplot(pw_upper, showCategory = 10, cex_label_category = 1.2) + 
@@ -297,7 +297,7 @@ local_go_lower = enrichGO(gene  = lower_quantiles[[metric]],
                           pvalueCutoff  = 0.001,
                           qvalueCutoff  = 0.001,
                           readable      = TRUE)
-write_csv(local_go_lower@result |> filter(p.adjust > 0.01, Count > 4), here::here("data/annotation/go_lower_quantile.csv"))
+write_csv(local_go_lower@result |> filter(p.adjust < 0.01, Count > 4), here::here("data/annotation/go_lower_quantile.csv"))
 pw_lower <- pairwise_termsim(local_go_lower) 
 pw_lower <- simplify(pw_lower, cutoff=0.7, by="p.adjust", select_fun=min)
 plot_lower <- emapplot(pw_lower, showCategory = 10, cex_label_category = 1.2) + 
