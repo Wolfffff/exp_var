@@ -142,7 +142,6 @@ pca <- function(x, space = c("rows", "columns"),
 }
 
 make_filtered_data = function(counts, metadata, feature_vec){
-  #print(colnames(metadata))
   filtered_metadata <- metadata
   filtered_counts <- as_data_frame(counts)
   for (column in names(feature_vec)) {
