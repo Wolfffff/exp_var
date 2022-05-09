@@ -28,14 +28,12 @@ text(pos, p_format(cor_test_mat$p))
 dev.off()
 
 merged_filtered$KaKs <- merged_filtered$Divergence.metrics.Ka/merged_filtered$Divergence.metrics.Ks
-merged_filtered <- merged_filtered[isnumeric(merged_filtered$KaKs),]
+merged_filtered <- merged_filtered[is.numeric(merged_filtered$KaKs),]
 
 # %%
 
 # %%
-# %%
-# %%
-mod = lm(sd ~ scale(KaKs) + scale(mean),merged_filtered)
+mod = lm(sd ~ scale(Divergence.metrics.omega) + scale(mean),merged_filtered)
 mod.summary = summary(mod)
 mod.summary
 
