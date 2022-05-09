@@ -57,7 +57,6 @@ counts <- filtered_data$counts
 n_samples <- dim(metadata)[1]
 metadata$sample_id <- rownames(metadata)
 
-log4r_info("Normalizing and estimating mean-variance weights...")
 countdata.list <- DGEList(counts = counts, samples = metadata, genes = rownames(dset))
 rep_names = c("technical_replicate_group", "wells.replicate", "individual", "sample")
 if (any(names(metadata) %in% rep_names)) {
@@ -69,14 +68,16 @@ if (any(names(metadata) %in% rep_names)) {
     }
     countdata.list <- sumTechReps(countdata.list, metadata[,rep_col])
 }
+
+# TODO: Remove calcNormFactors and change up naming
 log4r_info("Calculating normalization factors...")
 countdata.norm <- calcNormFactors(countdata.list)
 
 log4r_info("Trimming...")
-cutoff <- inv_log2_plus05(1)
+# cutoff <- inv_log2_plus05(1)
 
-# Removing very low expression genes
-drop <- which(apply(cpm(countdata.norm), 1, max) < cutoff)
+# Removing genes where max expression is less than cpm
+drop <- which(apply(cpm(countdata.norm), 1, max) < 1)
 countdata.norm <- countdata.norm[-drop, ]
 
 # Removing genes with low average expression
@@ -86,23 +87,6 @@ countdata.norm <- countdata.norm[-drop, ]
 # Removing mitochondrial genes
 drop <- which(remove_id_ver(countdata.norm$genes[,1]) %in% mt_gene_ids)
 countdata.norm <- countdata.norm[-drop, ]
-
-# recalc with updated metadata
-values_count <- sapply(lapply(countdata.norm$samples, unique), length)
-countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[, values_count > 1])]
-
-log4r_info("Making design matrix...")
-countdata.norm$samples  <- remove_redundant_features(countdata.norm$samples )
-
-# Removing columns with a crazy number of levels that mess everything up.
-# (this is why we have random effects by the way)
-countdata.norm$samples  <- remove_large_factors(
-    countdata.norm$samples,
-    columns_to_ignore
-)
-countdata.norm$samples <- select_meta(countdata.norm$samples)
-
-# Switch to DESeq2
 
 # Remove top 3 genes from BLOOD, hemoglobins
 if(dset_name == "BLOOD"){
@@ -118,6 +102,22 @@ if(dset_name %in% c("STOMACH")){
     print(paste("Removed genes:", paste(countdata.norm$genes[remove_genes,], collapse = " ")))
     countdata.norm  =   countdata.norm[-remove_genes,]
 }
+
+# TODO: recalculate normalization factors
+# Recalc with updated metadata
+values_count <- sapply(lapply(countdata.norm$samples, unique), length)
+countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[, values_count > 1])]
+
+log4r_info("Cleaning up redundant features and large factors...")
+countdata.norm$samples  <- remove_redundant_features(countdata.norm$samples )
+
+countdata.norm$samples  <- remove_large_factors(
+    countdata.norm$samples,
+    columns_to_ignore
+)
+countdata.norm$samples <- select_meta(countdata.norm$samples)
+
+
 
 log4r_info("Saving data...")
 saveRDS(list(data = countdata.norm, columns_to_ignore = columns_to_ignore), 

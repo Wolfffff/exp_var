@@ -1,6 +1,4 @@
 save.image(snakemake@log[["env"]])
-#setwd(here::here("snakemake"))
-#load("Rdatas/env/makeResiduals/ESCA.Rdata")
 
 my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
@@ -22,14 +20,6 @@ design <- make_design_matrix(countdata.norm$samples, columns_to_ignore)
 print(paste("Design matrix size:", paste(dim(design), collapse = " x ")))
 
 pca_on_raw <- pca_plot(countdata.norm$counts, color = rep("1", ncol(countdata.norm$counts)))
-
-# Switch to DESeq2
-
-# if(dset_name == "ESCA"){
-#     bigones = sort(apply(countdata.norm$counts, 1, max), decreasing = T)
-#     remove_genes = which(rownames(countdata.norm) %in% names(bigones)[1])
-#     countdata.norm  =   countdata.norm[-remove_genes,]
-# }
 
 print(paste0("Filtered count dimensions: ", 
              dim(countdata.norm$counts)[1], " x ", dim(countdata.norm$counts)[2]))
