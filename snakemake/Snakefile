@@ -40,20 +40,20 @@ rule all:
         "Rdatas/gene_var_matrices.RDS",
         expand("Rdatas/networkStats/{ids}.csv", ids=ids)
 
-# rule download:
-#     resources: 
-#         tmpdir="/scratch/tmp"
-#     params:
-#         id=ids,
-#         source=get_source
-#     log:
-#         "logs/download/{id}.txt"
-#     input:
-#         metadata=get_metadata
-#     output:
-#         "Rdatas/raw/{id}.rds"
-#     script:
-#         "scripts/downloadRecount3.R"
+rule download:
+    resources: 
+        tmpdir="/scratch/tmp"
+    params:
+        id=ids,
+        source=get_source
+    log:
+        "logs/download/{id}.txt"
+    input:
+        metadata=get_metadata
+    output:
+        "Rdatas/raw/{id}.rds"
+    script:
+        "scripts/download_datasets.R"
 
 rule preProcess:
     resources: 
@@ -70,7 +70,7 @@ rule preProcess:
     output:
         "Rdatas/preProcess/{id}.rds"
     script:
-        "scripts/preProcess.R"
+        "scripts/preprocessing.R"
 
 rule makeResiduals:
     resources: 
@@ -90,7 +90,7 @@ rule makeResiduals:
         all_plots="Rdatas/plots/all_pca_{id}.rds"
 
     script:
-        "scripts/makeResiduals.R"
+        "scripts/make_residuals.R"
 
 rule csv_residuals:
     threads: 1

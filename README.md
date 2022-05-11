@@ -1,54 +1,85 @@
-# Expression Variance
+# Characterizing the landscape of gene expression variance in humans
 
-This repository contains code for exploring the landscape of variation across a multitude of studies. Specifically, we have a pipeline for pulling a multitude of RNA-Seq datasets, processing them, and explore the resulting expression profiles.
+Repository contains scripts to reproduce results of the paper as below:
 
-Running slides: [google](https://docs.google.com/presentation/d/1idrk-miGwgxcSU7wPH6h3MwpjLKCQPiOI6iEjDPiRiI/edit?usp=sharing)
+> *Characterizing the landscape of gene expression variance in humans.*
+> Scott Wolf*, Diogo Melo*, Kristina Garske, Luisa Pallares, Julien Ayroles. 
 
-## Pipeline and Data
+# Workflow
 
-For the exact pipeline we run, see the `snakemake` folder in the repository. The current set of studies from (Expression Atlas)[snakemake/metadata/EA_metadata.csv](snakemake/metadata/EA_metadata.csv) and [snakemake/metadata/recount3_metadata.csv](snakemake/metadata/recount3_metadata.csv). We currently have ~70 studies. The resulting data is placed in [snakemake/Rdatas/residuals/](snakemake/Rdatas/residuals/).
+The main pipeline for generating gene-level metrics is built using [Snakemake](https://snakemake.readthedocs.io/en/stable/). To run the pipeline, run the following command from the `snakemake` directory:
 
-### Ranking
-
-Implemented PCA scoring/ranking in [acrossStudiesVarScore.R](acrossStudiesVarScore.R) which yield a more as we discussed previously. The output is currently the best thing we have to run with and should be give us a decent first pass at gene lists for toying with.
-
-### Plots
-The plots are generated in [data/plots/](data/plots/). Check out the PCAs and mean-variance plots for the residuals that we've discussed in the past.
+```{bash}
+snakemake Snakefile
+```
 
 
-### Data
+Many of the supporting functions can be found in [functions.R](functions.R).
+## Snakemake pipeline
+
+The following notes describe each piece of the Snakemake workflow in detail. The Snakemake file can be viewed at [snakemake/Snakefile](snakemake/Snakefile). The corresponding config file detailing the datasources is located at [snakemake/config.yaml](snakemake/config.yaml), and the config for running this on a Slurm cluster is located at [snakemake/config_slurm.yaml](snakemake/config_slurm.yaml).
+
+### Data download
+
+After reading each set of ids and appending the corresponding source, we download the data from the source. This is done by passing our study ids along with the corresponding source (Expression Atlas or recount3) and metadata for each. For sources found in Expression Atlas and recount3, we use the corresponding R packages (ExpressionAtlas and recount3) to pull the rawdata and corresponding metadata. For each of these, we output the data in `/snakemake/Rdatas/raw/{id}.rds`. The source for doing this can be found in: [download_datasets.R](snakemake/scripts/download_datasets.R).
+
+### Preprocessing
+
+After gathering the raw data, we need to preprocess the data. We initially passing the id and metadata. After loading the datasets, we preprocess the data by:
+
+1. Filtering out manually curated columns of problematic metadata. The columns that were hand curated can be found in [snakemake/metadata/EA_metadata.csv](snakemake/metadata/EA_metadata.csv) and [snakemake/metadata/recount3_metadata.csv](snakemake/metadata/recount3_metadata.csv) accordingly.
+
+2. Removing portions of studies where cell lines are used (i.e. Cultured Fibroblasts in the Skin tissue set from GTEx) and where multiple tissue types are pooled (i.e. Esophagus from GTEx).
+
+3. Filtering to get only control samples from each study.
+
+4. Summing technical replicates.
+
+5. Drop gene with expression less than 1 cpm.
+
+6. Drop genes with mean expression below 5 cpm
+
+7. Drop mitochondrial genes
+
+8. Remove extreme outliers from BLOOD and Stomach samples
+
+9. Recalculate normalization factors on the remaining data
+
+10. Remove redundant metadata
+
+11. Remove factors with large number of levels
 
 
-### Avenues
 
-#### Evo
+Following this, for each dataset, we output the filtered expression data and its corresponding filtered metadata at `/snakemake/Rdatas/preProcess/{id}.rds`. The source for doing this can be found in: [preprocessing.R](snakemake/scripts/preprocessing.R).
 
-Here we've take a pass at getting a couple evolutionary metrics. We pulled $\omega$ and $\alpha$ from [PopHuman](https://academic.oup.com/nar/article/46/D1/D1003/4559406) with chimpanzees as the reference species. That can be found in [imkt_pull.R](imkt_pull.R) and a correlation correlation plot is generated in [evo_analysis.R](evo_analysis.R) to be found [data/plots/SpearmanCorrelations/corr_plot_with_pvals.png](data/plots/SpearmanCorrelations/corr_plot_with_pvals.png).
+### Calculating residuals
 
-#### Disease
+Following preprocessing, we want to calculate residual expression after removing the confounding factors. We do this for each study by:
 
-Starting PTWAS analysis -- see [ptwas.R](ptwas.R). We have the table but need to deal with subsetting to disease phenotypes using their Table S1 from the paper.
+1. Making a design matrix using preprocessed data and ignoring manually identified problematic columns.
 
-# Framing
+2. Calculate a variance stabilizing transform as implemented in [DESeq2](https://rdrr.io/bioc/DESeq2/man/varianceStabilizingTransformation.html).
 
-## Drivers of Gene Expression Variance difference
+3. Filter outlier individuals using a robust Principal Component Analysis approach as described by Chen et al. 2020.
 
-- Positive selection, continuously pushing advantageous alleles to fixation
-    - dn/ds
-- Purifying selection, removing deleterious variants
-    - dn/ds, segregating variants, 
-- Differential input of mutation, due to differential mutation rate or differences in the size of the mutational targets. 
-    - Number of eQTLs, regulatory regions
-- Canalization, modifiers that change the sensitivity of genes to genetic and environmental variation
+4. Recalculate design matrix after filtering for outliers and stabilizing variance.
 
-Early-expressed genes should then be less variable, and late-expressed genes more variable due to the additive effect of several upstream regulators.
 
-Is there any gene-level measure that has a more-upstream to less-upstream axis? (KEGG?)
 
-### Canalization
+### Postprocessing 
 
-Genes should have some expected level of phenotypic variation given their underlying genetic variation and eQTLs and all that. Genes that have less phenotypic variation than expected by this measure can be said to be more canalized, being robust to the input of genetic variation. What are the characteristics of these canalized genes?
+#### CSV residuals
 
-Same thing for hyper-variable genes. Are they responding to the environment?
+Generates a CSV file containing the residuals for each study.
 
-Pitch: We can test for substantial canalization by looking at the relation between genetic variation (broad sense: genetic diversity, segregating sites, eQTLs) and phenotypic variation in the expression data. If there is a relation between them, no evidence for canalization and phenotypic variation is proportional to genetic variation. Genes that deviate from this might be more or less canalized, and we can probe them for enrichments.
+#### Graph
+Creates a a fully connected gene-by-gene graph in which each edge is weighted by the Spearman correlation between gene expression for each study.
+
+#### Network stats
+
+#### Gene metrics
+
+#### Variance Scores
+
+Calculates a standard, cross-study gene expression variation using the post correction expression residuals.
