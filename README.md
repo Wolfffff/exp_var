@@ -3,18 +3,20 @@
 Repository contains scripts to reproduce results of the paper as below:
 
 > *Characterizing the landscape of gene expression variance in humans.*
-> Scott Wolf*, Diogo Melo*, Kristina Garske, Luisa Pallares, Julien Ayroles. 
+> Scott Wolf*, Diogo Melo*, Kristina Garske, Luisa Pallares, Julien Ayroles.
 
 # Workflow
 
-The main pipeline for generating gene-level metrics is built using [Snakemake](https://snakemake.readthedocs.io/en/stable/). To run the pipeline, run the following command from the `snakemake` directory:
+The main pipeline for generating gene-level metrics is built using [Snakemake](https://snakemake.readthedocs.io/en/stable/). To run the pipeline, run `snakemake -c N` where N is the number of cores(or all) from the `snakemake` directory. Many of the supporting functions can be found in [functions.R](functions.R).
 
-```{bash}
-snakemake Snakefile
+`conda env create -f environment.yml`
+
+To run this, you will need to install the packages referenced below and
+Pull `https://bioconductor.org/packages/release/bioc/src/contrib/ExpressionAtlas_1.24.0.tar.gz` and run `R CMD INSTALL ExpressionAtlas_1.24.0.tar.gz`.
+```r
+install.packages("pak")
+pak::pkg_install(c("log4r","here","ExpressionAtlas","recount3","wesanderson", "cowplot", "rrcov", "AnnotationDbi", "DESeq2", "sergihervas/iMKT", "clusterProfiler", "viridis", "org.Hs.eg.db","edgeR", "janitor", "vsn","doMC", "Rfast"))
 ```
-
-
-Many of the supporting functions can be found in [functions.R](functions.R).
 ## Snakemake pipeline
 
 The following notes describe each piece of the Snakemake workflow in detail. The Snakemake file can be viewed at [snakemake/Snakefile](snakemake/Snakefile). The corresponding config file detailing the datasources is located at [snakemake/config.yaml](snakemake/config.yaml), and the config for running this on a Slurm cluster is located at [snakemake/config_slurm.yaml](snakemake/config_slurm.yaml).
@@ -66,8 +68,7 @@ Following preprocessing, we want to calculate residual expression after removing
 4. Recalculate design matrix after filtering for outliers and stabilizing variance.
 
 
-
-### Postprocessing 
+### Postprocessing
 
 #### CSV residuals
 
