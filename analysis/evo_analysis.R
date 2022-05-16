@@ -15,8 +15,8 @@ p_format <- function(x, ndp=5)
 
 library(psych)
 library(corrplot)
-merged_filtered = merged[,which(names(merged) %in% c("gene","mean", "sd", "alpha.symbol","Divergence.metrics.omega","Divergence.metrics.Ka","Divergence.metrics.Ks","Fishers.exact.test.P.value", "MKT.table.Divergence1", "MKT.table.Divergence2"))]
-cor_mat = cor(merged_filtered[,-1],method="spearman")
+merged_filtered = merged[,which(names(merged) %in% c("gene","mean", "sd", "alpha.symbol","Divergence.metrics.omega","Divergence.metrics.Ka","Divergence.metrics.Ks", "MKT.table.Divergence1", "MKT.table.Divergence2"))]
+cor_mat = cor(merged_filtered[,c(-1)],method="spearman")
 
 # Worth looking into -- FDR corrected here.
 cor_test_mat = corr.test(merged_filtered[,-1],method="spearman",adjust="fdr")
@@ -33,7 +33,7 @@ merged_filtered <- merged_filtered[is.numeric(merged_filtered$KaKs),]
 # %%
 
 # %%
-mod = lm(sd ~ scale(Divergence.metrics.omega) + scale(mean),merged_filtered)
+mod = lm(sd ~ scale(Divergence.metrics.omega) + scale(mean), merged_filtered)
 mod.summary = summary(mod)
 mod.summary
 
