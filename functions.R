@@ -200,7 +200,7 @@ remove_redundant_features <- function(metadata){
   }
 
   metadata <- metadata[,!(names(metadata) %in% as.list(to_remove))]
-  metadata
+  list(metadata = metadata, redundant_features = to_remove)
 }
 
 pca_plot = function(resids, color = NULL){
