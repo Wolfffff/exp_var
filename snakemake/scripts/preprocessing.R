@@ -125,8 +125,9 @@ countdata.norm$samples  <- remove_large_factors(
 )
 countdata.norm$samples <- select_meta(countdata.norm$samples)
 
-metadata= data.frame(rep_col=rep_col,columns_to_ignore = paste(columns_to_ignore, collapse = ";"))
-write.table(metadata, file = "metadata.csv", append=TRUE,col.names=!file.exists("metadata.csv"), sep = ",")
+## TODO: whatever this is
+# metadata= data.frame(rep_col=rep_col,columns_to_ignore = paste(columns_to_ignore, collapse = ";"))
+# write.table(metadata, file = "metadata.csv", append=TRUE,col.names=!file.exists("metadata.csv"), sep = ",")
 
 log4r_info("Saving data...")
 saveRDS(list(data = countdata.norm, columns_to_ignore = columns_to_ignore),
