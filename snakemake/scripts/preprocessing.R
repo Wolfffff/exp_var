@@ -1,3 +1,4 @@
+library(lubridate)
 save.image(snakemake@log[["env"]])
 # setwd(here::here("snakemake"))
 # load("Rdatas/env/preProcess/BONE_MARROW.Rdata")
@@ -6,7 +7,7 @@ my_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
 log4r_info("Starting.")
 print = log4r_info
-log4r_info("Loading packages") 
+log4r_info("Loading packages")
 source("../functions.R")
 source("scripts/getMTgenes.R")
 
@@ -51,6 +52,10 @@ ESOPHAGUS = {
 log4r_info(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
 log4r_info(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
 
+uf_metadata = data.frame(name = dset_name, datetime = now(), count_rows = dim(counts)[1], count_cols = dim(counts)[2],
+ metadata_rows = dim(metadata)[1], metadata_cols = dim(metadata)[2])
+write.table(uf_metadata, file = "uf_metadata.csv", append=TRUE,col.names=!file.exists("uf_metadata.csv"), sep = ",") # Save metadata to file
+
 filtered_data <- make_filtered_data(counts, metadata, feature_vec)
 metadata <- filtered_data$metadata
 counts <- filtered_data$counts
@@ -66,6 +71,7 @@ if (any(names(metadata) %in% rep_names)) {
         rep_col = rep_col[which.min(sapply(rep_col, function(x) length(levels(factor(metadata[,x])))))]
         log4r_info(paste0("More than one rep column. Choosing ", rep_col))
     }
+
     countdata.list <- sumTechReps(countdata.list, metadata[,rep_col])
 }
 
@@ -109,7 +115,9 @@ values_count <- sapply(lapply(countdata.norm$samples, unique), length)
 countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[, values_count > 1])]
 
 log4r_info("Cleaning up redundant features and large factors...")
-countdata.norm$samples  <- remove_redundant_features(countdata.norm$samples )
+results =  remove_redundant_features(countdata.norm$samples )
+countdata.norm$samples <- results$metadata
+redundant_features = results$redundant_features
 
 countdata.norm$samples  <- remove_large_factors(
     countdata.norm$samples,
@@ -117,9 +125,10 @@ countdata.norm$samples  <- remove_large_factors(
 )
 countdata.norm$samples <- select_meta(countdata.norm$samples)
 
-
+metadata= data.frame(rep_col=rep_col,columns_to_ignore = paste(columns_to_ignore, collapse = ";"))
+write.table(metadata, file = "metadata.csv", append=TRUE,col.names=!file.exists("metadata.csv"), sep = ",")
 
 log4r_info("Saving data...")
-saveRDS(list(data = countdata.norm, columns_to_ignore = columns_to_ignore), 
+saveRDS(list(data = countdata.norm, columns_to_ignore = columns_to_ignore),
         file = snakemake@output[[1]])
 log4r_info("Done!")
