@@ -24,7 +24,7 @@ rank_df_list = lapply(tissue_rank_files, \(x) read.csv(x, header = TRUE))
 names(rank_df_list) = tissues
 
 current_tissue = tissues[1]
-for(current_tissue in tissues){
+runGOtissue = function(current_tissue = NULL){
     rank_df = rank_df_list[[current_tissue]]
     tail_size = 0.05
 
@@ -104,5 +104,6 @@ for(current_tissue in tissues){
     plot_dir = here::here("data/plots/per_tissue_go")
     dir.create(plot_dir, showWarnings = FALSE, recursive = TRUE)
     save_plot(file.path(plot_dir, paste0(current_tissue, ".png")), p12, base_height = 6, base_asp = 2)
+    return(0)
 }
 # %%
