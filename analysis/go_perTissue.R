@@ -23,7 +23,7 @@ tissue_rank_files = dir(here::here("data/pca_ranks_tissue"), full.names = T)
 rank_df_list = lapply(tissue_rank_files, \(x) read.csv(x, header = TRUE))
 names(rank_df_list) = tissues
 
-current_tissue = tissues[1]
+
 runGOtissue = function(current_tissue = NULL){
     rank_df = rank_df_list[[current_tissue]]
     tail_size = 0.05
@@ -106,4 +106,8 @@ runGOtissue = function(current_tissue = NULL){
     save_plot(file.path(plot_dir, paste0(current_tissue, ".png")), p12, base_height = 6, base_asp = 2)
     return(0)
 }
+
+library(doMC)
+registerDoMC(length(tissues))
+llply(tissues, runGOtissue, .parallel = TRUE)
 # %%
