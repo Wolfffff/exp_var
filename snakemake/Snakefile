@@ -41,7 +41,7 @@ rule all:
         expand("Rdatas/networkStats/{ids}.csv", ids=ids)
 
 rule download:
-    resources: 
+    resources:
         tmpdir="/scratch/tmp"
     params:
         id=ids,
@@ -56,7 +56,7 @@ rule download:
         "scripts/download_datasets.R"
 
 rule preProcess:
-    resources: 
+    resources:
         tmpdir="/scratch/tmp"
     params:
         id=ids,
@@ -65,7 +65,7 @@ rule preProcess:
         log="logs/preProcess/{id}.txt",
         env="Rdatas/env/preProcess/{id}.Rdata"
     input:
-        data="Rdatas/raw/{id}.rds", 
+        data="Rdatas/raw/{id}.rds",
         metadata=get_metadata
     output:
         "Rdatas/preProcess/{id}.rds"
@@ -73,7 +73,7 @@ rule preProcess:
         "scripts/preprocessing.R"
 
 rule makeResiduals:
-    resources: 
+    resources:
         tmpdir="/scratch/tmp"
     params:
         id=ids
@@ -96,8 +96,8 @@ rule csv_residuals:
     threads: 1
     log:
         log="logs/csv_residuals/{id}.txt",
-        env="Rdatas/env/csv_residuals/{id}.Rdata"    
-    resources: 
+        env="Rdatas/env/csv_residuals/{id}.Rdata"
+    resources:
         tmpdir="/scratch/tmp"
     input:
         "Rdatas/residuals/{id}.rds",
@@ -108,7 +108,7 @@ rule csv_residuals:
 
 rule graph:
     threads: 1
-    resources: 
+    resources:
         tmpdir="/scratch/tmp"
     input:
         "Rdatas/residuals/csv/{id}.csv",
@@ -120,7 +120,7 @@ rule graph:
 rule network_stats:
     log:
         log="logs/network_stats/{id}.txt",
-    resources: 
+    resources:
         tmpdir="/scratch/tmp"
     input:
         graph="Rdatas/graphs/{id}.xml.gz"
@@ -130,12 +130,13 @@ rule network_stats:
         "scripts/network_stats.py"
 
 rule geneMetrics:
-    resources: 
+    resources:
         tmpdir="/scratch/tmp"
     log:
         log="logs/acrossStudies/gene_metrics.txt",
-        env="Rdatas/env/acrossStudies/gene_metrics.Rdata"    
+        env="Rdatas/env/acrossStudies/gene_metrics.Rdata"
     input:
+        expand("Rdatas/networkStats/{ids}.csv", ids=ids),
         expand("Rdatas/residuals/{ids}.rds", ids=ids)
     output:
         "Rdatas/gene_metrics.RDS",
@@ -144,11 +145,11 @@ rule geneMetrics:
         "scripts/makeGeneMetrics.R"
 
 rule varScores:
-    resources: 
-        tmpdir="/scratch/tmp"  
+    resources:
+        tmpdir="/scratch/tmp"
     log:
         log="logs/acrossStudies/varScores.txt",
-        env="Rdatas/env/acrossStudies/varScores.Rdata"   
+        env="Rdatas/env/acrossStudies/varScores.Rdata"
     input:
         "Rdatas/gene_metrics.RDS",
         "Rdatas/gene_connectivity.RDS"
