@@ -21,8 +21,8 @@ ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"),
 rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"),
                   header=T, comment.char = "#")
 metadata_df = bind_rows(ea_df, rc3_df) %>%
-    mutate(group = gsub("Other - Expression Atlas", "Other", group),
-           group = gsub("Other - recount3", "Other", group))
+    mutate(group = gsub("Other - Expression Atlas", "Misc", group),
+           group = gsub("Other - recount3", "Misc", group))
 
 file_paths <- list.files(path = here::here("snakemake/Rdatas/residuals/"), 
                          pattern = "\\.rds", full.names = TRUE)
