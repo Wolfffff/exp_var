@@ -13,6 +13,7 @@ library(rethinking)
 library(cmdstanr)
 library(bayesplot)
 library(patchwork)
+library(ggthemes)
 
 
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
@@ -36,7 +37,16 @@ print("Reading residual files")
 data_list <- llply(file_paths, readRDS, .parallel = TRUE)
 names(data_list) <- file_names
 
+{
 corr_mat = readRDS(here::here("snakemake/Rdatas/gene_var_matrices.RDS"))$sd
+ord1 = match(colnames(corr_mat),metadata_df$id)
+ord2 = clusters = metadata_df$group[match(colnames(corr_mat),metadata_df$id)]
+leveled = factor(ord2,levels = c("GTEx", "TCGA", "Misc"))
+ord3 = sort.int(leveled,index.return=T)
+ord3_ix = ord3$ix
+ord3_x = ord3$`x`
+corr_mat = corr_mat[ord3_ix, ord3_ix]
+}
 
 ids = rownames(corr_mat)
 (z1 = outer(ids, ids, paste, sep = ":"))
@@ -95,9 +105,9 @@ fit_stan <- ulam(
 mod <- cmdstan_model(cmdstanr_model_write(rethinking::stancode(fit_stan)))
 fit <- mod$sample(
   data = rethinking_data,
-  chains = 8,
+  chains = 2,
   parallel_chains = 8,
-  iter_warmup = 2000,
+  iter_warmup = 4000,
   iter_sampling = 2000,
   adapt_delta = 0.99, max_treedepth = 14
 )
@@ -148,5 +158,7 @@ save_plot(here::here("test.png"),
           p_model, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 save_plot(here::here("data/plots/correlationModeling.png"),
           p_model, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
+
+
 
 
