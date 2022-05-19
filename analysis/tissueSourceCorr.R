@@ -36,7 +36,16 @@ print("Reading residual files")
 data_list <- llply(file_paths, readRDS, .parallel = TRUE)
 names(data_list) <- file_names
 
+{
 corr_mat = readRDS(here::here("snakemake/Rdatas/gene_var_matrices.RDS"))$sd
+ord1 = match(colnames(corr_mat),metadata_df$id)
+ord2 = clusters = metadata_df$group[match(colnames(corr_mat),metadata_df$id)]
+leveled = factor(ord2,levels = c("GTEx", "TCGA", "Misc"))
+ord3 = sort.int(leveled,index.return=T)
+ord3_ix = ord3$ix
+ord3_x = ord3$`x`
+corr_mat = corr_mat[ord3_ix, ord3_ix]
+}
 
 ids = rownames(corr_mat)
 (z1 = outer(ids, ids, paste, sep = ":"))
