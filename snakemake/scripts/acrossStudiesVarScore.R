@@ -47,7 +47,7 @@ for (metric in c("mean", "sd")){
         geom_point() + geom_text_repel(max.overlaps = 15, show.legend = FALSE) + coord_fixed() +
          scale_color_manual(values = pallet) + labs(x = "PCoA Axis 1", y = "PCoA Axis 2", color = "Study\nsource") + theme_cowplot() +
         theme(legend.position = "top")
-    saveRDS(pcoa_plot, here::here(paste0("snakemake/Rdatas/plots/PCoA_plot_", metric, ".RDS")))
+    saveRDS(pcoa_df, here::here(paste0("snakemake/Rdatas/PCoA_df_", metric, ".RDS")))
     save_plot(here::here(paste0("data/plots/SpearmanCorrelations/",metric,"_PCoA_plot.png")), pcoa_plot, base_height = 7, base_asp = 2)
 
     eig = eigen(metric_cor)
