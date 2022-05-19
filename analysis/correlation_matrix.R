@@ -84,8 +84,6 @@ PCoA = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, color = source)) +
                      guides(color=guide_legend(ncol=2, override.aes = list(size=3))) 
 save_plot("test.png", PCoA, base_height = 7, base_asp = 1.4)
 
-
-
 density = readRDS(here::here("snakemake/Rdatas/plots/density_plot.RDS"))
 density[["scaled"]] = density[["scaled"]] + 
                       theme_tufte() + theme(legend.position = "none") +
@@ -115,7 +113,6 @@ panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
         PCoA + 
         density  +
         plot_layout(design = layout)
-save_plot(here::here("test.png"), panel, base_height = 7.5, base_asp = 1.2, ncol = 2, nrow = 2)
 save_plot(here::here("data/plots/fig1.png"), panel, base_height = 7.5, base_asp = 1.2, ncol = 2, nrow = 2)
 }
 
