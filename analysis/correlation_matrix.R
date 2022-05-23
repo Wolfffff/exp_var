@@ -14,6 +14,7 @@ library(Hmisc)
 library(superheat)
 library(ggthemes)
 library(patchwork)
+library(ggrepel)
 
 rank_list = list()
 metric_cor_list = list()
@@ -41,15 +42,17 @@ M = rcorr(mat, type = "spearman")$r
 melted_cormat <- reshape2::melt(M)
 #plot heatmap
 {
+study_label = rep(" ", 60)
+study_label[seq(2, 60, 2)] = seq(2, 60, 2)
 heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
     geom_tile() +
     scale_fill_viridis_c(alpha = 1)  + theme_tufte() +
     labs(y = "    GTEx            TCGA              Misc.", 
          x = "GTEx                TCGA                  Misc.", fill = "") +
     scale_x_discrete(breaks = c(12, 30, 47), label = c("gTEX", "TCGA", "Misc")) +
-    scale_y_discrete(breaks = c(12, 30, 47), label = c("gTEX", "TCGA", "Misc")) +
+    scale_y_discrete(label = study_label) +
     theme(legend.position = "bottom", 
-          legend.key.width= unit(4, 'cm')) 
+          legend.key.width= unit(4, 'cm'), axis.text.y = element_text(size = 15)) 
 b_size_df = data.frame(start = c(0, 24, 35), end = c(24, 35, 60))  + .5
 heatmap = heatmap + geom_rect(data = b_size_df, color = "black", alpha = 0, size = 2,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
@@ -115,6 +118,9 @@ panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
         plot_layout(design = layout)
 save_plot(here::here("data/plots/fig1.png"), panel, base_height = 7.5, base_asp = 1.2, ncol = 2, nrow = 2)
 }
+
+
+
 
 
 

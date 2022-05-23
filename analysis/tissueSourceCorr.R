@@ -143,7 +143,7 @@ p_source = mcmc_intervals(fit$draws("b")) +
           axis.text = element_text(size = 26)) +
     labs(x = "Coefficient estimate")
 p_study = mcmc_intervals(fit$draws("as")) +
-    scale_y_discrete(labels = paste0(paste(ids, grp, sep = " ("), ")")) +
+    scale_y_discrete(labels = paste0(paste(ids, grp, sep = " ("), ")", " ", seq_along(ids))) +
     ggtitle("A. Per-study random effect") + theme_tufte()  +  
     theme(plot.title = element_text(size = 30),
           axis.title = element_text(size = 28),
