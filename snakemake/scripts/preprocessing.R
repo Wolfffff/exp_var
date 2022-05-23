@@ -49,13 +49,6 @@ ESOPHAGUS = {
 }
 )
 
-log4r_info(paste0("Unfiltered count dimensions: ", dim(counts)[1], " x ", dim(counts)[2]))
-log4r_info(paste0("Unfiltered metadata dimensions: ", dim(metadata)[1], " x ", dim(metadata)[2]))
-
-uf_metadata = data.frame(name = dset_name, datetime = now(), count_rows = dim(counts)[1], count_cols = dim(counts)[2],
- metadata_rows = dim(metadata)[1], metadata_cols = dim(metadata)[2])
-write.table(uf_metadata, file = "uf_metadata.csv", append=TRUE,col.names=!file.exists("uf_metadata.csv"), sep = ",") # Save metadata to file
-
 filtered_data <- make_filtered_data(counts, metadata, feature_vec)
 metadata <- filtered_data$metadata
 counts <- filtered_data$counts

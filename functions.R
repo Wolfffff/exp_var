@@ -113,7 +113,7 @@ select_meta = function(metadata){
     mask_high_missing = laply(metadata, function(x) sum(x == "")/length(x)) > 0.1
     mask = rowSums(cbind(mask_no_levels, mask_crap_cols, mask_high_missing, mask_dominant_level, mask_small_levels)) >= 1
     sel_metadata = metadata[,!mask, drop = FALSE]
-    sel_metadata
+    list(metadata = sel_metadata, filtered= colnames(metadata)[!mask])
 }
 
 pca <- function(x, space = c("rows", "columns"),
@@ -169,6 +169,7 @@ get_control_cols <- function(metadata, columns_to_ignore){
 remove_large_factors = function(metadata, columns_to_ignore){
   n_samples = nrow(metadata)
   cols_to_control = get_control_cols(metadata, columns_to_ignore)
+  base_set = cols_to_control
   for(col in cols_to_control){
     n_coef = length(unique(metadata[[col]])) - 1
     #print(paste(col, n_coef))
@@ -180,7 +181,8 @@ remove_large_factors = function(metadata, columns_to_ignore){
       cols_to_control = cols_to_control[cols_to_control!=col]
      }
   }
-  return(metadata)
+  return(list(metadata = metadata,
+              large_factors = base_set[!(base_set %in% cols_to_control)]))
 }
 
 remove_redundant_features <- function(metadata){
