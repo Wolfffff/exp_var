@@ -12,7 +12,11 @@ ea_ids = pd.read_csv(ea_table, comment='#').loc[:,"id"].tolist()
 ea = {id: "EA" for id in ea_ids}
 
 def get_source(wildcards):
-    idx = wildcards.id
+    if type(wildcards) == str:
+        idx = wildcards
+    else:
+        idx = wildcards.id
+
     if idx in rc3_ids:
         return rc3[idx]
     elif idx in ea_ids:
@@ -160,3 +164,21 @@ rule varScores:
 
     script:
         "scripts/acrossStudiesVarScore.R"
+
+rule generate_table:
+    params:
+        dset_names = ids,
+        assay_name = [get_assay(dset) for dset in ids]
+    resources:
+        tmpdir="/scratch/tmp"
+    log:
+        log="logs/metadata/metadata.txt",
+        env="Rdatas/env/metadata/metadata.Rdata"
+    input:
+        raw = expand("Rdatas/raw/{ids}.rds", ids=ids),
+        raw_metadata = [get_metadata(rds) for rds in expand("{ids}", ids=ids)],
+        preprocessed = expand("Rdatas/preProcess/{ids}.rds", ids=ids)
+    output:
+        "raw_metadata_df.csv"
+    script:
+        "scripts/generate_table.R"
