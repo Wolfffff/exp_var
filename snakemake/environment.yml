@@ -1,4 +1,4 @@
-name: ev
+name: expression_variance
 channels:
   - bioconda
   - conda-forge

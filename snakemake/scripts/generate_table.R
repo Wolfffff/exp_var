@@ -153,7 +153,7 @@ md = data.frame(id = dset_name, group=raw_metadata[raw_metadata$id == dset_name,
     replicate_col=rep_col)
 
 # output_raw_metadata_df <- rbind(output_raw_metadata_df, raw_metadata)
-    write.table(md,  file = "raw_metadata_df.csv",col.names=!file.exists("raw_metadata_df.csv"), sep = ",",append=file.exists("raw_metadata_df.csv"), row.names=F)
+    write.table(md,  file = "raw_metadata_df.csv",col.names=!file.exists("sample_metadata.csv"), sep = ",",append=file.exists("sample_metadata.csv"), row.names=F)
 }
 
 # write.table(output_raw_metadata_df,  file = "raw_metadata_df.csv", append=TRUE,col.names=!file.exists("raw_metadata_df.csv"), sep = ",") # Save metadata to file
