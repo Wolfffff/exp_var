@@ -11,8 +11,10 @@ source("../functions.R")
 source("scripts/getMTgenes.R")
 
 #provide column names
-output_raw_metadata_df <- data.frame(matrix(ncol = 17, nrow = 0))
-colnames(output_raw_metadata_df) <- c('id','datetime','group','tissue','raw_counts_genes','raw_counts_individuals','raw_metadata_individuals', 'raw_metadata_features', 'filtered_counts_genes', ' filtered_counts_individuals','filtered_metadata_individuals', 'filtered_metadata_features', 'to_ignore_manually_curated','to_ignore_redundant_features', 'to_ignore_large_factors', 'replicate_col')
+output_raw_metadata_df <- data.frame(matrix(ncol = 19, nrow = 0))
+colnames(output_raw_metadata_df) <- c('id','datetime','group','tissue','raw_counts_genes','raw_counts_individuals','raw_metadata_individuals', 'raw_metadata_features',
+ 'filtered_counts_genes', ' filtered_counts_individuals','filtered_metadata_individuals', 'filtered_metadata_features', 'to_ignore_manually_curated',
+ 'to_ignore_redundant_features', 'to_ignore_large_factors',    "final_features_removed", "final_metadata_colnames",  'replicate_col')
 
 
 for (idx in 1:length(snakemake@input[["raw"]])){
@@ -130,7 +132,10 @@ large_factors = results$large_factors
 
 results =  select_meta(countdata.norm$samples)
 countdata.norm$samples <- results$metadata
-filtered = results$filtered
+final_features_removed= results$removed_columns
+final_metadata_colnames = results$resulting_columns
+
+
 
 
 
@@ -143,9 +148,10 @@ md = data.frame(id = dset_name, group=raw_metadata[raw_metadata$id == dset_name,
     to_ignore_manually_curated = columns_to_ignore_scsv,
     to_ignore_redundant_features = paste(redundant_features, collapse=";"),
     to_ignore_large_factors =  paste(large_factors, collapse=";"),
-    final_features_removed = paste(filtered,collapse=";") ,replicate_col=rep_col)
+    final_features_removed = paste(final_features_removed, collapse=";") ,
+    final_metadata_colnames= paste(final_metadata_colnames, collapse=";")  ,
+    replicate_col=rep_col)
 
-    log4r_info(dim(raw_metadata))
 # output_raw_metadata_df <- rbind(output_raw_metadata_df, raw_metadata)
     write.table(md,  file = "raw_metadata_df.csv",col.names=!file.exists("raw_metadata_df.csv"), sep = ",",append=file.exists("raw_metadata_df.csv"), row.names=F)
 }
