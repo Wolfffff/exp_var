@@ -113,7 +113,7 @@ select_meta = function(metadata){
     mask_high_missing = laply(metadata, function(x) sum(x == "")/length(x)) > 0.1
     mask = rowSums(cbind(mask_no_levels, mask_crap_cols, mask_high_missing, mask_dominant_level, mask_small_levels)) >= 1
     sel_metadata = metadata[,!mask, drop = FALSE]
-    list(metadata = sel_metadata, filtered= colnames(metadata)[!mask])
+    list(metadata = sel_metadata, resulting_columns= colnames(metadata)[!mask],removed_columns = colnames(metadata)[mask] )
 }
 
 pca <- function(x, space = c("rows", "columns"),
