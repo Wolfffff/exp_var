@@ -32,7 +32,8 @@ library(plyr)
 library(dplyr)
 
 term2gene_df = ptwas_table[, c("Trait","Gene")]
-ptwas_table_merged = merge(term2gene_df,ptwas_traits, by.x = "Trait", by.y = "ID", all.x = TRUE)
+ptwas_table_merged = merge(term2gene_df,ptwas_traits, by.x = "Trait", by.y = "ID", all.x = TRUE) 
+#%>%    filter(Category != "Anthropometric", Category != "Morphology")
 # %%
 
 # %%
@@ -44,8 +45,15 @@ tissues = tools::file_path_sans_ext(dir(here::here("data/pca_ranks_tissue")))
 tissue_rank_files = dir(here::here("data/pca_ranks_tissue"), full.names = T)
 rank_df_list = lapply(tissue_rank_files, \(x) read.csv(x, header = TRUE))
 names(rank_df_list) = tissues
-
-df <- data.frame(tissue=character(), ptwas_category = character(), number_of_genes_tissue = integer(), number_of_genes_topbottom = integer(), category_count=integer(), total_count = integer(), upper_count = integer(), lower_count=integer(), stringsAsFactors=F)
+rank_df_list[["across"]] = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[-1]
+df <- data.frame(tissue=character(), 
+                 ptwas_category = character(), 
+                 number_of_genes_tissue = integer(), 
+                 number_of_genes_topbottom = integer(), 
+                 category_count=integer(), 
+                 total_count = integer(), 
+                 upper_count = integer(), 
+                 lower_count=integer(), stringsAsFactors=F)
 
 runPTWAStissue = function(current_tissue = NULL){
     rank_df = rank_df_list[[current_tissue]]
@@ -73,12 +81,21 @@ runPTWAStissue = function(current_tissue = NULL){
             next
         }
         cat_df = ptwas_table_merged[ptwas_table_merged$Category == cat,]
-        rank_df_with_disease = rank_df %>% mutate(sd_disease = if_else(Gene %in% cat_df$Gene, 1, 0))
-        lower_with_disease = as.data.frame(lower_quantiles) %>% mutate(sd_disease = if_else(sd%in% cat_df$Gene, 1, 0))
-        upper_with_disease = as.data.frame(upper_quantiles) %>% mutate(sd_disease = if_else(sd%in% cat_df$Gene, 1, 0))
+        rank_df_with_disease = rank_df %>% 
+            mutate(sd_disease = if_else(Gene %in% cat_df$Gene, 1, 0))
+        lower_with_disease = as.data.frame(lower_quantiles) %>% 
+            mutate(sd_disease = if_else(sd %in% cat_df$Gene, 1, 0))
+        upper_with_disease = as.data.frame(upper_quantiles) %>% 
+            mutate(sd_disease = if_else(sd %in% cat_df$Gene, 1, 0))
         # print()
-        tmp_df <- data.frame(tissue=current_tissue , ptwas_category = cat, number_of_genes_tissue = dim(as.data.frame(rank_df))[1], number_of_genes_topbottom = dim(as.data.frame(upper_quantiles))[1],
-        category_count=length(unique(cat_df$Gene)), total_count = sum(rank_df_with_disease$sd_disease), upper_count =sum(upper_with_disease$sd_disease), lower_count=sum(lower_with_disease$sd_disease), stringsAsFactors=F)
+        tmp_df <- data.frame(tissue = current_tissue , 
+                             ptwas_category = cat, 
+                             number_of_genes_tissue = nrow(rank_df),
+                             number_of_genes_topbottom = length(upper_quantiles[[metric]]),
+                             category_count = length(unique(cat_df$Gene)), 
+                             total_count = sum(rank_df_with_disease$sd_disease), 
+                             upper_count = sum(upper_with_disease$sd_disease), 
+                             lower_count = sum(lower_with_disease$sd_disease), stringsAsFactors=F)
         df = rbind(df,tmp_df)
     }
 
@@ -88,7 +105,7 @@ runPTWAStissue = function(current_tissue = NULL){
 
 library(doMC)
 registerDoMC(length(tissues))
-results  = llply(tissues, runPTWAStissue, .parallel = TRUE)
+results  = llply(c(tissues, "across"), runPTWAStissue, .parallel = TRUE)
 results_df = do.call("rbind", results)
 # %%
 
@@ -96,19 +113,34 @@ results_df = do.call("rbind", results)
 # results_df $upper_fc = ((results_df$upper_count / results_df$number_of_genes_topbottom) - (results_df$total_count / results_df$number_of_genes_tissue))/(results_df$total_count / results_df$number_of_genes_tissue)
 # results_df $lower_fc = ((results_df$lower_count / results_df$number_of_genes_topbottom) - (results_df$total_count / results_df$number_of_genes_tissue))/(results_df$total_count / results_df$number_of_genes_tissue)
 
-results_df$upper_or =(results_df$upper_count / (results_df$total_count - results_df$upper_count))/(5/95)
-results_df$lower_or =(results_df$lower_count / (results_df$total_count - results_df$lower_count))/(5/95)
+results_df$upper_or = (results_df$upper_count / (results_df$total_count - results_df$upper_count))/(5/95)
+results_df$lower_or = (results_df$lower_count / (results_df$total_count - results_df$lower_count))/(5/95)
 
-results_df$phyper_upper = phyper(results_df$upper_count, results_df$number_of_genes_topbottom, (results_df$number_of_genes_tissue - results_df$number_of_genes_topbottom), results_df$total_count)
-results_df$phyper_lower = phyper(results_df$lower_count, results_df$number_of_genes_topbottom, (results_df$number_of_genes_tissue - results_df$number_of_genes_topbottom), results_df$total_count)
+two_tail_phyper = function(x, m, n, k){
+    phyper(x, m, n, k, lower.tail = FALSE)
+}
+
+results_df$phyper_upper = phyper(results_df$upper_count, 
+                                 results_df$number_of_genes_topbottom, (results_df$number_of_genes_tissue - results_df$number_of_genes_topbottom), 
+                                 results_df$total_count, lower.tail = FALSE)
+results_df$phyper_lower = phyper(results_df$lower_count, 
+                                 results_df$number_of_genes_topbottom, (results_df$number_of_genes_tissue - results_df$number_of_genes_topbottom), 
+                                 results_df$total_count, lower.tail = FALSE)
 results_df$phyper_upper_bh_adj = p.adjust(results_df$phyper_upper, method = "BH")
 results_df$phyper_lower_bh_adj = p.adjust(results_df$phyper_lower, method = "BH")
 
 
-results_df[results_df$phyper_upper_bh_adj < 0.05, ] %>% dplyr::select(tissue, ptwas_category, phyper_upper_bh_adj, phyper_upper_bh_adj)
+results_df %>% 
+    filter(phyper_upper_bh_adj < 0.05) %>%
+    dplyr::select(tissue, ptwas_category, phyper_upper_bh_adj, 
+                  phyper_upper_bh_adj, upper_or) 
 
-results_df[results_df$phyper_lower_bh_adj < 0.05,] %>% dplyr::select(tissue, ptwas_category, phyper_upper_bh_adj, phyper_lower_bh_adj)
+results_df %>% 
+    filter(phyper_lower_bh_adj < 0.05) %>%
+    dplyr::select(tissue, ptwas_category, 
+                  phyper_lower_bh_adj, phyper_lower_bh_adj, lower_or)
 # results_df$phyper_lower
 
 # results_df $lower_or = (results_df$lower_count / results_df$number_of_genes_topbottom) /(results_df$total_count / results_df$number_of_genes_tissue)
 # %%
+
