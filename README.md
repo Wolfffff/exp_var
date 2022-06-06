@@ -15,7 +15,7 @@ To run this, you will need to install the packages referenced below and
 Pull `https://bioconductor.org/packages/release/bioc/src/contrib/ExpressionAtlas_1.24.0.tar.gz` and run `R CMD INSTALL ExpressionAtlas_1.24.0.tar.gz`.
 ```r
 install.packages("pak")
-pak::pkg_install(c("log4r","here","ExpressionAtlas","recount3","wesanderson", "cowplot", "rrcov", "AnnotationDbi", "DESeq2", "sergihervas/iMKT", "clusterProfiler", "viridis", "org.Hs.eg.db","edgeR", "janitor", "vsn","doMC", "Rfast", "missMDA", "corrplot", "vegan", "Hmisc"))
+pak::pkg_install(c("log4r","here","ExpressionAtlas","recount3","wesanderson", "cowplot", "rrcov", "AnnotationDbi", "DESeq2", "sergihervas/iMKT", "clusterProfiler", "viridis", "org.Hs.eg.db","edgeR", "janitor", "vsn","doMC", "Rfast", "missMDA", "corrplot", "vegan", "Hmisc", "ggfortify"))
 ```
 ## Snakemake pipeline
 

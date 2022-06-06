@@ -108,16 +108,15 @@ values_count <- sapply(lapply(countdata.norm$samples, unique), length)
 countdata.norm$samples <- countdata.norm$samples[, names(countdata.norm$samples[, values_count > 1])]
 
 log4r_info("Cleaning up redundant features and large factors...")
-results =  remove_redundant_features(countdata.norm$samples )
+results =  remove_redundant_features(countdata.norm$samples)
 countdata.norm$samples <- results$metadata
-redundant_features = results$redundant_features
 
 countdata.norm$samples  <- remove_large_factors(
     countdata.norm$samples,
     columns_to_ignore
-)
-countdata.norm$samples <- select_meta(countdata.norm$samples)
-
+)$metadata
+results <- select_meta(countdata.norm$samples)
+countdata.norm$samples = results$metadata
 ## TODO: whatever this is
 # metadata= data.frame(rep_col=rep_col,columns_to_ignore = paste(columns_to_ignore, collapse = ";"))
 # write.table(metadata, file = "metadata.csv", append=TRUE,col.names=!file.exists("metadata.csv"), sep = ",")
