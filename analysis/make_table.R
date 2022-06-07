@@ -1,17 +1,17 @@
-df1<-read.csv("snakemake/uf_metadata.csv",head=TRUE,row.names=NULL)
-df2<-read.csv("snakemake/f_metadata.csv",head=TRUE, row.names=NULL)
-
-merged_df <- merge(df1,df2,by="name",all.x=T, all.y=T)
-
-
-filtered_df = data.frame(study = merged_df$name, raw_gene_count = merged_df$count_rows.x, raw_sample_count = merged_df$metadata_rows.x,
- filtered_gene_count = merged_df$count_rows.y, filtered_sample_count = merged_df$metadata_rows.y)
-
-ea_ids = read.csv("snakemake/metadata/EA_metadata.csv")
-rc3_ids = read.csv("snakemake/metadata/recount3_metadata.csv")
-
-filtered_df$source = ifelse(filtered_df$study %in% ea_ids, "Expression Atlas", "recount3")
-
-filtered_df <- filtered_df[order(filtered_df$source),]
+library(tidyverse)
+library(data.table)
+metadata_df <- read_csv("data/raw_metadata_df.csv")
+metadata_df$citation <- NA
+metadata_df[which(metadata_df$group == "GTEx"),]$citation = "GTEx"
+metadata_df[which(metadata_df$group == "TCGA"),]$citation = "TCGA"
+metadata_df[which(metadata_df$group %in% c("Other - recount3", "Other - Expression Atlas")),]$group = "Misc"
 
 
+id_citation_map <- read_csv("data/id_citation_mapping.csv")
+map <- id_citation_map$citation
+lookup <- setNames(map, id_citation_map$id)
+metadata_df[metadata_df$group == "Misc",]$citation <- lookup[unique(metadata_df[metadata_df$group == "Misc",]$id)]
+grouped_df = data.table::data.table(metadata_df)[,lapply(.SD, paste, collapse = ","),'group']
+grouped_df [1]$citation <- "GTEx"
+grouped_df [2]$citation <- "TCGA"
+grouped_df[,c("id", "citation")]
