@@ -39,7 +39,6 @@ Genetic and Epigenetic Fine Mapping of Complex Trait Associated Loci in the Huma
 #_Genetics_of_gene_expression_in_macrophage_immune_response_Open_access,ERP020977,,multi-group,Other - recount3
 RNA-seq transcript and gene data on zika exposed and zika naïve samples,SRP192714,,case-control,Other - recount3,blood
 #A blood RNA signature for predicting the treatment outcome in the Tuberculosis Treatment Response Cohort,SRP092402,,case-control,Other - recount3,blood
-HipSci___RNAseq___healthy_volunteers,ERP007111,,control,Other - recount3,skin
 A network of transcriptome modules demonstrates mechanistic pathways of both virus induced and non-viral asthma exacerbations in children [blood],SRP150552,,longitudinal,Other - recount3,blood
 Cell type-specific immune phenotypes predict loss of insulin secretion in new-onset type 1 diabetes,SRP174638,,longitudinal,Other - recount3,immune
 A blood RNA signature for tuberculosis disease risk in household contact study - GC6 cohort.,SRP098758,,longitudinal,Other - recount3,blood
@@ -53,6 +52,6 @@ RNA-seq analysis of hepatocellular carcinoma with portal vein tumor thrombosis,S
 Elucidating the etiology and molecular pathogenicity of infectious diarrhea by high throughput RNA sequencing,SRP059039,,multi-group,Other - recount3,blood
 Natural selection has contributed to functional immune response differences between human hunter-gatherers and agriculturalists,SRP162654,,multi-group,Other - recount3,blood
 Molecular Hallmarks of Naturally Acquired Immunity to Malaria,SRP032775,,paired-exposure,Other - recount3,blood
-Cell type specific gene expression patterns associated with posttraumatic stress disorder in World Trade Center responders,SRP145493,,paired-exposure,Other - recount3,blood
-Gene Networks Specific for Innate Immunity Define Post-traumatic Stress Disorder [RNA-Seq],SRP051848,,?,Other - recount3,immune
+Cell type specific gene expression patterns associated with posttraumatic stress disorder in World Trade Center responders,SRP145493,,case-control,Other - recount3,immune
+Gene Networks Specific for Innate Immunity Define Post-traumatic Stress Disorder [RNA-Seq],SRP051848,,case-control,Other - recount3,immune
 Transcriptome analysis of psoriasis in a large case-control sample: RNA-seq provides insights into disease mechanisms,SRP035988,,case-control,Other - recount3,skin

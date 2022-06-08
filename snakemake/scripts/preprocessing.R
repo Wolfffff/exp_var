@@ -56,7 +56,7 @@ n_samples <- dim(metadata)[1]
 metadata$sample_id <- rownames(metadata)
 
 countdata.list <- DGEList(counts = counts, samples = metadata, genes = rownames(dset))
-rep_names = c("technical_replicate_group", "wells.replicate", "individual", "sample")
+rep_names = c("technical_replicate_group", "wells.replicate", "individual", "sample", "donor.id")
 if (any(names(metadata) %in% rep_names)) {
     log4r_info("Summing technical replicates...")
     rep_col = names(metadata)[names(metadata) %in% rep_names]
