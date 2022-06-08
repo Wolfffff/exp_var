@@ -44,7 +44,7 @@ crap_cols = c("alias", "Alias", "Broker.name", "broker.name", "Description", "Ti
 feature_vec <- list()
 feature_vec[["disease"]] <- c("normal", "control", "", NA,
                             "non inflammatory bowel disease control")
-feature_vec[["treatment"]] <- c("normal", "control", "", NA)
+feature_vec[["treatment"]] <- c("normal", "control", "CTL", "", NA)
 feature_vec[["tcga.cgc_sample_sample_type"]] <- c("Solid Tissue Normal")
 feature_vec[["diagnosis"]] <- c("Control")
 feature_vec[["Healthy"]] <- c("Healthy")

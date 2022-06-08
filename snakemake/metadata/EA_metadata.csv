@@ -2,6 +2,4 @@ name,id,columns_to_ignore,group,tissue
 BLUEPRINT EpiVar project: Genetic Drivers of Epigenetic and Transcriptional Variation in Human Immune Cells,E-ENAD-34,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas,immune
 RNA-sequencing of 465 lymphoblastoid cell lines from the 1000 Genomes,E-GEUV-1,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas,immune
 Mapping regulatory variation in sensory neurons using IPS lines from the HIPSCI project,E-ENAD-33,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas,neuron
-AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id;cell_line,Other - Expression Atlas,blood
 "RNA-seq of 359 treatment-naive pediatric patients with Crohn's disease, patients with ulcerative colitis and control individuals",E-GEOD-57945,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas,colon
-Transcription profiling by high throughput in pre- and post-infection of Plasmodium falciparum,E-GEOD-52166,AtlasAssayGroup;sampling_time_point;individual;technical_replicate_group;sample_id,Other - Expression Atlas,blood
