@@ -46,7 +46,7 @@ feature_vec[["disease"]] <- c("normal", "control", "", NA,
                             "non inflammatory bowel disease control")
 feature_vec[["treatment"]] <- c("normal", "control", "CTL", "", NA)
 feature_vec[["tcga.cgc_sample_sample_type"]] <- c("Solid Tissue Normal")
-feature_vec[["diagnosis"]] <- c("Control")
+feature_vec[["diagnosis"]] <- c("Control", "control")
 feature_vec[["Healthy"]] <- c("Healthy")
 feature_vec[["source_name"]] <- c("normal_skin","healthy children without bacterial colonization")
 feature_vec[["condition"]] <- c("Control","")

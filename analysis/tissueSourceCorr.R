@@ -90,7 +90,7 @@ rethinking_data = dplyr::select(corr_df,
                                 n_source, n_bool_tissue,
                                 sample_size) %>%
                                 as.list()
-rethinking_data$index = 1:60
+rethinking_data$index = 1:57
 fit_stan <- ulam(
     alist(
         corr ~ normal(mu, sigma),
@@ -125,7 +125,7 @@ fit$summary() %>%
     dplyr::filter(grepl('as', variable)) %>%
     mutate(id = ids) %>%
     relocate(id) %>%
-    print(n = 60)
+    print(n = 57)
 
 p_tissue = mcmc_intervals(fit$draws("c")) +
     scale_y_discrete(labels = c("Different tissue", "Same tissue")) +
