@@ -56,4 +56,4 @@ grouped_df <- rbind(grouped_df, metadata_df[metadata_df$group == "Misc",c("id", 
 
 library(kableExtra)
 tbl = knitr::kable(grouped_df,"pipe")
-writeLines(tbl, 'data/T1.md'')
+writeLines(tbl, 'data/T1.md')

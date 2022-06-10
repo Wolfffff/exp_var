@@ -105,7 +105,7 @@ runPTWAStissue = function(current_tissue = NULL){
 
 library(doMC)
 registerDoMC(length(tissues))
-results  = llply(c(tissues, "across"), runPTWAStissue, .parallel = TRUE)
+results  = llply(c(tissues, "across"), runPTWAStissue, .parallel = FALSE, .progress = "text")
 results_df = do.call("rbind", results)
 # %%
 

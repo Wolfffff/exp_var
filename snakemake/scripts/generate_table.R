@@ -7,8 +7,8 @@ log4r_info("Starting.")
 print = log4r_info
 log4r_info("Loading packages")
 
-source("../functions.R")
-source("scripts/getMTgenes.R")
+source(here::here("functions.R"))
+source(here::here("snakemake/scripts/getMTgenes.R"))
 
 #provide column names
 output_raw_metadata_df <- data.frame(matrix(ncol = 19, nrow = 0))
@@ -16,7 +16,7 @@ colnames(output_raw_metadata_df) <- c('id','datetime','group','tissue','raw_coun
  'filtered_counts_genes', ' filtered_counts_individuals','filtered_metadata_individuals', 'filtered_metadata_features', 'to_ignore_manually_curated',
  'to_ignore_redundant_features', 'to_ignore_large_factors',    "final_features_removed", "final_metadata_colnames",  'replicate_col')
 
-
+output_file = snakemake@output[[1]]
 for (idx in 1:length(snakemake@input[["raw"]])){
     raw_counts = readRDS(snakemake@input[["raw"]][idx])
     raw_metadata =  read_csv(snakemake@input[["raw_metadata"]][idx])
@@ -153,7 +153,7 @@ md = data.frame(id = dset_name, group=raw_metadata[raw_metadata$id == dset_name,
     replicate_col=rep_col)
 
 # output_raw_metadata_df <- rbind(output_raw_metadata_df, raw_metadata)
-    write.table(md,  file = "raw_metadata_df.csv",col.names=!file.exists("sample_metadata.csv"), sep = ",",append=file.exists("sample_metadata.csv"), row.names=F)
+    write.table(md,  file = output_file,col.names=!file.exists(output_file), sep = ",",append=file.exists(output_file), row.names=F)
 }
 
 # write.table(output_raw_metadata_df,  file = "raw_metadata_df.csv", append=TRUE,col.names=!file.exists("raw_metadata_df.csv"), sep = ",") # Save metadata to file

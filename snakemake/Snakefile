@@ -42,6 +42,7 @@ rule all:
    input:
         "Rdatas/gene_var_rank.RDS",
         "Rdatas/gene_var_matrices.RDS",
+        "../data/sample_metadata.csv",
         expand("Rdatas/networkStats/{ids}.csv", ids=ids)
 
 rule download:
@@ -179,6 +180,6 @@ rule generate_table:
         raw_metadata = [get_metadata(rds) for rds in expand("{ids}", ids=ids)],
         preprocessed = expand("Rdatas/preProcess/{ids}.rds", ids=ids)
     output:
-        "raw_metadata_df.csv"
+        "../data/sample_metadata.csv"
     script:
         "scripts/generate_table.R"
