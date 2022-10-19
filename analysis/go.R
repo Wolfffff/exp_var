@@ -283,7 +283,7 @@ write_csv(local_go_upper_table, here::here("data/annotation/go_upper_quantile.cs
 pw_upper <- pairwise_termsim(local_go_upper) 
 pw_upper <- simplify(pw_upper, cutoff=0.7, by="p.adjust", select_fun=min)
 plot_upper <- emapplot(pw_upper, showCategory = 10, cex_label_category = 1.2) + 
-      ggtitle("A. High variation") +
+      ggtitle("A. High-variance genes") +
           theme_tufte() + 
           theme(legend.position = "none") + 
           theme(plot.title = element_text(size=28),
@@ -309,7 +309,7 @@ write_csv(rbind(local_go_upper_table, local_go_lower_table),
 pw_lower <- pairwise_termsim(local_go_lower) 
 pw_lower <- simplify(pw_lower, cutoff=0.7, by="p.adjust", select_fun=min)
 plot_lower <- emapplot(pw_lower, showCategory = 10, cex_label_category = 1.2) + 
-    ggtitle("B. Low variation") +            
+    ggtitle("B. Low-variance genes") +            
           theme_tufte() + 
           theme(legend.position = "none") + 
           theme(plot.title = element_text(size=28),

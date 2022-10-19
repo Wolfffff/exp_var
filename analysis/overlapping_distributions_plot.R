@@ -45,14 +45,16 @@ lower_col = wes_palette("Royal1")[2]
 unscaled <- ggplot(metric_df_sd_long, aes(x = value,group= study,color=study)) + scale_color_manual(values=col_vector) +#, fill = stat(quantile))) +
   geom_density() + geom_rug(data = low_df,aes(x=value), col = lower_col) + geom_rug(data = high_df,aes(x=value), color = upper_col) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-panel.background = element_blank(), axis.line = element_line(colour = "black")) + theme(legend.position = "none") + xlab("Standard Deviation") + ylab("Density") #+ ggtitle("Density Plot Standard Deviation by Study")
+panel.background = element_blank(), axis.line = element_line(colour = "black")) + theme(legend.position = "none") + 
+  xlab("Standard deviation") + ylab("Density") #+ ggtitle("Density Plot Standard Deviation by Study")
 # ggsave("stat_density_sd_by_study_mean_centered_rug.png", width = 24, height = 12, units = "in", dpi = 300)
 
 
 scaled <- ggplot(metric_df_sd_long_scaled, aes(x = value,group= study,color=study)) + scale_color_manual(values=col_vector) + #, fill = stat(quantile))) +
   geom_density() + geom_rug(data = low_df_scaled,aes(x=value), col = lower_col) + geom_rug(data = high_df_scaled,aes(x=value), color = upper_col) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-panel.background = element_blank(), axis.line = element_line(colour = "black")) + theme(legend.position = "none") + xlab("Z-Normalized Standard Deviation") + ylab("Density")# + ggtitle("Density Plot of Z-score Normalized Standard Deviation by Study")
+panel.background = element_blank(), axis.line = element_line(colour = "black")) + theme(legend.position = "none") + 
+  xlab("Z-normalized standard deviation") + ylab("Density")# + ggtitle("Density Plot of Z-score Normalized Standard Deviation by Study")
 # ggsave("stat_density_sd_by_study_mean_centered_rug_scaled.png", width = 24, height = 12, units = "in", dpi = 300)
 #%%
 
