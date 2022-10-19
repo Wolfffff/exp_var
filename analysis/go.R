@@ -152,7 +152,7 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
   geom_point() + 
   geom_label_repel(label = sig_terms_df$.id, max.overlaps = 27) +
   theme_tufte() +
-  xlab("Shannon Entropy") + ylab("Skewness") +
+  xlab("Shannon entropy") + ylab("Skewness") +
                            theme(plot.title = element_text(size = 30),
                                           axis.title = element_text(size = 18),
                                           axis.text = element_text(size = 18),
