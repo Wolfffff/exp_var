@@ -74,7 +74,7 @@ pallet[3] = wes_palette("Rushmore1")[3]
 PCoA = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, color = source)) + 
     geom_point() + geom_text_repel(max.overlaps = 10, show.legend = FALSE, size = 6) + 
     coord_fixed() +
-        scale_color_manual(values = pallet) + labs(x = "PCoA Axis 1", y = "PCoA Axis 2", color = "Study\nsource") + theme_tufte() + 
+        scale_color_manual(values = pallet) + labs(x = "PCoA axis 1", y = "PCoA axis 2", color = "Study\nsource") + theme_tufte() + 
         #scale_x_continuous(limits = c(-.45, .4)) + scale_y_continuous(limits = c(-.5, .4)) +
                theme(legend.position = "bottom", 
                      legend.title = element_blank(), 
