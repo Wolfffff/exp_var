@@ -156,10 +156,10 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
                            theme(plot.title = element_text(size = 30),
                                           axis.title = element_text(size = 18),
                                           axis.text = element_text(size = 18),
-                                          strip.text.x = element_text(size = 35)) +
+                                          strip.text.x = element_text(size = 38)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
-                            annotate("text", x = 1.2, y = 1, label = 'bold("Low-variance bias")', parse=TRUE) +
-                            annotate("text", x = 1.2, y = -1, label = 'bold("High-variance bias")', parse = TRUE)
+                            annotate("text", x = 1.28, y = 1, label = 'bold("Low-variance bias")', parse=TRUE) +
+                            annotate("text", x = 1.28, y = -1, label = 'bold("High-variance bias")', parse = TRUE)
 save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
 save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
 
