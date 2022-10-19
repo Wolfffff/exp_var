@@ -158,8 +158,8 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
                                           axis.text = element_text(size = 18),
                                           strip.text.x = element_text(size = 32)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
-                            annotate("text", x = 1.5, y = 1, label = 'bold("Low variance bias")',parse=TRUE) +
-                            annotate("text", x = 1.5, y = -1, label = 'bold("High variance bias")', parse = TRUE)
+                            annotate("text", x = 1.5, y = 1, label = 'bold("Low-variance bias")',parse=TRUE) +
+                            annotate("text", x = 1.5, y = -1, label = 'bold("High-variance bias")', parse = TRUE)
 save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
 save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
 
@@ -174,14 +174,14 @@ dev.off()
 
 n_plots = 5
 library(reshape2)
-df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "High variance bias")
+df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% melt %>% mutate(class = "High-variance bias")
 n_terms = nrow(sig_terms_df)
-df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots+1):n_terms]], termTable) %>% melt %>% mutate(class = "Low variance bias")
+df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots+1):n_terms]], termTable) %>% melt %>% mutate(class = "Low-variance bias")
 df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low variance bias") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
                                 legend.title = element_text(size = 35),
@@ -192,7 +192,7 @@ geom_bar(stat="identity", color="black", position=position_dodge()) +
                                 strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
-  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High variance bias") +
+  scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
                                 legend.title = element_text(size = 35),
