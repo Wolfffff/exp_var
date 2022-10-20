@@ -50,12 +50,14 @@ panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 # ggsave("stat_density_sd_by_study_mean_centered_rug.png", width = 24, height = 12, units = "in", dpi = 300)
 
 
-scaled <- ggplot(metric_df_sd_long_scaled, aes(x = value,group= study,color=study)) + scale_color_manual(values=col_vector) + #, fill = stat(quantile))) +
-  geom_density() + geom_rug(data = low_df_scaled,aes(x=value), col = lower_col) + geom_rug(data = high_df_scaled,aes(x=value), color = upper_col) +
+scaled <- ggplot(metric_df_sd_long_scaled, aes(x = value,group= study,color=study)) + 
+  scale_color_manual(values=col_vector) + 
+  geom_density() + 
+  geom_rug(data = low_df_scaled,aes(x=value), col = lower_col) + 
+  geom_rug(data = high_df_scaled,aes(x=value), color = upper_col) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-panel.background = element_blank(), axis.line = element_line(colour = "black")) + theme(legend.position = "none") + 
+  panel.background = element_blank(), axis.line = element_line(colour = "black")) + theme(legend.position = "none") + 
   xlab("Z-normalized standard deviation") + ylab("Density")# + ggtitle("Density Plot of Z-score Normalized Standard Deviation by Study")
-# ggsave("stat_density_sd_by_study_mean_centered_rug_scaled.png", width = 24, height = 12, units = "in", dpi = 300)
 #%%
 
 # %%
@@ -70,3 +72,14 @@ ggsave(here::here("data/plots/sd_dist.png"), width = 12, height = 6, units = "in
 saveRDS(list(scaled = scaled, unscaled = unscaled), here::here("snakemake/Rdatas/plots/density_plot.RDS"))
 # %%
 
+
+# %%
+metric_df_sd_long_scaled 
+names(metric_df_sd_long_scaled)[3] <- "scaled_sd"
+rank_df = read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
+rank_df = rename(rank_df, Genes = Gene)
+scaled_sd_ranked = inner_join(metric_df_sd_long_scaled, dplyr::select(rank_df, Genes, sd), by= "Genes")
+library(ggthemes)
+p = ggplot(scaled_sd_ranked, aes(sd, scaled_sd, color = study, group = study)) + geom_smooth() + theme_tufte() + theme(legend.position = "none")
+save_plot("test.png", p, base_height = 7, base_asp = 2)
+# %%
