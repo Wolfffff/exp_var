@@ -12,4 +12,8 @@ pca_ranks = read.csv(here::here("data/pca_ranks.csv"), header=T, comment.char = 
 num_genes = length(pca_ranks)
 
 sample_metadata = read.csv(here::here("data/sample_metadata.csv"), header=T, comment.char = "#")
-range(sample_metadata$filtered_metadata_individuals)
+# sample_metadata[sample_metadata$filtered_metadata_individuals==min(sample_metadata$filtered_counts_individuals),]
+range(sample_metadata$filtered_counts_individuals)
+mean(sample_metadata$filtered_counts_individuals)
+median(sample_metadata$filtered_counts_individuals)
+

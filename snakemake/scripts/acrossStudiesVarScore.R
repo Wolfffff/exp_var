@@ -67,7 +67,7 @@ for (metric in c("mean", "sd")){
         ggplot(aes(x = PC, y = var_explained, group = 1)) +
         geom_point(size = 4) +
         geom_line() +
-        labs(title = paste0("Scree plot: PCA on ", metric," rank correlation matrix")) +
+        labs(title = paste0("Scree plot: PCA on ", toupper(metric)," rank across-study Spearman correlation matrix")) +
         xlab("Principal component") +
         ylab("Percent of variance explained") +
         theme_tufte()
