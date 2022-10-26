@@ -17,3 +17,20 @@ range(sample_metadata$filtered_counts_individuals)
 mean(sample_metadata$filtered_counts_individuals)
 median(sample_metadata$filtered_counts_individuals)
 
+files <- list.files(path=here::here("snakemake/Rdatas/residuals/csv"), pattern="csv", full.names = TRUE)
+l <- lapply(X = files, FUN = function(x) {
+            row.names(read.table(x, sep = "\t"))
+        })
+
+study_names <- tools::file_path_sans_ext(basename(files))
+
+for(i in 1:length(l)){
+    write.table(sort(l[[i]]), file = paste0(here::here("data/genes/"), study_names[i] , ".csv"),sep=",", row.names = F,col.names = F)
+}
+
+data <- readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
+colnames(data$mean)[1] <- "gene_id"
+colnames(data$sd)[1] <- "gene_id"
+
+write.table(data$mean, file = paste0(here::here("data/perStudyMetrics/per_study_means.csv")),sep=",", row.names = F)
+write.table(data$sd, file = paste0(here::here("data/perStudyMetrics/per_study_sd.csv")),sep=",", row.names = F)
