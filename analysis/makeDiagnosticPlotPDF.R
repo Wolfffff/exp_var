@@ -41,9 +41,9 @@ CD"
         p
 }
 panels = lapply(1:57, makePanel)
-dir.create("temp")
-for(i in 1:57) save_plot(paste0("temp/file_",str_pad(i, 2, pad=0), ".pdf"), panels[[i]], 
+
+for(i in 1:57) save_plot(paste0("~/temp/file_",str_pad(i, 2, pad=0), ".pdf"), panels[[i]], 
                         base_height = 6, base_asp = 1.2, ncol = 2, nrow=2)
-concatenate_pdfs(input_filepaths = dir("temp", pattern = ".pdf"), 
-                 output_filepath = "data/plots/diagnostic_plots.pdf")
+qpdf::pdf_combine(input = dir("~/temp", pattern = ".pdf", full.names = TRUE), 
+                 output = "data/plots/diagnostic_plots.pdf")
 
