@@ -6,7 +6,6 @@ library(ggthemes)
 library(grid)
 library(qpdf)
 
-pak::pkg_install("qpdf")
 ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"),
                  header=T, comment.char = "#")
 rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"),
