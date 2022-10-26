@@ -78,7 +78,7 @@ library(biomaRt)
 # ldply(go_gene_overlapping,dim) %>% filter(V1 > 20)
 # names(go_gene_groups)
 # save.image(file='go_traversal.RData')
-load('go_traversal.RData')
+load(here::here('go_traversal.RData'))
 
 
 # %%
@@ -158,8 +158,8 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
                                           axis.text = element_text(size = 18),
                                           strip.text.x = element_text(size = 42)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
-                            annotate("text", x = 1.4, y = 1, label = 'bold("Low-variance bias")', parse=TRUE) +
-                            annotate("text", x = 1.4, y = -1, label = 'bold("High-variance bias")', parse = TRUE)
+                            annotate("text", x = 1.4, y = 0.7, label = 'bold("Low-variance\nbias")', parse=TRUE, size = 8) +
+                            annotate("text", x = 1.4, y = -1.3, label = 'bold("High-variance\nbias")', parse = TRUE, size = 8)
 save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
 save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
 
