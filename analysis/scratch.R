@@ -10,3 +10,6 @@ sum(md$filtered_metadata_individuals)
 
 pca_ranks = read.csv(here::here("data/pca_ranks.csv"), header=T, comment.char = "#")
 num_genes = length(pca_ranks)
+
+sample_metadata = read.csv(here::here("data/sample_metadata.csv"), header=T, comment.char = "#")
+range(sample_metadata$filtered_metadata_individuals)

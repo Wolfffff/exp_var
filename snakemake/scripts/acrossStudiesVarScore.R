@@ -1,8 +1,8 @@
-my_logfile = snakemake@log[["log"]]
+snakemakemy_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
 log4r_info("Starting.")
 print = log4r_info
-log4r_info("Loading packages") 
+log4r_info("Loading packages")
 source(here::here("functions.R"))
 
 metric_df = readRDS(here::here("snakemake/Rdatas/gene_metrics.RDS"))
@@ -17,7 +17,7 @@ library(ape)
 library(Hmisc)
 library(ggrepel)
 library(wesanderson)
-
+library(ggthemes)
 ea_df = read.csv(here::here("snakemake/metadata/EA_metadata.csv"), header=T, comment.char = "#")
 rc3_df = read.csv(here::here("snakemake/metadata/recount3_metadata.csv"), header=T, comment.char = "#")
 metadata_df = bind_rows(ea_df,rc3_df)
@@ -38,12 +38,12 @@ for (metric in c("mean", "sd")){
     res <- pcoa(abs(1 - metric_cor))
 
     pcoa_df = data.frame(res$vectors[, 1:2],
-               study = rownames(data.frame(res$vectors[, 1:2])))    
+               study = rownames(data.frame(res$vectors[, 1:2])))
     pcoa_df$source = metadata_df[match(pcoa_df$study, metadata_df$id), "group"]
 
     pallet = wes_palette("Royal1", 4)
     pallet[3] = wes_palette("Rushmore1")[3]
-    pcoa_plot = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, color = source)) + 
+    pcoa_plot = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, color = source)) +
         geom_point() + geom_text_repel(max.overlaps = 15, show.legend = FALSE) + coord_fixed() +
          scale_color_manual(values = pallet) + labs(x = "PCoA Axis 1", y = "PCoA Axis 2", color = "Study\nsource") + theme_cowplot() +
         theme(legend.position = "top")
@@ -61,6 +61,17 @@ for (metric in c("mean", "sd")){
     PC_scores = as.matrix(imputed_rank$completeObs) %*% eig$vectors
     vars = apply(PC_scores, 2, function(x) var(x))
     print(paste(round(vars/sum(vars) * 100, 1)[1:5], collapse = "% "))
+    # var_explained_df <- data.frame(PC = paste0("PC",1:60), var_explained = round(vars/sum(vars) * 100, 1))
+    var_explained_df <- data.frame(PC = sort(1:57,decreasing=TRUE), var_explained = sort(round(vars/sum(vars) * 100, 1)), decreasing = TRUE)
+    var_explained_df %>%
+        ggplot(aes(x = PC, y = var_explained, group = 1)) +
+        geom_point(size = 4) +
+        geom_line() +
+        labs(title = paste0("Scree plot: PCA on ", metric," rank correlation matrix")) +
+        xlab("Principal component") +
+        ylab("Percent of variance explained") +
+        theme_tufte()
+    ggsave(here::here(paste0(metric,"_scree_plot.png")), width = 10, height = 5)
     gene_rank = rank(PC_scores[,1], na.last = "keep")
     names(gene_rank) = metric_df[[metric]][,1]
     rank_list[[metric]] = gene_rank
