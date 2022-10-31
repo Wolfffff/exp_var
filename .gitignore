@@ -13,3 +13,4 @@ Rdatas/
 snakemake/Rplots.pdf
 data/PTWAS_scan.weights.hg38.txt
 test.png
+packrat/lib*/
