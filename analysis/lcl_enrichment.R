@@ -10,8 +10,10 @@ library(AnnotationDbi)
 
 
 # %%
+
 organism <- "org.Hs.eg.db"
 library(organism, character.only = TRUE)
+
 # %%
 
 
@@ -22,11 +24,35 @@ library(organism, character.only = TRUE)
 lcl_table <- read.table(here::here("data/10Jun21_eQTL_SNPs_sharing_EDITED.txt"), header = T, sep = "\t")
 uniq_lcl_eqtls <- unique(lcl_table$gene)
 rank_df <- read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
-rank_df$Gene <- mapIds(org.Hs.eg.db,
-    keys = rank_df$Gene,
-    keytype = "ENSEMBL", column = "SYMBOL"
-)
+
 # %%
+run_hypergeometric <- function(fdr){
+# %%
+files <- list.files(path="/Genomics/ayroleslab2/scott/exp_var/data/annotation/Lea_LCL_results", pattern="*.txt", full.names=TRUE, recursive=FALSE)
+list_of_dfs <- lapply(files, function(x) {
+    df <- read_tsv(x) # load file
+    if("P.Value" %in% colnames(df)) {
+
+        df$P.Value <- p.adjust(df$P.Value, method = "BH")
+        df <- df[df$P.Value < fdr,]
+
+    } else {
+        df$gene <- mapIds(org.Hs.eg.db,
+        keys = df$gene,
+        keytype = "SYMBOL", column = "ENSEMBL"
+        )
+    }
+    df
+})
+names(list_of_dfs) <- gsub(".txt", "", basename(files))
+
+n_env_responsive_genes <- lapply(list_of_dfs, FUN=function(x) {
+    nrow(x)
+})
+n_env_responsive_genes[['10Jun21_eQTL_SNPs_sharing_EDITED']] <- unique(list_of_dfs[['10Jun21_eQTL_SNPs_sharing_EDITED']])$gene %>% unique %>% length
+# %%
+
+# list_of_dfs[["23May22_limma_treatment_ACRYL"]]
 
 
 # %%
@@ -49,23 +75,61 @@ lower_quantiles[[metric]] <- rank_df[rank_df[[metric]] <= cutoff, ]$Gene
 
 # %%
 # Find overlap between LCL eQTLs and top/bottom n% of genes, calculate odds ratio, and perform hypergeometric test
+df <- data.frame(source=character(),
+                 ptwas_category = character(),
+                 number_of_genes_tissue = integer(),
+                 number_of_genes_topbottom = integer(),
+                 category_count=integer(),
+                 total_count = integer(),
+                 upper_count = integer(),
+                 lower_count=integer(),
+                 num_env_responsive = integer(),
+                 fdr=numeric(),
+                  stringsAsFactors=F)
 
 # Create dummy var noting overlap with top/bottom n% of genes
-rank_df_with_dummyvar <- rank_df %>% mutate(sd_dummyvar = if_else(Gene %in% uniq_lcl_eqtls, 1, 0))
-lower_with_dummyvar <- as.data.frame(lower_quantiles) %>% mutate(sd_dummyvar = if_else(sd %in% uniq_lcl_eqtls, 1, 0))
-upper_with_dummyvar <- as.data.frame(upper_quantiles) %>% mutate(sd_dummyvar = if_else(sd %in% uniq_lcl_eqtls, 1, 0))
+for (name in names(list_of_dfs)){
+    uniq_lcl_eqtls = unique(list_of_dfs[[name]]$gene)
+    rank_df_with_dummyvar <- rank_df %>% mutate(sd_dummyvar = if_else(Gene %in% uniq_lcl_eqtls, 1, 0))
+    lower_with_dummyvar <- as.data.frame(lower_quantiles) %>% mutate(sd_dummyvar = if_else(sd %in% uniq_lcl_eqtls, 1, 0))
+    upper_with_dummyvar <- as.data.frame(upper_quantiles) %>% mutate(sd_dummyvar = if_else(sd %in% uniq_lcl_eqtls, 1, 0))
 
-results_df <- data.frame(tissue = "cross_tissue", number_of_genes_tissue = dim(as.data.frame(rank_df))[1], number_of_genes_topbottom = dim(as.data.frame(upper_quantiles))[1], total_count = length(uniq_lcl_eqtls), upper_count = sum(upper_with_dummyvar$sd_dummyvar), lower_count = sum(lower_with_dummyvar$sd_dummyvar), stringsAsFactors = F)
+    results_df <- data.frame(source = name, number_of_genes_tissue = dim(as.data.frame(rank_df))[1], number_of_genes_topbottom = dim(as.data.frame(upper_quantiles))[1],
+                total_count = length(uniq_lcl_eqtls), upper_count = sum(upper_with_dummyvar$sd_dummyvar), lower_count = sum(lower_with_dummyvar$sd_dummyvar), n_env_responsive = n_env_responsive_genes[[name]],fdr=fdr, stringsAsFactors = F)
 
-# Calculate odds ratios
-results_df$upper_or <- (results_df$upper_count / (results_df$total_count - results_df$upper_count)) / (int(100*tail_size) / (100 - int(100*tail_size)))
-results_df$lower_or <- (results_df$lower_count / (results_df$total_count - results_df$lower_count)) / (int(100*tail_size) / (100 - int(100*tail_size)))
+    # Calculate odds ratios
+    results_df$upper_or <- (results_df$upper_count / (results_df$total_count - results_df$upper_count)) / ((100*tail_size) / (100 - (100*tail_size)))
+    results_df$lower_or <- (results_df$lower_count / (results_df$total_count - results_df$lower_count)) / ((100*tail_size) / (100 - (100*tail_size)))
 
-# Perform hypergeometric test and update results_df
-results_df$phyper_upper <- phyper(results_df$upper_count, results_df$number_of_genes_topbottom, (results_df$number_of_genes_tissue - results_df$number_of_genes_topbottom), results_df$total_count)
-results_df$phyper_lower <- phyper(results_df$lower_count, results_df$number_of_genes_topbottom, (results_df$number_of_genes_tissue - results_df$number_of_genes_topbottom), results_df$total_count)
-results_df$phyper_upper_bh_adj <- p.adjust(results_df$phyper_upper, method = "BH")
-results_df$phyper_lower_bh_adj <- p.adjust(results_df$phyper_lower, method = "BH")
+    # Perform hypergeometric test
+    q = results_df$upper_count
+    m = results_df$number_of_genes_topbottom
+    n = (results_df$number_of_genes_tissue - results_df$number_of_genes_topbottom)
+    k = n_env_responsive_genes[[name]]# Number of environmentally responsive genes
 
-write_csv(data.frame(results_df), here::here("data/annotation/lcl_output_table.csv"))
+    # Perform hypergeometric test and update results_df
+    results_df$phyper_upper <- phyper(q, m, n, k, lower.tail = FALSE)
+
+    q = results_df$lower_count
+    results_df$phyper_lower <- phyper(q, m, n, k, lower.tail = FALSE)
+
+    results_df$phyper_upper_bh_adj <- p.adjust(results_df$phyper_upper, method = "BH")
+    results_df$phyper_lower_bh_adj <- p.adjust(results_df$phyper_lower, method = "BH")
+    df <- rbind(df, results_df)
+}
+
+df
+
 # %%
+}
+fdr = 0.05
+output <- run_hypergeometric(0.05)
+write_csv(data.frame(output), here::here(paste0("data/annotation/lcl_output_table_fdr",gsub('\\.', '', toString(fdr)),".csv")))
+
+# %%
+list_of_fdrs = c(0.1, 0.01, 0.001, 0.0001)
+resulting_list_of_tables <- lapply(list_of_fdrs, run_hypergeometric)
+merged_df <- bind_rows(resulting_list_of_tables)
+merged_df[,c("source","fdr","n_env_responsive")] %>% pivot_wider(names_from = source, values_from = n_env_responsive) %>% as.data.frame
+
+#%%
