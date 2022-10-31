@@ -28,13 +28,14 @@ rank_df <- read.csv(here::here("data/pca_ranks.csv"), header = TRUE)[, -1]
 # %%
 run_hypergeometric <- function(fdr){
 # %%
+library(qvalue)
 files <- list.files(path="/Genomics/ayroleslab2/scott/exp_var/data/annotation/Lea_LCL_results", pattern="*.txt", full.names=TRUE, recursive=FALSE)
 list_of_dfs <- lapply(files, function(x) {
     df <- read_tsv(x) # load file
     if("P.Value" %in% colnames(df)) {
-
-        df$P.Value <- p.adjust(df$P.Value, method = "BH")
-        df <- df[df$P.Value < fdr,]
+        df <- df[order(df$P.Value),] # sort by p-value
+        df$qvalue <- qvalue(df$P.Value)$qvalues#p.adjust(df$P.Value, method = "BH")
+        df <- df[df$qvalue < fdr,]
 
     } else {
         df$gene <- mapIds(org.Hs.eg.db,
@@ -85,7 +86,7 @@ df <- data.frame(source=character(),
                  lower_count=integer(),
                  num_env_responsive = integer(),
                  fdr=numeric(),
-                  stringsAsFactors=F)
+                 stringsAsFactors=F)
 
 # Create dummy var noting overlap with top/bottom n% of genes
 for (name in names(list_of_dfs)){
@@ -122,12 +123,12 @@ df
 
 # %%
 }
-fdr = 0.05
-output <- run_hypergeometric(0.05)
-write_csv(data.frame(output), here::here(paste0("data/annotation/lcl_output_table_fdr",gsub('\\.', '', toString(fdr)),".csv")))
+# fdr = 0.05
+# output <- run_hypergeometric(0.05)
+# write_csv(data.frame(output), here::here(paste0("data/annotation/lcl_output_table_fdr",gsub('\\.', '', toString(fdr)),".csv")))
 
 # %%
-list_of_fdrs = c(0.1, 0.01, 0.001, 0.0001)
+list_of_fdrs = c(0.1, 0.01)
 resulting_list_of_tables <- lapply(list_of_fdrs, run_hypergeometric)
 merged_df <- bind_rows(resulting_list_of_tables)
 merged_df[,c("source","fdr","n_env_responsive")] %>% pivot_wider(names_from = source, values_from = n_env_responsive) %>% as.data.frame
