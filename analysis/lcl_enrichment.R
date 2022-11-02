@@ -18,6 +18,22 @@ library(organism, character.only = TRUE)
 
 
 # %%
+lcl_count_of_genes_per_treatment = list(
+    ACRYL = 797,
+    BAFF = 195,
+    BPA = 717,
+    ETOH = 14,
+    FSL1 = 102,
+    GARD = 700,
+    IFNG = 532,
+    # IGF = 0,
+    PFOA = 801,
+    DEX = 3214,
+    TUNIC = 60
+)
+# %%
+
+# %%
 # Load the data and convert Ensembl IDs to gene symbols for matching
 
 # LCL enrichment table from https://github.com/AmandaJLea/LCLs_gene_exp/blob/main/main_results/10Jun21_eQTL_SNPs_sharing_EDITED.txt
@@ -34,8 +50,12 @@ list_of_dfs <- lapply(files, function(x) {
     df <- read_tsv(x) # load file
     if("P.Value" %in% colnames(df)) {
         df <- df[order(df$P.Value),] # sort by p-value
-        df$qvalue <- qvalue(df$P.Value)$qvalues#p.adjust(df$P.Value, method = "BH")
-        df <- df[df$qvalue < fdr,]
+        # df$qvalue <- qvalue(df$P.Value)$qvalues#p.adjust(df$P.Value, method = "BH")
+        # df <- df[df$qvalue < fdr,]
+        name = str_split(x, "/")[[1]][9]
+        name = str_split(name, "\\.")[[1]][1]
+        name = str_split(name, "_")[[1]][4]
+        df <- df[1:lcl_count_of_genes_per_treatment[[name]],]
 
     } else {
         df$gene <- mapIds(org.Hs.eg.db,
@@ -123,14 +143,6 @@ df
 
 # %%
 }
-# fdr = 0.05
-# output <- run_hypergeometric(0.05)
+output <- run_hypergeometric(0)
+write_csv(output, here::here("data/Lea_LCL_results_hypergeometric_test.csv"))
 # write_csv(data.frame(output), here::here(paste0("data/annotation/lcl_output_table_fdr",gsub('\\.', '', toString(fdr)),".csv")))
-
-# %%
-list_of_fdrs = c(0.1, 0.01)
-resulting_list_of_tables <- lapply(list_of_fdrs, run_hypergeometric)
-merged_df <- bind_rows(resulting_list_of_tables)
-merged_df[,c("source","fdr","n_env_responsive")] %>% pivot_wider(names_from = source, values_from = n_env_responsive) %>% as.data.frame
-
-#%%
