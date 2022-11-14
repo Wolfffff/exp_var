@@ -68,9 +68,11 @@ histogram = data.frame(Correlations = M[lower.tri(M)]) %>%
 save_plot("data/plots/SpearmanCorrelations/sd_corr_plot_histogram.png", plot = histogram, base_height = 4, base_asp = 1.5)
 
 pcoa_df = readRDS(here::here("snakemake/Rdatas/PCoA_df_sd.RDS"))
-pcoa_df$source = gsub("Other", "Misc.", pcoa_df$source)
+pcoa_df$source = gsub("Other - recount3", "Misc.", pcoa_df$source)
+pcoa_df$source = gsub("Other - Expression Atlas", "Misc.", pcoa_df$source)
 pallet = wes_palette("Royal1", 4)
 pallet[3] = wes_palette("Rushmore1")[3]
+pallet = pallet[2:4]
 PCoA = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, fill = source)) +
     geom_point(aes(fill=source), size=5, color="black",shape=21) + geom_text_repel(aes(color=source), min.segment.length = 0,force=1,max.time = 10, max.iter = 500000, point.padding = 5, max.overlaps = 6, show.legend = FALSE, size = 6) +
     coord_fixed() +
