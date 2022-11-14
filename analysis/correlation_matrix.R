@@ -80,16 +80,17 @@ PCoA = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, fill = source)) +
         scale_color_manual(values = pallet) + labs(x = "PCoA axis 1", y = "PCoA axis 2", color = "Study\nsource") + theme_tufte() +
         #scale_x_continuous(limits = c(-.45, .4)) + scale_y_continuous(limits = c(-.5, .4)) +
                theme(axis.line = element_line("black"),
-                     legend.position = "bottom",
+                     legend.position = c(1, 1),
+                     legend.justification = c("right", "top"),
                      legend.title = element_blank(),
                      legend.background = element_blank(),
-                     legend.text = element_text(size = 18),
+                     legend.text = element_text(size = 25),
                      legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.),
                      axis.title = element_text(size = 28),
                      axis.text = element_text(size = 18)) +
                      ggtitle("C.") + theme(plot.title = element_text(size = 30)) +
                      guides(color=guide_legend(ncol=2, override.aes = list(size=5)))
-save_plot("test.png", PCoA, base_height = 7, base_asp = 1.4)
+save_plot("test.png", PCoA, base_height = 7.5, base_asp = 1.2, ncol = 1, nrow = 1)
 
 density = readRDS(here::here("snakemake/Rdatas/plots/density_plot.RDS"))
 density[["scaled"]] = density[["scaled"]] +
