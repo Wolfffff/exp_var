@@ -84,7 +84,7 @@ PCoA = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, fill = source)) +
                      legend.justification = c("right", "top"),
                      legend.title = element_blank(),
                      legend.background = element_blank(),
-                     legend.text = element_text(size = 25),
+                     legend.text = element_text(size = 23),
                      legend.margin =margin(r=1.5,l=1.5,t=0.,b=0.),
                      axis.title = element_text(size = 28),
                      axis.text = element_text(size = 18)) +
