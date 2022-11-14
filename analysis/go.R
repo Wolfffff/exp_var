@@ -153,15 +153,18 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
   geom_label_repel(label = sig_terms_df$.id, max.overlaps = 27) +
   theme_tufte() +
   xlab("Shannon entropy") + ylab("Skewness") +
-                           theme(plot.title = element_text(size = 30),
-                                          axis.title = element_text(size = 28),
-                                          axis.text = element_text(size = 28),
-                                          strip.text.x = element_text(size = 42)) +
+                           theme(
+                            axis.line.y = element_line("black"),
+                            plot.title = element_text(size = 30),
+                            axis.title = element_text(size = 28),
+                            axis.text = element_text(size = 28),
+                            strip.text.x = element_text(size = 42)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
-                            annotate("text", x = 1.45, y = 1, label = 'bold("Low-variance bias")', parse=TRUE, size = 7.5) +
-                            annotate("text", x = 1.45, y = -1, label = 'bold("High-variance bias")', parse = TRUE, size = 7.5)
-save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
-save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.25*2)
+                            annotate("text", x = 1.45, y = 0.98, label = 'bold("Low-variance bias")', parse=TRUE, size = 7.5) +
+                            annotate("text", x = 1.45, y = -.98, label = 'bold("High-variance bias")', parse = TRUE, size = 7.5)
+save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.26*2)
+save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, 
+          base_width = 6.5*2, base_height = 11*0.26*2)
 
 
 p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
@@ -178,28 +181,32 @@ df2 = ldply(go_gene_overlapping[sig_terms_df$.id[1:n_plots]], termTable) %>% mel
 n_terms = nrow(sig_terms_df)
 df1 = ldply(go_gene_overlapping[sig_terms_df$.id[(n_terms-n_plots+1):n_terms]], termTable) %>% melt %>% mutate(class = "Low-variance bias")
 df1$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df1$.id)
+df1$.id[df1$.id=="macromolecule methylation"] = "macromolecule\nmethylation"
+
 df2$.id = vector <- sub("^(\\S+) (\\S+) ", "\\1 \\2\n", df2$.id)
+df2$.id[df2$.id=="leukocyte chemotaxis"] = "leukocyte\nchemotaxis"
+
 p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 35),
-                                legend.text = element_text(size = 32),
-                                axis.title = element_text(size = 32),
-                                axis.text = element_text(size = 28),
-                                axis.text.x = element_text(size=40,angle = 0, hjust = 0.5),
+                                legend.title = element_text(size = 40),
+                                legend.text = element_text(size = 35),
+                                axis.title = element_text(size = 42),
+                                axis.text = element_text(size = 30),
+                                axis.text.x = element_text(size=45,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 35),
-                                legend.text = element_text(size = 32),
-                                axis.title = element_text(size = 32),
-                                axis.text = element_text(size = 28),
-                                axis.text.x = element_text(size=40,angle = 0, hjust = 0.5),
+                                legend.title = element_text(size = 40),
+                                legend.text = element_text(size = 35),
+                                axis.title = element_text(size = 42),
+                                axis.text = element_text(size = 30),
+                                axis.text.x = element_text(size=45,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
 p = p1+ p2 + plot_layout(ncol=1, guides = "collect")
 save_plot("test.png", p, base_height = 6.5*2.2,base_width=13*2.2)

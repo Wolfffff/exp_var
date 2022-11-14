@@ -79,7 +79,8 @@ PCoA = ggplot(pcoa_df, aes(Axis.1, Axis.2, label = study, fill = source)) +
         scale_fill_manual(values = pallet) + labs(x = "PCoA axis 1", y = "PCoA axis 2", color = "Study\nsource") + theme_tufte() +
         scale_color_manual(values = pallet) + labs(x = "PCoA axis 1", y = "PCoA axis 2", color = "Study\nsource") + theme_tufte() +
         #scale_x_continuous(limits = c(-.45, .4)) + scale_y_continuous(limits = c(-.5, .4)) +
-               theme(legend.position = "bottom",
+               theme(axis.line = element_line("black"),
+                     legend.position = "bottom",
                      legend.title = element_blank(),
                      legend.background = element_blank(),
                      legend.text = element_text(size = 18),
@@ -94,13 +95,13 @@ density = readRDS(here::here("snakemake/Rdatas/plots/density_plot.RDS"))
 density[["scaled"]] = density[["scaled"]] +
                       theme_tufte() + theme(legend.position = "none") +
                       ggtitle("D.") +
-                      theme(plot.title = element_text(size = 30)) +
+                      theme(plot.title = element_text(size = 30), axis.line = element_line("black")) +
                       theme(axis.title = element_text(size = 28),
                             axis.text = element_text(size = 18))
 density[["unscaled"]] = density[["unscaled"]] +
                         theme_tufte() + theme(legend.position = "none") +
                         theme(axis.title.y = element_blank(), axis.title = element_text(size = 28),
-                            axis.text = element_text(size = 18))
+                            axis.text = element_text(size = 18), axis.line = element_line("black"))
                     #   theme(plot.title = element_text(size = 30)) +
                       theme()
 density = density[["scaled"]] +
@@ -116,7 +117,7 @@ panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 30),
                                         axis.title = element_text(size = 30),
                                         axis.text = element_text(size = 15),
                                         legend.text = element_text(size = 18)) +
-        histogram + ggtitle("B.") + theme(plot.title = element_text(size = 30),
+        histogram + ggtitle("B.") + theme(plot.title = element_text(size = 30), axis.line = element_line("black"),
                                           axis.title = element_text(size = 28),
                                           axis.text = element_text(size = 18)) +
         PCoA +
