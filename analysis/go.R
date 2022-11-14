@@ -191,9 +191,9 @@ geom_bar(stat="identity", color="black", position=position_dodge()) +
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 40),
-                                legend.text = element_text(size = 35),
-                                axis.title = element_text(size = 42),
+                                legend.title = element_text(size = 50),
+                                legend.text = element_text(size = 50),
+                                axis.title = element_text(size = 50),
                                 axis.text = element_text(size = 30),
                                 axis.text.x = element_text(size=45,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
@@ -202,9 +202,9 @@ geom_bar(stat="identity", color="black", position=position_dodge()) +
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
                           theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 40),
-                                legend.text = element_text(size = 35),
-                                axis.title = element_text(size = 42),
+                                legend.title = element_text(size = 50),
+                                legend.text = element_text(size = 50),
+                                axis.title = element_text(size = 50),
                                 axis.text = element_text(size = 30),
                                 axis.text.x = element_text(size=45,angle = 0, hjust = 0.5),
                                 strip.text.x = element_text(size = 32))
