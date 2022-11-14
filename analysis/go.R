@@ -154,8 +154,8 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
   theme_tufte() +
   xlab("Shannon entropy") + ylab("Skewness") +
                            theme(plot.title = element_text(size = 30),
-                                          axis.title = element_text(size = 24),
-                                          axis.text = element_text(size = 24),
+                                          axis.title = element_text(size = 28),
+                                          axis.text = element_text(size = 28),
                                           strip.text.x = element_text(size = 42)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
                             annotate("text", x = 1.45, y = 1, label = 'bold("Low-variance bias")', parse=TRUE, size = 7.5) +
