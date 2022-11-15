@@ -14,13 +14,17 @@ args = commandArgs( trailingOnly = TRUE)
 ##############################
 ## set up workspace (local) ##
 
+install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
+pak::pkg_install(c("tidyverse", "ggthemes", "gridExtra", "RColorBrewer",
+                   "ggrepel", "cowplot", "svglite"))
 library(tidyverse)
 library(ggthemes)
 library(gridExtra)
 library(RColorBrewer)
 library(ggrepel)
+library(cowplot)
 
-load( "~/Documents/AyrolesLab/varGeneExp/Figures/pcor_rankVchromHMM10_forHeatmapPlot_FigS1.RData")
+load( "analysis/chromHMM/fxnlGen_highLow_var_mean_lineplot.RData")
 
 
 ####################################
@@ -40,56 +44,56 @@ thisChromHMM <- get( "chromHMMcov.genome")
 finalDF <- merge( thisVarrank, thisChromHMM, by = 1)
 
 for ( k in 6:ncol( finalDF)) {
-  
+
   thisCat <- colnames( finalDF)[ k] ## annotation
-  
+
   tmpDF.tissue <- finalDF[ , c( 4, k)] ## varrank
   tmpDF.tissue <- tmpDF.tissue[ complete.cases( tmpDF.tissue), ]
-  
+
   medianL <- median( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 1), 2]) ## lowest 5%
   medianH <- median( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 20), 2]) ## highest 5%
   SEML <- sd( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 1), 2]) / sqrt( length( which( tmpDF.tissue$varrankBin == 1))) ## lowest 5%
   SEMH <- sd( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 20), 2]) / sqrt( length( which( tmpDF.tissue$varrankBin == 20))) ## highest 5%
   SDL <- sd( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 1), 2]) ## lowest 5%
   SDH <- sd( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 20), 2]) ## highest 5%
-  
-  wilcoxRes.var <- rbind( wilcoxRes.var, data.frame( category = thisCat, 
-                                                     medianL = medianL, 
-                                                     medianH = medianH, 
+
+  wilcoxRes.var <- rbind( wilcoxRes.var, data.frame( category = thisCat,
+                                                     medianL = medianL,
+                                                     medianH = medianH,
                                                      SEML = SEML,
                                                      SEMH = SEMH,
                                                      SDL = SDL,
                                                      SDH = SDH,
-                                                     medianDiffHsubtractL = medianH - medianL, 
-                                                     wilcoxP = wilcox.test( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 20), 2], 
+                                                     medianDiffHsubtractL = medianH - medianL,
+                                                     wilcoxP = wilcox.test( tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 20), 2],
                                                                             tmpDF.tissue[ which( tmpDF.tissue$varrankBin == 1), 2])$p.value
                                                      )
                           )
-  
+
   tmpDF.tissue <- finalDF[ , c( 5, k)] ## meanrank
   tmpDF.tissue <- tmpDF.tissue[ complete.cases( tmpDF.tissue), ]
-  
+
   medianL <- median( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 1), 2]) ## lowest 5%
   medianH <- median( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 20), 2]) ## highest 5%
   SEML <- sd( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 1), 2]) / sqrt( length( which( tmpDF.tissue$meanrankBin == 1))) ## lowest 5%
   SEMH <- sd( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 20), 2]) / sqrt( length( which( tmpDF.tissue$meanrankBin == 20))) ## highest 5%
   SDL <- sd( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 1), 2]) ## lowest 5%
   SDH <- sd( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 20), 2]) ## highest 5%
-  
-  wilcoxRes.mean <- rbind( wilcoxRes.mean, data.frame( category = thisCat, 
-                                                     medianL = medianL, 
-                                                     medianH = medianH, 
+
+  wilcoxRes.mean <- rbind( wilcoxRes.mean, data.frame( category = thisCat,
+                                                     medianL = medianL,
+                                                     medianH = medianH,
                                                      SEML = SEML,
                                                      SEMH = SEMH,
                                                      SDL = SDL,
                                                      SDH = SDH,
-                                                     medianDiffHsubtractL = medianH - medianL, 
-                                                     wilcoxP = wilcox.test( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 20), 2], 
+                                                     medianDiffHsubtractL = medianH - medianL,
+                                                     wilcoxP = wilcox.test( tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 20), 2],
                                                                             tmpDF.tissue[ which( tmpDF.tissue$meanrankBin == 1), 2])$p.value
                                                      )
                           )
-  
-  
+
+
 }
 
 wilcoxRes.var <- wilcoxRes.var %>% mutate( padj = p.adjust( wilcoxP, method = "BH")) %>% mutate( sig = NA)
@@ -111,7 +115,7 @@ wilcoxRes.mean$sig[ which( wilcoxRes.mean$padj >= 0.05)] <- c( "no")
 newDF <- data.frame( cbind( wilcoxRes.var[ , c( 1, 2, 6, 11)], type = "low")) %>% rename( median = medianL, SD = SDL)
 newDF <- rbind( newDF, data.frame( cbind( wilcoxRes.var[ , c( 1, 3, 7, 11)], type = "high")) %>% rename( median = medianH, SD = SDH))
 newDF$type <- factor( newDF$type, levels = c( "low", "high"))
-newDF$type <- factor( newDF$type, labels = c( "Bottom 5% of Genes\nRanked by Variance", "Top 5% of Genes\nRanked by Variance"))
+newDF$type <- factor( newDF$type, labels = c( "Low-variance\ngenes", "High-variance\ngenes"))
 
 # get color palette and make non-significant comparisons black
 colors <- brewer.pal( 10, "Paired")
@@ -123,21 +127,18 @@ tmpDF.col.var <- unique( merge( tmpDF.col, newDF[ , c( "category", "sig")] ))
 tmpDF.col.var$color <- as.character( tmpDF.col.var$color)
 tmpDF.col.var$color[ which( tmpDF.col.var$sig == "no")] <- c( "#000000")
 
-library(ggthemes)
-svg( file = paste0( "top_bottom_5pVarrank_fxnlGen_lineplot_10kb.svg"), width = 12.5, height = 8.5)
-ggplot( newDF, aes( x = type, y = median, group = category, color = category)) +
-  geom_line( size = 2, alpha = 0.6, position = position_dodge( width = 0.25)) +
-  geom_point( size = 3, alpha = 0.6, position = position_dodge( width = 0.25)) +
+var_line_plot = ggplot( newDF, aes( x = type, y = median, group = category, color = category)) +
+  geom_line( linewidth = 1, alpha = 0.6, position = position_dodge( width = 0.25)) +
+  geom_point( size = 2, alpha = 0.6, position = position_dodge( width = 0.25)) +
   geom_pointrange( aes( ymin = median - SD, ymax = median + SD), position = position_dodge( width = 0.25)) +
-  geom_label_repel(size = 6,label = newDF$category, position = position_dodge( width = 0.25), family = "serif",max.overlaps = Inf) +
+  geom_label_repel(label = newDF$category, position = position_dodge( width = 0.25), family = "serif", max.overlaps = 20) +
   ylab( "Median proportion of gene region in indicated annotation") +
-  xlab("") + 
-  scale_color_manual( values = tmpDF.col.var$color) + 
-  theme_tufte( base_size = 22) +
-  theme(axis.line = element_line("black"), legend.position = "none",
-  axis.title = element_text(size = 22),axis.text=element_text(size=22,color="black"))
-  # theme( panel.grid.major = element_line( color = "grey90"), legend.position = "none")
-dev.off()
+  xlab("") +
+  scale_color_manual( values = tmpDF.col.var$color) +
+  theme_tufte() +
+  theme(axis.line = element_line("black"), legend.position = "none", axis.text=element_text(color="black", family = "serif"), axis.title =element_text(color="black", family = "serif"))
+save_plot( file = paste0("data/plots/top_bottom_5pVarrank_fxnlGen_lineplot_10kb.pdf"), var_line_plot, base_height = 7, base_asp = 0.77)
+save_plot( file = paste0("data/plots/top_bottom_5pVarrank_fxnlGen_lineplot_10kb.png"), var_line_plot, base_height = 7, base_asp = 0.77)
 
 gg1 <- ggplot( newDF, aes( x = type, y = median, group = category, color = category)) + geom_line( size = 2, alpha = 0.6, position = position_dodge( width = 0.25)) + geom_point( size = 3, alpha = 0.6, position = position_dodge( width = 0.25)) + geom_pointrange( aes( ymin = median - SD, ymax = median + SD), position = position_dodge( width = 0.25)) + geom_label_repel( label = newDF$category, position = position_dodge( width = 0.25), family = "serif") + theme_bw() + theme( legend.position = "none") + ylab( "Median proportion of gene region in indicated annotation") + xlab( "") + scale_color_manual( values = tmpDF.col.var$color) + theme_tufte( base_size = 20) + theme( panel.grid.major = element_line( color = "grey90"), legend.position = "none")
 
