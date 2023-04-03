@@ -95,11 +95,12 @@ fit_stan <- ulam(
     alist(
         corr ~ normal(mu, sigma),
         mu <- a + as[s1] + as[s2] + b[n_source] + c[n_bool_tissue] + d*sample_size,
-        as[index] ~ normal(0, 0.25),
+        as[index] ~ normal(0, sigma_a),
         b[n_source] ~ normal(0, 0.25),
         c[n_bool_tissue] ~ normal(0, 0.25),
         d ~ normal(0, 0.5),
         a ~ normal(0, 1),
+        sigma_a ~ exponential(1)
         sigma ~ exponential(1)
     ), data = rethinking_data, chains = 1, cores = 1, iter = 2)
 mod <- cmdstan_model(cmdstanr_model_write(rethinking::stancode(fit_stan)))
