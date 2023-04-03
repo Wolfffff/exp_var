@@ -31,14 +31,19 @@ dev.off()
 merged_filtered$KaKs <- merged_filtered$Divergence.metrics.Ka/merged_filtered$Divergence.metrics.Ks
 merged_filtered <- merged_filtered[is.numeric(merged_filtered$KaKs),]
 
+library(ppcor)
+merged_alpha = merged[, c("sd", "alpha.symbol", "mean")]
+merged_alpha = merged_alpha[complete.cases(merged_alpha),]
+
+pcor(merged_alpha, method = "spearman")
 # %%
 
 # %%
 # pi vals
 
+pak::pkg_install(c("rtracklayer", "GenomicFeatures"))
 library(GenomicFeatures)
 library(rtracklayer)
-# BiocManager::install("GenomicFeatures")
 
 gtf <- makeTxDbFromGFF(here::here("data/annotation/Homo_sapiens.GRCh37.87.gtf")) #change me!
 gene_annotations <- genes(gtf)
@@ -55,9 +60,9 @@ for(gene in unique(genes_with_pi$gene_id)){
 
 write.csv(results_df, here::here("data/annotation/pi_ceu_results.csv"),row.names = F)
 
-# %% 
+# %%
 
-# %% 
+# %%
 
 library(psych)
 library(corrplot)
@@ -75,7 +80,7 @@ mtext("Spearman Correlation Plot - Numbers are p-vals", at=3.5, line=-0.5, cex=4
 pos <- expand.grid(1:ncol(cor_test_mat$p), ncol(cor_test_mat$p):1)
 text(pos, p_format(cor_test_mat$p))
 dev.off()
-# %% 
+# %%
 
 # %%
 rank_df[order(rank_df$sd,decreasing=TRUE),][1:10,]

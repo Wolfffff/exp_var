@@ -1,4 +1,29 @@
-#pak::pkg_install(c("DESeq2", "vsn"))
+if(!require(pak)){ install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/stable/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))
+}
+pak::pkg_install(c("ExpressionAtlas",
+  "plyr",
+  "tidyverse",
+  "limma",
+  "edgeR",
+  "ggplot2",
+  "janitor",
+  "foreach",
+  "doParallel",
+  "biomaRt",
+  "ggfortify",
+  "patchwork",
+  "cowplot",
+  "clusterProfiler",
+  "AnnotationDbi",
+  "org.Hs.eg.db",
+  "rrcov",
+  "DESeq2",
+  "vsn",
+  "viridis",
+  "recount3",
+  "sergihervas/iMKT",
+  "wesanderson"))
+
 library(ExpressionAtlas)
 library(plyr)
 library(tidyverse)
