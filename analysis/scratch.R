@@ -34,3 +34,7 @@ colnames(data$sd)[1] <- "gene_id"
 
 write.table(data$mean, file = paste0(here::here("data/perStudyMetrics/per_study_means.csv")),sep=",", row.names = F)
 write.table(data$sd, file = paste0(here::here("data/perStudyMetrics/per_study_sd.csv")),sep=",", row.names = F)
+
+library("Hmisc")
+pca_ranks = read.csv(here::here("data/pca_ranks.csv"), header=T, comment.char = "#")
+rcorr(as.matrix(pca_ranks[,c("mean","sd")]), type = "spearman")
