@@ -147,6 +147,7 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
 
 p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point()
 save_plot("test.png", p, base_height = 5)
+write.csv(sig_terms_df, "data/sig_go_terms_shannon_skew.csv")
 
 entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) + 
   geom_point() + 
