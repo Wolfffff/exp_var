@@ -80,19 +80,19 @@ runPTWAStissue = function(current_tissue = NULL){
         if(is.na(cat)){
             next
         }
-        cat_df = ptwas_table_merged[ptwas_table_merged$Category == cat,]
+        cat_df_Gene = ptwas_table_merged[ptwas_table_merged$Category == cat, "Gene"] |> na.omit()
         rank_df_with_disease = rank_df %>% 
-            mutate(sd_disease = if_else(Gene %in% cat_df$Gene, 1, 0))
-        lower_with_disease = as.data.frame(lower_quantiles) %>% 
-            mutate(sd_disease = if_else(sd %in% cat_df$Gene, 1, 0))
-        upper_with_disease = as.data.frame(upper_quantiles) %>% 
-            mutate(sd_disease = if_else(sd %in% cat_df$Gene, 1, 0))
+            mutate(sd_disease = if_else(Gene %in% cat_df_Gene, 1, 0))
+        lower_with_disease = data.frame(metric = lower_quantiles[[metric]]) %>% 
+            mutate(sd_disease = if_else(metric %in% cat_df_Gene, 1, 0))
+        upper_with_disease = data.frame(metric = upper_quantiles[[metric]]) %>% 
+            mutate(sd_disease = if_else(metric %in% cat_df_Gene, 1, 0))
         # print()
         tmp_df <- data.frame(tissue = current_tissue , 
                              ptwas_category = cat, 
                              number_of_genes_tissue = nrow(rank_df),
                              number_of_genes_topbottom = length(upper_quantiles[[metric]]),
-                             category_count = length(unique(cat_df$Gene)), 
+                             category_count = length(unique(cat_df_Gene)), 
                              total_count = sum(rank_df_with_disease$sd_disease), 
                              upper_count = sum(upper_with_disease$sd_disease), 
                              lower_count = sum(lower_with_disease$sd_disease), stringsAsFactors=F)
@@ -105,7 +105,13 @@ runPTWAStissue = function(current_tissue = NULL){
 
 library(doMC)
 registerDoMC(length(tissues))
-results  = llply(c(tissues, "across"), runPTWAStissue, .parallel = FALSE, .progress = "text")
+iteration <- function(idx){
+  tryCatch(
+    runPTWAStissue(idx)
+    ,error = function(e) print(paste('error',idx))
+    )
+}
+results  = llply(c(tissues, "across"), iteration, .parallel = FALSE, .progress = "text")
 results_df = do.call("rbind", results)
 # %%
 
