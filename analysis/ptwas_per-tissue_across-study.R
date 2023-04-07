@@ -145,6 +145,9 @@ results_df %>%
     filter(phyper_lower_bh_adj < 0.05) %>%
     dplyr::select(tissue, ptwas_category, 
                   phyper_lower_bh_adj, phyper_lower_bh_adj, lower_or)
+
+library(rio)
+rio::export(results_df, here::here("data/ptwas_per-tissue_across-study.csv"))
 # results_df$phyper_lower
 
 # results_df $lower_or = (results_df$lower_count / results_df$number_of_genes_topbottom) /(results_df$total_count / results_df$number_of_genes_tissue)
