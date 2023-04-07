@@ -150,7 +150,8 @@ save_plot("test.png", p, base_height = 5)
 
 entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) + 
   geom_point() + 
-  geom_label_repel(label = sig_terms_df$.id, max.overlaps = 27) +
+  geom_label_repel(aes(label = .id), max.overlaps = 25) +
+  geom_label_repel(data = sig_terms_df %>% filter(.id == "oxidative phosphorylation"), aes(label = .id), max.overlaps = 22) +
   theme_tufte() +
   xlab("Shannon entropy") + ylab("Skewness") +
                            theme(
@@ -165,7 +166,8 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
 save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.26*2)
 save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, 
           base_width = 6.5*2, base_height = 11*0.26*2)
-
+save_plot(here::here("data/plots/GOterm_entropy_by_skewness.svg"), entropy_by_skewness, 
+          base_width = 6.5*2, base_height = 11*0.26*2)
 
 p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
 save_plot("test.png", p, base_height = 5)
