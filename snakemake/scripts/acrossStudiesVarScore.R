@@ -1,4 +1,4 @@
-my_logfile = snakemake@log[["log"]]
+snakemakemy_logfile = snakemake@log[["log"]]
 snakemake@source("logger.R")
 log4r_info("Starting.")
 print = log4r_info
