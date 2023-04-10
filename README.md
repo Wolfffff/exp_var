@@ -3,7 +3,7 @@
 Repository contains scripts to reproduce results of the paper as below:
 
 > *Characterizing the landscape of gene expression variance in humans.*
-> Scott Wolf*, Diogo Melo*, Kristina Garske, Luisa Pallares, Julien Ayroles.
+> Scott Wolf*, Diogo Melo*, Kristina M. Garske, Luisa F. Pallares, Amanda J. Lea, Julien F. Ayroles.
 
 # Workflow
 
