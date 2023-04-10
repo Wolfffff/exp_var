@@ -109,5 +109,13 @@ runGOtissue = function(current_tissue = NULL){
 
 library(doMC)
 registerDoMC(length(tissues))
-llply(tissues, runGOtissue, .parallel = TRUE)
+
+iteration <- function(idx){
+  tryCatch(
+    runGOtissue(idx)
+    ,error = function(e) print(paste('error',idx))
+    )
+}
+
+llply(tissues, iteration, .parallel = TRUE)
 # %%

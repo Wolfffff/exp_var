@@ -65,6 +65,8 @@ library(ppcor)
 merged = merged[complete.cases(merged),]
 pcor(merged[,c("sd", "pi", "mean")], method = "spearman") 
 pcor(rank_df[,c("sd", "mean_connectivity", "mean")], method = "spearman") 
+cor(rank_df[,c("sd", "mean")], method = "spearman") 
+cor.test(rank_df$sd, rank_df$mean, method = "spearman") 
 
 
 # %%

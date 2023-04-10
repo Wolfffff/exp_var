@@ -3,7 +3,7 @@ __default__:
     partition: main
     nodes: 1
     qos: 1day
-    cores: 1 #Request n cores be allocated per node.
+    cores: 2 #Request n cores be allocated per node.
     chdir: /Genomics/argo/users/damelo/projects/exp_var/snakemake
     output: logs/slurm/exp_var-%j.out
     error: logs/slurm/exp_var-%j.err
