@@ -95,40 +95,40 @@ def getGeneNetworkStats(g):
 
     for v in g.vertex_index:
         line = [genes[v]]
-        line.append(np.sum(np.abs(g.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(g.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_01.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_01.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_01.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_02.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_02.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_02.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_03.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_03.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_03.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_04.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_04.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_04.get_all_edges(v, [corr] )[:,2])))
         
         line.append(tv_05.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_05.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_05.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_fdr5e2.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_fdr5e2.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_fdr5e2.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_fdr1e2.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_fdr1e2.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_fdr1e2.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_fdr1e3.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_fdr1e3.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_fdr1e3.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_fdr1e4.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_fdr1e4.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_fdr1e4.get_all_edges(v, [corr] )[:,2])))
         
         line.append(tv_fdr1e5.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_fdr1e5.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_fdr1e5.get_all_edges(v, [corr] )[:,2])))
 
         line.append(tv_fdr1e6.get_total_degrees([v])[0])
-        line.append(np.sum(np.abs(tv_fdr1e6.get_all_edges(v, [corr] )[:,2])))
+        line.append(np.mean(np.abs(tv_fdr1e6.get_all_edges(v, [corr] )[:,2])))
 
         block_df.loc[v] = line
     return block_df
