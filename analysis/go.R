@@ -152,7 +152,7 @@ write.csv(sig_terms_df, "data/sig_go_terms_shannon_skew.csv")
 single = sig_terms_df %>% filter(.id == "oxidative phosphorylation")
 entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) + 
   geom_point(fill = "black", color = "white", shape = 21) + 
-  geom_text_repel(label = sig_terms_df$.id, max.overlaps = 20, size = 2.5, point.padding = 0.5) +
+  geom_text_repel(label = sig_terms_df$.id, max.overlaps = 20, size = 2.5, point.padding = 0.) +
   geom_text_repel(data = single, point.padding = 0.5,
                 label = single$.id, hjust = "left", size = 2.5) +
   theme_tufte() +
@@ -165,20 +165,11 @@ entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
                             annotate("text", x = 1.45, y = 0.98, label = 'bold("Low-variance bias")', parse=TRUE, size = 4) +
                             annotate("text", x = 1.45, y = -.98, label = 'bold("High-variance bias")', parse = TRUE, size = 4)
-save_plot("test.png", entropy_by_skewness, base_width = 7.2, base_height = 4)
+save_plot("test.png", entropy_by_skewness, base_width = 7.5, base_height = 4)
 save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, 
-         base_width = 7.2, base_height = 4)
+         base_width = 7.5, base_height = 4)
 save_plot(here::here("data/plots/GOterm_entropy_by_skewness.tiff"), entropy_by_skewness, 
-         base_width = 7.2, base_height = 4)
-
-
-p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
-save_plot("test.png", p, base_height = 5)
-
-
-png("test.png")
-plot(sort(goTerm_shannon$V1))
-dev.off()
+         base_width = 7.5, base_height = 4)
 
 n_plots = 5
 library(reshape2)
@@ -195,27 +186,28 @@ p1 = ggplot(df1, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("A. Low-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
-                          theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 50),
-                                legend.text = element_text(size = 50),
-                                axis.title = element_text(size = 50),
-                                axis.text = element_text(size = 30),
-                                axis.text.x = element_text(size=45,angle = 0, hjust = 0.5),
-                                strip.text.x = element_text(size = 32))
+                          theme(plot.title = element_text(size = 12),
+                                legend.title = element_text(size = 12),
+                                legend.text = element_text(size = 8),
+                                axis.title = element_text(size = 12),
+                                axis.text = element_text(size = 10),
+                                axis.text.x = element_text(size=11,angle = 0, hjust = 0.5),
+                                strip.text.x = element_text(size = 10))
 p2 = ggplot(df2, aes(x=.id, y=value, fill=variable)) +
 geom_bar(stat="identity", color="black", position=position_dodge()) + 
   scale_fill_viridis_d(option="inferno", labels = 1:10) + ggtitle("B. High-variance bias") +
   theme_tufte() + xlab("") + ylab("Counts") + labs(fill = "Decile") +
-                          theme(plot.title = element_text(size = 50),
-                                legend.title = element_text(size = 50),
-                                legend.text = element_text(size = 50),
-                                axis.title = element_text(size = 50),
-                                axis.text = element_text(size = 30),
-                                axis.text.x = element_text(size=45,angle = 0, hjust = 0.5),
-                                strip.text.x = element_text(size = 32))
+                          theme(plot.title = element_text(size = 12),
+                                legend.title = element_text(size = 12),
+                                legend.text = element_text(size = 8),
+                                axis.title = element_text(size = 12),
+                                axis.text = element_text(size = 10),
+                                axis.text.x = element_text(size=11,angle = 0, hjust = 0.5),
+                                strip.text.x = element_text(size = 10))
 p = p1+ p2 + plot_layout(ncol=1, guides = "collect")
-save_plot("test.png", p, base_height = 6.5*2.2,base_width=13*2.2)
-save_plot(here::here("data/plots/GOterm_decile_barplot.png"), p, base_height = 6.5*2.2,base_width=13*2.2)
+save_plot("test.png", p, base_height = 4,base_width=7.5)
+save_plot(here::here("data/plots/GOterm_decile_barplot.png"), p,  base_height = 4,base_width=7.5)
+save_plot(here::here("data/plots/GOterm_decile_barplot.tiff"), p,  base_height = 5,base_width=7.5)
 high_term = p2
 low_term = p1
 # %%
