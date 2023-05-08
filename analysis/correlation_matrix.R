@@ -52,15 +52,15 @@ heatmap = ggplot(data = melted_cormat, aes(x=Var1, y=Var2, fill=value)) +
     scale_x_discrete(breaks = c(12, 30, 47), label = c("gTEX", "TCGA", "Misc")) +
     scale_y_discrete(label = study_label) +
     theme(legend.position = "bottom",
-          legend.key.width= unit(1.8, 'cm'), axis.text.y = element_text(size = 8))
+          legend.key.width= unit(1.5, 'cm'), axis.text.y = element_text(size = 8))
 b_size_df = data.frame(start = c(0, 24, 35), end = c(24, 35, 57))  + .5
 heatmap = heatmap + geom_rect(data = b_size_df, color = "black", alpha = 0, linewidth = 1,
                                 aes(x = NULL, y = NULL, fill = NULL, xmin=start, xmax=end,
                                     ymin=start, ymax=end))
 }
-save_plot("test.png", heatmap, base_height = 7.5/2, base_asp = 1.2)
+save_plot("test.png", heatmap, base_width = 7.5/2, base_height = 7.5/2)
 
-save_plot(here::here("data/plots/SpearmanCorrelations/sd_corr_plot_heatmap.png"), heatmap, base_height = 7.5, base_asp = 1)
+save_plot(here::here("data/plots/SpearmanCorrelations/sd_corr_plot_heatmap.png"), heatmap, base_width = 7.5/2, base_height = 7.5/2)
 {
 histogram = data.frame(Correlations = M[lower.tri(M)]) %>%
     ggplot(aes(Correlations)) + geom_histogram(bins = 100) +
