@@ -129,7 +129,7 @@ panel = heatmap + ggtitle("A.") + theme(plot.title = element_text(size = 12),
         PCoA + ggtitle("C.") + 
         density  +
         plot_layout(design = layout)
-save_plot(here::here("test.png"), panel, base_height = 7.5, base_asp = 1.2)
-save_plot(here::here("data/plots/fig1.png"), panel, base_height = 7.5, base_asp = 1.2)
-save_plot(here::here("data/plots/fig2.tiff"), panel, base_height = 7.5, base_asp = 1.2)
+save_plot(here::here("test.png"), panel, base_width = 7.5, base_height = 7.5)
+save_plot(here::here("data/plots/fig1.png"), panel, base_width = 7.5, base_height = 7.5)
+save_plot(here::here("data/plots/fig2.tiff"), panel, base_width = 7.5, base_height = 7.5)
 }

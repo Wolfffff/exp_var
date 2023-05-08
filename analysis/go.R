@@ -146,26 +146,30 @@ sig_terms_df = ldply(go_gene_overlapping[mask],
   as.tibble
 
 p = ggplot(sig_terms_df, aes(H, Skew)) + geom_point()
-save_plot("test.png", p, base_height = 5)
+save_plot("test.png", p, base_height = 2.5, base_width = 5.2)
 write.csv(sig_terms_df, "data/sig_go_terms_shannon_skew.csv")
 
+single = sig_terms_df %>% filter(.id == "oxidative phosphorylation")
 entropy_by_skewness = ggplot(sig_terms_df, aes(H, Skew)) + 
-  geom_point() + 
-  geom_label_repel(label = sig_terms_df$.id, max.overlaps = 27) +
+  geom_point(fill = "black", color = "white", shape = 21) + 
+  geom_text_repel(label = sig_terms_df$.id, max.overlaps = 20, size = 2.5, point.padding = 0.5) +
+  geom_text_repel(data = single, point.padding = 0.5,
+                label = single$.id, hjust = "left", size = 2.5) +
   theme_tufte() +
   xlab("Shannon entropy") + ylab("Skewness") +
                            theme(
                             axis.line = element_line("black"),
-                            plot.title = element_text(size = 30),
-                            axis.title = element_text(size = 28),
-                            axis.text = element_text(size = 28),
-                            strip.text.x = element_text(size = 42)) +
+                            plot.title = element_text(size = 12),
+                            axis.title = element_text(size = 12),
+                            axis.text = element_text(size = 10)) +
                             geom_hline(yintercept=0, linetype = "dashed") +
-                            annotate("text", x = 1.45, y = 0.98, label = 'bold("Low-variance bias")', parse=TRUE, size = 7.5) +
-                            annotate("text", x = 1.45, y = -.98, label = 'bold("High-variance bias")', parse = TRUE, size = 7.5)
-save_plot("test.png", entropy_by_skewness, base_width = 6.5*2, base_height = 11*0.26*2)
+                            annotate("text", x = 1.45, y = 0.98, label = 'bold("Low-variance bias")', parse=TRUE, size = 4) +
+                            annotate("text", x = 1.45, y = -.98, label = 'bold("High-variance bias")', parse = TRUE, size = 4)
+save_plot("test.png", entropy_by_skewness, base_width = 7.2, base_height = 4)
 save_plot(here::here("data/plots/GOterm_entropy_by_skewness.png"), entropy_by_skewness, 
-          base_width = 6.5*2, base_height = 11*0.26*2)
+         base_width = 7.2, base_height = 4)
+save_plot(here::here("data/plots/GOterm_entropy_by_skewness.tiff"), entropy_by_skewness, 
+         base_width = 7.2, base_height = 4)
 
 
 p = ggplot(sig_terms_df, aes(x=Skew)) + geom_histogram()
