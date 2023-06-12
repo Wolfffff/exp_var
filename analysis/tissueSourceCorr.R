@@ -94,11 +94,10 @@ rethinking_data$index = 1:57
 fit_stan <- ulam(
     alist(
         corr ~ normal(mu, sigma),
-        mu <- a + as[s1] + as[s2] + b[n_source] + c[n_bool_tissue] + d*sample_size,
+        mu <- a + as[s1] + as[s2] + b[n_source] + c[n_bool_tissue],
         as[index] ~ normal(0, 0.25),
         b[n_source] ~ normal(0, 0.25),
         c[n_bool_tissue] ~ normal(0, 0.25),
-        d ~ normal(0, 0.5),
         a ~ normal(0, 1),
         sigma ~ exponential(1)
     ), data = rethinking_data, chains = 1, cores = 1, iter = 2)
@@ -117,9 +116,6 @@ fit$summary() %>%
     dplyr::filter(grepl('b', variable)) %>%
     mutate(source = levels(corr_df$source)) %>%
     relocate(source)
-
-fit$summary() %>%
-    dplyr::filter(grepl('c|d', variable))
 
 fit$summary() %>%
     dplyr::filter(grepl('as', variable)) %>%
@@ -154,11 +150,6 @@ p_model = p_study + (p_tissue / p_source)
 #+
   #plot_annotation(title = "Modeling the driver of across-study variance correlations",
    # caption = "Linear effect model coefficients with Fisher z-transformed spearman correlations as the response. \n A: The pairwise random effect captures the non-independence of the correlation values and estimates the contribution \n of each study to the correlation. For example: comparisons involving bone_marrow tend to be lower than the others. \n B and C: Fixed effect estimates: correlations among studies that use the same tissue are higher, and correlations \ninvolving studies in the \"Other\" category (non gTEX and TCGA) tend to be lower.")
-save_plot(here::here("test.png"),
-          p_model, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
 save_plot(here::here("data/plots/correlationModeling.png"),
           p_model, base_height = 7, base_asp = 1.4, ncol = 2, nrow = 2)
-
-
-
 
